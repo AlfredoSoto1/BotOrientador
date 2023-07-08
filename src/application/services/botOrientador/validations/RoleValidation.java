@@ -11,6 +11,7 @@ import application.services.botOrientador.discord.BotServer;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.exceptions.HierarchyException;
 
 /**
  * @author Alfredo
@@ -35,7 +36,7 @@ public class RoleValidation {
 	}
 	
 	
-	public void applyRoles(Guild server, MemberRecord record) {
+	public boolean applyRoles(Guild server, MemberRecord record) {
 		// Obtain the server from the name
 		Member serverMember = server.getMembersByName(record.getDiscordUser(), true)
 				.get(0);
@@ -60,10 +61,15 @@ public class RoleValidation {
 		if(loadedRoles.containsKey(record.getDepartment().getName()))
 			server.addRoleToMember(serverMember, loadedRoles.get(record.getDepartment().getName())).queue();
 		
-		server.modifyNickname(serverMember, record.getFullName()).queue();
+		try {
+			server.modifyNickname(serverMember, record.getFullName()).queue();
+			return true;
+		} catch(HierarchyException e) {
+			return false;
+		}
 	}
 	
-	public void removeRoles(Guild server, String discordUser) {
+	public boolean removeRoles(Guild server, String discordUser) {
 		// Obtain the server from the name
 		Member serverMember = server.getMembersByName(discordUser, true).get(0);
 		
@@ -72,7 +78,12 @@ public class RoleValidation {
 				server.removeRoleFromMember(serverMember, role).queue();
 		}
 		
-		server.modifyNickname(serverMember, null).queue();
+		try {
+			server.modifyNickname(serverMember, null).queue();
+			return true;
+		} catch(HierarchyException e) {
+			return false;
+		}
 	}
 
 	public void dispose() {

@@ -197,7 +197,11 @@ public class LogInModal implements ModalI, CommandI, ButtonI, MessengerI, Startu
 						.getGuildsByName(BotServer.SERVER_NAME, true)
 						.get(0);
 				
-				roleValidation.removeRoles(server, event.getUser().getName());
+				boolean success = roleValidation.removeRoles(server, event.getUser().getName());
+				if(!success)
+					event.getHook().sendMessage("Cannot change nickname since you have a higher role than the bot.")
+					.setEphemeral(true)
+					.queue();
 			} else {
 				event.reply(event.getUser().getAsMention() + "Cannot find your Discord user in database to log-off.")
 				.setEphemeral(true)
@@ -257,12 +261,17 @@ public class LogInModal implements ModalI, CommandI, ButtonI, MessengerI, Startu
 		loginValidation.logInMember(member.get(), event.getUser().getName());
 		
 		// Set the corresponding roles to the logged member
-		roleValidation.applyRoles(
+		boolean success = roleValidation.applyRoles(
 			event.getJDA()
 				.getGuildsByName(BotServer.SERVER_NAME, true)
 				.get(0),
 			member.get()
 		);
+		
+		if(!success)
+			event.getHook().sendMessage("Cannot change nickname since you have a higher role than the bot.")
+			.setEphemeral(true)
+			.queue();
 	}
 	
 	@Override

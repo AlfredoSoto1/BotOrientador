@@ -16,12 +16,19 @@ import application.hosts.bot.commands.CommandManager;
 import application.hosts.bot.messages.MessageManager;
 import application.hosts.bot.modals.ModalManager;
 import application.hosts.bot.startup.StartupManager;
+import application.services.botOrientador.commands.Calendario;
+import application.services.botOrientador.commands.Curriculum;
+import application.services.botOrientador.commands.FAQ;
+import application.services.botOrientador.commands.GuiaPrepistica;
 import application.services.botOrientador.commands.Help;
+import application.services.botOrientador.commands.MadeWeb;
+import application.services.botOrientador.commands.Map;
+import application.services.botOrientador.commands.Rules;
+import application.services.botOrientador.commands.SuperLinks;
 import application.services.botOrientador.modals.LogInModal;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
-import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 
@@ -99,7 +106,7 @@ public class BotEntry extends ApplicationThread {
 		
 		// Set custom bot status
 		discordBuilder.setStatus(OnlineStatus.ONLINE);
-		discordBuilder.setActivity(Activity.playing("!test"));
+//		discordBuilder.setActivity(Activity.playing("Aquí para ayudar siempre!"));
 	}
 
 	private void prepareBotPermissions() throws LoginException {
@@ -144,15 +151,16 @@ public class BotEntry extends ApplicationThread {
 		startupManager.add(loginModal);
 		
 		commandManager.add(new Help());
-//		commandManager.add(new Curriculum());
-//		commandManager.add(new EstudiantesOrientadores());
-//		commandManager.add(new GuiaPrepistica());
-//		commandManager.add(new FAQ());
-//		commandManager.add(new Calendario());
-//		commandManager.add(new SuperLinks());
+		commandManager.add(new Map());
+		commandManager.add(new FAQ());
+		commandManager.add(new Rules());
 //		commandManager.add(new Salon());
-//		commandManager.add(new Map());
-//		commandManager.add(new MadeWeb());
+		commandManager.add(new MadeWeb());
+		commandManager.add(new Calendario());
+		commandManager.add(new SuperLinks());
+		commandManager.add(new Curriculum());
+		commandManager.add(new GuiaPrepistica());
+//		commandManager.add(new EstudiantesOrientadores());
 	}
 
 	private void loadToken() throws IOException {

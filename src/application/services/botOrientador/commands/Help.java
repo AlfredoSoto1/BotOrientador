@@ -42,109 +42,100 @@ public class Help implements CommandI {
 	
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
-		EmbedBuilder embedBuider = new EmbedBuilder();
+		EmbedBuilder embedBuilder = new EmbedBuilder();
 
-		embedBuider.setColor(new Color(70, 150, 90));
-		embedBuider.setTitle("Lista de Commandos");
+		embedBuilder.setColor(new Color(70, 150, 90));
+		embedBuilder.setTitle("Lista de Commandos");
 
-		embedBuider.addField(
+		prepareGeneralCommands(embedBuilder);
+		
+		prepareDepartmentCommands(embedBuilder);
+		
+		event.replyEmbeds(embedBuilder.build()).queue();
+	}
+	
+	private void prepareGeneralCommands(EmbedBuilder embedBuilder) {
+		embedBuilder.addField(
+			":pushpin: Comandos generales", "", false);
+		
+		embedBuilder.addField(
+			"1) ``/reglas``", "Provee las reglas del servidor:scroll:", true);
+		
+		embedBuilder.addField(
+			"2) ``/help``", "Muestra una lista de comandos disponibles:mag:", true);
+		
+		embedBuilder.addField(
+			"3) ``/map``",
+			"Provee un enlace a el Mapa de UPRM:map:", true);
+		
+		embedBuilder.addField(
+			"4) ``/links``",
+			"Provee un PDF con todos los links importantes del UPRM:link::link:", true);
+
+		embedBuilder.addField(
+			"5) ``/calendario``",
 			"""
-			1) ``/help``
-			""",
+			Provee un enlace rapido al Calendario Académico de UPRM.:calendar_spiral:
+			""", true);
+		embedBuilder.addField(
+			"6) ``/made-web``",
 			"""
-			Muestra la lista de comandos disponibles
+			Provee el enlace para accesar a la página web de la consejera de **INEL/ICOM/INSO/CIIC**, Madeline Rodríguez:globe_with_meridians:
 			""", true);
 		
-		embedBuider.addField(
-			"""
-			2) ``/curriculo``:``dept``
-			""",
-			"""
-			Te proveéra un PDF del curriculo del departamento que tú
-			escojas **(INEL/ICOM/INSO/CIIC)**
-			""", true);
+		embedBuilder.addField(
+			"7) ``/guia_prepistica``", "Guia para prepas:straight_ruler:", true);
 		
-		embedBuider.addField(
-			"""
-			3) ``/map``
-			""",
-			"""
-			Provee un enlace a el Mapa de UPRM
-			""", true);
+		embedBuilder.addField(
+			"", "", false);
 		
-		embedBuider.addField(
+	}
+	
+	private void prepareDepartmentCommands(EmbedBuilder embedBuilder) {
+		embedBuilder.addField(
 			"""
-			4) ``/links``
+			:pushpin: Comandos que proveen información acerca de las facilidades del RUM
+			(*INEL, ICOM, INSO, CIIC*)
 			""",
-			"""
-			Provee un PDF con todos los links importantes del UPRM
-			""", true);
-		embedBuider.addField(
-			"""
-			5) ``/salon``:``#``
-			""",
+			"", false);
+		
+		embedBuilder.addField(
+			"8) ``/salon`` ``<letra>``",
 			"""
 			Provee información sobre el edificio donde se puede encontrar ese salón.
 			""", true);
-		embedBuider.addField(
+		
+		embedBuilder.addField(
+			"9) ``/curriculo`` ``<departamento>``",
 			"""
-			6) ``/calendario``
-			""",
-			"""
-			Provee un enlace rapido al Calendario Académico de UPRM.
+			Te proveera un PDF del curriculo del departamento que tú
+			escojas **(INEL/ICOM/INSO/CIIC)**
 			""", true);
-		embedBuider.addField(
-			"""
-			7) ``/telephone_guide``
-			""",
-			"""
-			Mostrara una lista de todos los teléfonos que tengo disponible para ofrecerte.
-			""", true);
-		embedBuider.addField(
-			"""
-			8) ``/ls_projects``
-			""",
+		
+		embedBuilder.addField(
+			"10) ``/ls_projects`` `<select-projects>`",
 			"""
 			Provee información sobre proyectos e investigaciones relacionadas a **INEL/ICOM/INSO/CIIC**
-			""", true);
-		embedBuider.addField(
-			"""
-			9) ``/estudiantes-orientadores``:``dep``
-			""",
+			""", false);
+		
+		embedBuilder.addField(
+			"11) ``/estudiantes-orientadores`` ``<departamento>``",
 			"""
 			Provee una lista los usernames (@'s) de los Estudiantes Orientadores de ese DEPT. Puedes escoger entre: **INEL, ICOM, INSO o CIIC**
 			""", true);
-		embedBuider.addField(
-			"""
-			10) ``/ls_student_orgs``
-			""",
+		
+		embedBuilder.addField(
+			"12) ``/ls_student_orgs`` `<select-orgs>`",
 			"""
 			Provee información sobre organizaciones estudiantiles relacionadas a 
 			**INEL/ICOM/INSO/CIIC**,
 			*(IEEE/EMC/HKN/RAS_CSS/COMP_SOC/CAS/PES/WIE/ACM_CSE/CAHSI/SHPE/ALPHA_AST/EMB/PHOTONICS)*
+			""", false);
+		
+		embedBuilder.addField(
+			"13) ``/telephone_guide`` `<who?>`",
+			"""
+			Mostrara una lista de todos los teléfonos que tengo disponible para ofrecerte.
 			""", true);
-		embedBuider.addField(
-			"""
-			11) ``/reglas``
-			""",
-			"""
-			Provee las reglas del servidor
-			""", true);
-		embedBuider.addField(
-			"""
-			13) ``/guia_prepistica``
-			""",
-			"""
-			Guia para prepas
-			""", true);
-		embedBuider.addField(
-			"""
-			14) ``/made-web``
-			""",
-			"""
-			Provee el enlace para accesar a la página web de la consejera de **INEL/ICOM/INSO/CIIC**, Madeline Rodríguez
-			""", true);
-
-		event.replyEmbeds(embedBuider.build()).queue();
 	}
 }
