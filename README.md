@@ -19,7 +19,7 @@ in a database using Microsoft Access files with secure password and encryption.
 
 ## Features
 ### What's new?
-The current version for this software is: v2023.2-Beta
+The current version for this software is: v2023.3-Beta
 * Has most of the commands ported from prior version in python to java
 * Uses Discord modals to enter student data
 * Assigns roles to each corresponding user
