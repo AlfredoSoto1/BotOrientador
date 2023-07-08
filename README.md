@@ -54,29 +54,46 @@ git clone `GitHub's repository link here`
 <details>
 <summary>Here are the bot commands that can be used in any chat inside the pre-defined server</summary>
   
-| Method                              | Description                                                                                                                         |
+| Slash Command                       | Description                                                                                                                         |
 | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `/help command: provide`            | Provides a list of all the commands that the bot knows about and can be run by _any_ user.                                          |
-| `/curriculo program: choose`        | Provides a PDF containing the department's curriculum. It accepts the following options: __(INEL/ICOM/INSO/CIIC)__.                 |
+| `/help`                             | Provides a list of all the commands that the bot knows about and can be run by _any_ user.                                          |
+| `/curriculo <departamento>`         | Provides a PDF containing the department's curriculum. It accepts the following options: __(INEL/ICOM/INSO/CIIC)__.                 |
 | `/map`                              | Provides a link to an official UPRM site that contains the map of the campus.                                                       |
 | `/links`                            | Provides a list of links with important general information about the campus and the department.                                    |
-| `/salon code: provide`              | Provides a link to an official UPRM site that contains information about a specific classroom.                                      |
+| `/salon <letra>`                    | Provides a link to an official UPRM site that contains information about a specific classroom.                                      |
 | `/calendario`                       | Provides a link containing the academic calendar of UPRM.                                                                           |
-| `/telephone_guide`                  | Contains a list of contact numbers to choose.                                                                                       |
-| `/ls_projects`                      | Provides a list of projects and research done in relation to the __INEL/ICOM/INSO/CIIC__ departments.                               |
-| `/estudiante-orientador choose: department` | Provides a list of all the EO's in the server with the department provided as a parameter in the command.                   |
-| `/ls_student_orgs`                  | Provides a list of student organizations.                                                                                           |
+| `/telephone_guide <who?>`           | Contains a list of contact numbers to choose.                                                                                       |
+| `/ls_projects <select>`             | Provides a list of projects and research done in relation to the __INEL/ICOM/INSO/CIIC__ departments.                               |
+| `/estudiante-orientador <dept>`     | Provides a list of all the EO's in the server with the department provided as a parameter in the command.                           |
+| `/ls_student_orgs <select>`         | Provides a list of student organizations.                                                                                           |
 | `/rules`                            | Provides a list of rules for the server.                                                                                            |
 | `/guia-prepistica`                  | Provides a PDF containing the guide on how-to for prepas.                                                                           |
 
 </details>
 
 ### API Usage (for developers)
+#### Prepare software before debugging!!!
+1) Setting up the database
+* You first need to create a `database/` folder in the main project's directory.
+  You will need to reach to one of the managers of TeamMade to give you access to our
+  database. Once you have the database as a Microsoft Access file, you can paste it
+  inside the created `database/` directory. It should be named as `TeamMadeDB.accdb`
+
+2) Setting Bot-token
+* You are going to need a bot token before launching the software.
+  You can either create one for your own testing purposes or ask to
+  one of the official managers of TeamMade to test the bot lively in
+  the server (not recommended) only if the bot is not in a pre-release state
+
+* You will need to create a file inside the `assets/bot-token/` directory named
+  `bot-token.tkn`. There you will paste the bot token and you should be ready to go.
+
 #### Where to start debugging?
 To start running the software in Eclipse IDE, you need to run the java file named
 `ApplicationEntry.java`, located at `application.client` package
 
 ### Configuration
+(Currently Depricated)
 This software will start running in debug mode by default for developers. If you want to deploy the bot as an official
 build version, you will need to turn off the debug flag located at the `ApplicationEntry.java` file by switching the flag to false
 
