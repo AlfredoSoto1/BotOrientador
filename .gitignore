@@ -1,1 +1,18 @@
 /bin/
+
+# This directory contains the student attendace
+# its not relevant to the program, only once when
+# using the attendance software integrated in the services package
+
+assets/attendance/
+
+# Ignore the database itself, this is where all
+# data of the bot is stored
+
+database/
+
+# Ignore the bot token file. For testing purposes
+# if you plan to test the bot you have to follow the bot-token.tkn.example
+
+bot-token.tkn
+
