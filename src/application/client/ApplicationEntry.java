@@ -3,10 +3,10 @@
  */
 package application.client;
 
-import application.admin.remote.DatabaseConnections;
 import application.core.Application;
 import application.core.RunnableApplication;
-import application.services.botOrientador.entry.BotEntry;
+import application.database.DatabaseConnections;
+import services.bot.entry.BotEntry;
 
 /**
  * @author Alfredo
