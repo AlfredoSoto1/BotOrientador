@@ -39,10 +39,8 @@ public class ButtonManager extends ListenerAdapter implements ProgrammableAdapte
 	@Override
 	public void onButtonInteraction(ButtonInteractionEvent event) {
 		for(ButtonI button : buttons)
-			for(String buttonID : button.getButtonIDs()) {
-				if(buttonID.equals(event.getButton().getId()))
-					button.onButtonEvent(buttonID, event);
-			}
+			if(button.getButtonIDs().contains(event.getButton().getId()))
+				button.onButtonEvent(event.getButton().getId(), event);
 	}
 
 }

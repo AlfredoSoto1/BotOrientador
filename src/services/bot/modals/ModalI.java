@@ -3,6 +3,8 @@
  */
 package services.bot.modals;
 
+import java.util.Set;
+
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 
 /**
@@ -16,7 +18,7 @@ public interface ModalI {
 	 * 
 	 * @return String - ID
 	 */
-	public String getModalID();
+	public Set<String> getModalIDs();
 	
 	/**
 	 * This gets called when the modal

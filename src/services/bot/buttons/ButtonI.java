@@ -3,6 +3,8 @@
  */
 package services.bot.buttons;
 
+import java.util.Set;
+
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
 /**
@@ -12,10 +14,11 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 public interface ButtonI {
 	
 	/**
+	 * Return a set containing all the buttonIDs
 	 * 
 	 * @return
 	 */
-	public String[] getButtonIDs();
+	public Set<String> getButtonIDs();
 	
 	/**
 	 * 

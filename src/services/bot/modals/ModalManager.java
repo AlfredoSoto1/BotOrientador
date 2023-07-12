@@ -48,8 +48,14 @@ public class ModalManager extends ListenerAdapter implements ProgrammableAdapter
 	public void onModalInteraction(ModalInteractionEvent event) {
 		// Do linear search to find which modal is currently being called
 		for(ModalI modal : modals)
-			if(modal.getModalID().equals(event.getModalId())) {
+			// Check if the modal that currently is having an action to
+			// be executed to run the modal results
+			if(modal.getModalIDs().contains(event.getModalId())) {
 				modal.modalResults(event);
+				// Once the modal results have been produced, we can
+				// exit the loop since we don't need to keep looking
+				// for more events. Since the JDA execute this onModalInteraction() method
+				// in queue after each command triggered the modal
 				return;
 			}
 	}

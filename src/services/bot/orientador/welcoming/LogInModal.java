@@ -4,8 +4,11 @@
 package services.bot.orientador.welcoming;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import application.records.MemberRecord;
 import net.dv8tion.jda.api.entities.Guild;
@@ -20,13 +23,7 @@ import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.interactions.components.ActionRow;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import net.dv8tion.jda.api.interactions.components.text.TextInput;
-import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
-import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
-import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import services.bot.buttons.ButtonI;
 import services.bot.commands.CommandI;
 import services.bot.messages.MessengerI;
@@ -42,24 +39,7 @@ import services.bot.startup.StartupI;
  */
 public class LogInModal implements ModalI, CommandI, ButtonI, MessengerI, StartupI {
 
-	/*
-	 * 
-	 * Definitions for the id's for the discord components
-	 * 
-	 */
 	
-	// Defines the ID for the log in button
-	// when user joins server for the first time or via slash commands
-	private static final String LOGIN_BUTTON_ID = "id-button-login";
-
-	// Defines the ID for the modal used to enter the
-	// personal info to log-in for the first time
-	private static final String MODAL_ID = "id-login";
-	
-	// Defines the ID for the fields inside the modal
-	private static final String ENTER_EMAIL_ID = "id-email";
-	private static final String ENTER_PARAGRAPH_ID = "id-paragraph";
-
 	// Defines the ID for the slash command that ONLY
 	// Bot developers can use for testing the log-in modal
 	private static final String LOGIN_ME_ID = "log-me-id";
@@ -71,6 +51,8 @@ public class LogInModal implements ModalI, CommandI, ButtonI, MessengerI, Startu
 	private static final String COMMAND_OPTION = "developer-command";
 	
 	private List<OptionData> options;
+	private Map<String, LoginPrompt> loginPrompts;
+	private Map<String, LoginButton> loginButtons;
 	
 	// Validation for log-in users via database connections
 	private RoleValidation roleValidation;
@@ -78,6 +60,9 @@ public class LogInModal implements ModalI, CommandI, ButtonI, MessengerI, Startu
 	
 	public LogInModal() {
 		this.options = new ArrayList<>();
+		this.loginPrompts = new HashMap<>();
+		this.loginButtons = new HashMap<>();
+		
 		this.roleValidation = new RoleValidation();
 		this.loginValidation = new LoginValidation();
 		
@@ -89,13 +74,13 @@ public class LogInModal implements ModalI, CommandI, ButtonI, MessengerI, Startu
 	}
 	
 	@Override
-	public String getModalID() {
-		return MODAL_ID;
+	public Set<String> getModalIDs() {
+		return loginPrompts.keySet();
 	}
 	
 	@Override
-	public String[] getButtonIDs() {
-		return new String[] {LOGIN_BUTTON_ID};
+	public Set<String> getButtonIDs() {
+		return loginButtons.keySet();
 	}
 	
 	@Override
@@ -133,6 +118,8 @@ public class LogInModal implements ModalI, CommandI, ButtonI, MessengerI, Startu
 	@Override
 	public void onDisposing() {
 		options.clear();
+		loginPrompts.clear();
+		loginButtons.clear();
 		roleValidation.dispose();
 		loginValidation.dispose();
 	}
@@ -225,7 +212,7 @@ public class LogInModal implements ModalI, CommandI, ButtonI, MessengerI, Startu
 	public void modalResults(ModalInteractionEvent event) {
 		
 		// Find on database the student
-		Optional<MemberRecord> member = loginValidation.getStudent(event.getValue(ENTER_EMAIL_ID).getAsString());
+		Optional<MemberRecord> member = loginValidation.getStudent(loginPrompts.get(event.getModalId()).getUsernameValue(event));
 		
 		if(member.isEmpty()) {
 			String presentationMessage = WelcomeMessages.ERROR_MESSAGE_NOT_FOUND;
@@ -270,6 +257,10 @@ public class LogInModal implements ModalI, CommandI, ButtonI, MessengerI, Startu
 			event.getHook().sendMessage("Cannot change nickname since you have a higher role than the bot.")
 			.setEphemeral(true)
 			.queue();
+		
+		// After the bot has assigned the roles and gave the small tutorial
+		// we can remove from the chat history the button and the modal
+		loginPrompts.remove(event.getModalId());
 	}
 	
 	@Override
@@ -285,48 +276,31 @@ public class LogInModal implements ModalI, CommandI, ButtonI, MessengerI, Startu
 		String welcomeMessage = WelcomeMessages.WELCOME_MESSAGE;
 		welcomeMessage = welcomeMessage.replace(SpecialTokens.MEMBER_USER_NAME, channel.getUser().getAsMention());
 		
-		// Create a button that bot will use to reply to the user
-		// This button when clicked it will open a new modal with 
-		// all the fields required to log-in the user
-		Button loginButton = Button.success(LOGIN_BUTTON_ID, "Login to server");
+		LoginButton loginButton = new LoginButton("Login to server");
 		
-		// Add button to a new message
-		MessageCreateData message = new MessageCreateBuilder()
-			.addComponents(ActionRow.of(loginButton))
-			.build();
+		// Store the generated button temporarily
+		loginButtons.put(loginButton.getButtonID(), loginButton);
 		
 		// Send the private message with the welcoming message
 		// and the log-in button attached to it
 		channel.sendMessage(welcomeMessage).queue();
-		channel.sendMessage(message).queue();
+		channel.sendMessage(loginButton.build()).queue();
 	}
 	
 	@Override
 	public void onButtonEvent(String buttonID, ButtonInteractionEvent event) {
 		
-		// Create an Email field to be displayed inside the modal
-		TextInput email = TextInput.create(ENTER_EMAIL_ID, "Email", TextInputStyle.SHORT)
-				.setMinLength(1)
-				.setMaxLength(64)
-				.setRequired(true)
-				.setPlaceholder("Provide your institutional Email")
-				.build();
+		LoginPrompt loginPrompt = new LoginPrompt("Log-in as UPRM Student", "Email", "Fun facts about you :)");
 		
-		// Create a FunFacts field to be displayed inside the modal
-		TextInput funfacts = TextInput.create(ENTER_PARAGRAPH_ID, "Fun facts about you :)", TextInputStyle.PARAGRAPH)
-				.setMinLength(1)
-				.setMaxLength(255)
-				.setRequired(false)
-				.setPlaceholder("Provide some fun facts so that other members can relate with you!")
-				.build();
+		// Store the generated modal temporarily
+		this.loginPrompts.put(loginPrompt.getModalID(), loginPrompt);
 		
-		// Create a simple modal containing two text fields
-		// in which the user will enter his email to log-in and
-		// a fun fact about them
+		// Set up some descriptions for the fields to be displayed
+		loginPrompt.setUsernameDescription("Provide your institutional Email");
+		loginPrompt.setFunFactsDescription("Provide some fun facts so that other members can relate with you!");
 		
-		Modal modal = Modal.create(MODAL_ID, "Log-in as UPRM Student")
-				.addComponents(ActionRow.of(email), ActionRow.of(funfacts))
-				.build();
+		// Build the modal from the login-prompt
+		Modal modal = loginPrompt.build();
 		
 		// reply to the user with the modal
 		event.replyModal(modal).queue();
