@@ -28,6 +28,7 @@ The current version for this software is: v2023.3-Beta
   3) generate votes and obtain feedback from those
 
 * Organize database, and reduce the ammount of unecessary Records objects
+* Change the commands to be ephemeral (not visible to all members)
 * update ReadMe file
 * test software with real users
 * debug software with all test users
