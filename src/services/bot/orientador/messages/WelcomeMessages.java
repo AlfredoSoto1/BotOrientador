@@ -87,7 +87,7 @@ public interface WelcomeMessages {
 		Si tu email no aparece y estas seguro de que eres un prepa
 		de **INEL**, **ICOM**, **INSO** o **CIIC**, comunícate con
 		cualquier estudiante orientador del servidor de discord. Tienen
-		el rol de **Estudiante Orientador**
+		el rol de **Estudiante Orientador** o con un Bot Developer
 		""";
 
 }

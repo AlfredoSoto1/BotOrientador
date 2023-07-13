@@ -60,24 +60,28 @@ public class LoginPrompt {
 		this.funFactsDescription = funFactsDescription;
 	}
 	
-	public String getUsername() {
+	public String getUsernameTitle() {
 		return username;
 	}
 
-	public void setUsername(String username) {
+	public void setUsernameTitle(String username) {
 		this.username = username;
 	}
 
-	public String getFunFacts() {
+	public String getFunFactsTitle() {
 		return funFacts;
 	}
 
-	public void setFunFacts(String funFacts) {
+	public void setFunFactsTitle(String funFacts) {
 		this.funFacts = funFacts;
 	}
 	
 	public String getUsernameValue(ModalInteractionEvent event) {
 		return event.getValue(userID).getAsString();
+	}
+
+	public String getFunFactsValue(ModalInteractionEvent event) {
+		return event.getValue(funfID).getAsString();
 	}
 	
 	/**

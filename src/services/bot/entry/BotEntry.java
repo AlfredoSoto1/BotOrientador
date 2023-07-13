@@ -160,22 +160,22 @@ public class BotEntry extends ApplicationThread {
 		startupManager.add(loginModal);
 		
 		commandManager.add(new Help());
-		commandManager.add(new Map());
-		commandManager.add(new FAQ());
-		commandManager.add(new Rules());
-		commandManager.add(new Salon());
-		commandManager.add(new MadeWeb());
-		commandManager.add(new Calendario());
-		commandManager.add(new SuperLinks());
-		commandManager.add(new Curriculum());
-		commandManager.add(new GuiaPrepistica());
-		commandManager.add(new DCSP());
-		commandManager.add(new Projects());
-		commandManager.add(new Departamento());
-		commandManager.add(new AsesoriaAcademica());
-		commandManager.add(new AsistenciaEconomica());
-		commandManager.add(new GuardiaUniversitaria());
-		commandManager.add(new DecanatoDeEstudiantes());
+//		commandManager.add(new Map());
+//		commandManager.add(new FAQ());
+//		commandManager.add(new Rules());
+//		commandManager.add(new Salon());
+//		commandManager.add(new MadeWeb());
+//		commandManager.add(new Calendario());
+//		commandManager.add(new SuperLinks());
+//		commandManager.add(new Curriculum());
+//		commandManager.add(new GuiaPrepistica());
+//		commandManager.add(new DCSP());
+//		commandManager.add(new Projects());
+//		commandManager.add(new Departamento());
+//		commandManager.add(new AsesoriaAcademica());
+//		commandManager.add(new AsistenciaEconomica());
+//		commandManager.add(new GuardiaUniversitaria());
+//		commandManager.add(new DecanatoDeEstudiantes());
 		commandManager.add(new EstudiantesOrientadores());
 	}
 

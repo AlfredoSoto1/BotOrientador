@@ -31,17 +31,14 @@ public class LoginValidation {
 	private static final String SELECT_EO = 
 			"SELECT FullName, Department, TeamName, EstudianteGraduado, EstudianteOrientador, BotDeveloper, ConsejeroProfecional, LoggedIn FROM StaffMembers WHERE (Email = ?)";
 
-	private static final String UPDATE_LOGIN_EO = 
-			"UPDATE StaffMembers SET LoggedIn = ?, DiscordUser = ? WHERE (Email = ?)";
+	private static final String LOGIN_UPDATE_STATUS = 
+			"UPDATE TABLE SET LoggedIn = ?, DiscordUser = ?, BriefInfo = ? WHERE (Email = ?)";
+	
+	private static final String LOGIN_UPDATE_STATUS_PER_USER = 
+			"UPDATE TABLE SET LoggedIn = ?, DiscordUser = ?, BriefInfo = ? WHERE (DiscordUser = ?)";
 
-	private static final String UPDATE_LOGIN_PREPA = 
-			"UPDATE VerifiedMembers SET LoggedIn = ?, DiscordUser = ? WHERE (Email = ?)";
-	
-	private static final String UPDATE_LOGIN_ALL = 
+	private static final String LOGIN_UPDATE_FLAG = 
 			"UPDATE TABLE SET LoggedIn = ?";
-	
-	private static final String UPDATE_LOGIN_MEMBER = 
-			"UPDATE TABLE SET LoggedIn = ?, DiscordUser = ? WHERE (DiscordUser = ?)";
 	
 	private static final String SELECT_TEAMS = 
 			"SELECT TeamName, TeamColor FROM Teams";
@@ -52,6 +49,9 @@ public class LoginValidation {
 	private Map<String, TeamRole> loadedTeams;
 	private Map<String, DepartmentRole> loadedDepartments;
 	
+	/**
+	 * 
+	 */
 	public LoginValidation() {
 		this.loadedTeams = new HashMap<>();
 		this.loadedDepartments = new HashMap<>();
@@ -121,7 +121,7 @@ public class LoginValidation {
 			PreparedStatement stmt = DatabaseConnections.instance()
 					.getTeamMadeConnection()
 					.getConnection()
-					.prepareStatement(UPDATE_LOGIN_ALL.replace("TABLE", "StaffMembers"));
+					.prepareStatement(LOGIN_UPDATE_FLAG.replace("TABLE", "StaffMembers"));
 			
 			// Set the unknown value to SQL statement
 			stmt.setBoolean(1, false);
@@ -133,7 +133,7 @@ public class LoginValidation {
 			stmt = DatabaseConnections.instance()
 					.getTeamMadeConnection()
 					.getConnection()
-					.prepareStatement(UPDATE_LOGIN_ALL.replace("TABLE", "VerifiedMembers"));
+					.prepareStatement(LOGIN_UPDATE_FLAG.replace("TABLE", "VerifiedMembers"));
 
 			stmt.setBoolean(1, false);
 			// Run SQL
@@ -159,7 +159,7 @@ public class LoginValidation {
 	}
 	
 	private int updateLogMemberStatus(String discordUser, String targetTable) throws SQLException {
-		String logInMember_SQL = UPDATE_LOGIN_MEMBER.replace("TABLE", targetTable);
+		String logInMember_SQL = LOGIN_UPDATE_STATUS_PER_USER.replace("TABLE", targetTable);
 		
 		// Update login status
 		PreparedStatement stmt = DatabaseConnections.instance()
@@ -170,8 +170,9 @@ public class LoginValidation {
 		// Set the loggedIn flag to false
 		stmt.setBoolean(1, false);
 		stmt.setString(2, "");
+		stmt.setString(3, "");
 		// Set the email to look up for member in database
-		stmt.setString(3, discordUser);
+		stmt.setString(4, discordUser);
 		// Run SQL
 		int resultStatus = stmt.executeUpdate();
 		
@@ -183,20 +184,23 @@ public class LoginValidation {
 	
 	private void updateDatabaseLoginStatus(MemberRecord record, String discordUser) throws SQLException {
 		
+		String logInMember_SQL = LOGIN_UPDATE_STATUS.replace("TABLE", record.getRoles().isPrepa() ? "VerifiedMembers" : "StaffMembers");
+		
 		PreparedStatement stmt = DatabaseConnections.instance()
 				.getTeamMadeConnection()
 				.getConnection()
-				.prepareStatement(record.getRoles().isPrepa() ? UPDATE_LOGIN_PREPA : UPDATE_LOGIN_EO);
+				.prepareStatement(logInMember_SQL);
 		
 		// update log-in flag
 		record.setLoggedIn(true);
 		// update discord user
 		record.setDiscordUser(discordUser);
-		
+
 		// Set the unknown value to SQL statement
 		stmt.setBoolean(1, record.isLogged());
 		stmt.setString(2, discordUser);
-		stmt.setString(3, record.getEmail());
+		stmt.setString(3, record.getBriefInfo());
+		stmt.setString(4, record.getEmail());
 		
 		// Run SQL
 		stmt.executeUpdate();

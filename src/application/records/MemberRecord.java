@@ -17,6 +17,8 @@ public class MemberRecord {
 	private String fullName;
 	private String discordUser;
 
+	private String briefInfo;
+
 	private TeamRole team;
 	private ExtraRoles roles;
 	private DepartmentRole department;
@@ -34,6 +36,8 @@ public class MemberRecord {
 		this.team = team;
 		this.roles = roles;
 		this.department = department;
+		
+		this.briefInfo = "";
 	}
 	
 	public void setLoggedIn(boolean isLogged) {
@@ -44,6 +48,14 @@ public class MemberRecord {
 		return isLogged;
 	}
 
+	public void setBriefInfo(String brief) {
+		this.briefInfo = brief;
+	}
+	
+	public String getBriefInfo() {
+		return briefInfo;
+	}
+	
 	public void setEmail(String email) {
 		 this.email = email;
 	}

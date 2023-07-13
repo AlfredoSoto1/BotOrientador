@@ -178,6 +178,7 @@ public class LogInModal implements ModalI, CommandI, ButtonI, MessengerI, Startu
 				.setEphemeral(true)
 				.queue();
 				
+				// Obtain server from JDA
 				Guild server = event.getJDA()
 						.getGuildsByName(BotServer.SERVER_NAME, true)
 						.get(0);
@@ -214,6 +215,7 @@ public class LogInModal implements ModalI, CommandI, ButtonI, MessengerI, Startu
 		// Find on database the student
 		Optional<MemberRecord> member = loginValidation.getStudent(loginPrompts.get(event.getModalId()).getUsernameValue(event));
 		
+		// Tell user to retry if email was not found
 		if(member.isEmpty()) {
 			String presentationMessage = WelcomeMessages.ERROR_MESSAGE_NOT_FOUND;
 			// Send the official welcoming message
@@ -222,6 +224,7 @@ public class LogInModal implements ModalI, CommandI, ButtonI, MessengerI, Startu
 			return;
 		}
 		
+		// Test if user has already logged in
 		if(member.get().isLogged()) {
 			// Send message of already logged into server
 			event.reply(WelcomeMessages.ALREADY_LOGGED_IN).queue();
@@ -243,6 +246,12 @@ public class LogInModal implements ModalI, CommandI, ButtonI, MessengerI, Startu
 			event.reply(presentationMessage).queue();
 		}
 		
+		// Set a fun fact from the login-prompt
+		// to later save into database
+		member.get().setBriefInfo(loginPrompts.get(event.getModalId()).getFunFactsValue(event));
+		
+		// Login user and save any additional data
+		// that the member may have
 		loginValidation.logInMember(member.get(), event.getUser().getName());
 		
 		// Set the corresponding roles to the logged member
