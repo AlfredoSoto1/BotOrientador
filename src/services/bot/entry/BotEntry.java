@@ -30,6 +30,7 @@ import services.bot.orientador.data.Curriculum;
 import services.bot.orientador.data.GuiaPrepistica;
 import services.bot.orientador.links.MadeWeb;
 import services.bot.orientador.links.SuperLinks;
+import services.bot.orientador.messages.ProfanityFilter;
 import services.bot.orientador.misc.Calendario;
 import services.bot.orientador.misc.EstudiantesOrientadores;
 import services.bot.orientador.misc.FAQ;
@@ -38,6 +39,7 @@ import services.bot.orientador.misc.Map;
 import services.bot.orientador.misc.Projects;
 import services.bot.orientador.misc.Rules;
 import services.bot.orientador.misc.Salon;
+import services.bot.orientador.serverManagement.ServerManagement;
 import services.bot.orientador.welcoming.LogInModal;
 import services.bot.startup.StartupManager;
 
@@ -124,7 +126,8 @@ public class BotEntry extends ApplicationThread {
 			GatewayIntent.GUILD_MESSAGES,
 			GatewayIntent.GUILD_MESSAGE_TYPING,
 			GatewayIntent.GUILD_MEMBERS, 
-			GatewayIntent.GUILD_PRESENCES
+			GatewayIntent.GUILD_PRESENCES,
+			GatewayIntent.MESSAGE_CONTENT
 		);
 		
 		// Provide to bot cache policy
@@ -158,6 +161,12 @@ public class BotEntry extends ApplicationThread {
 		messageManager.add(loginModal);
 		commandManager.add(loginModal);
 		startupManager.add(loginModal);
+		
+		ProfanityFilter filter = new ProfanityFilter();
+		startupManager.add(filter);
+		messageManager.add(filter);
+		
+		commandManager.add(new ServerManagement());
 		
 		commandManager.add(new Help());
 //		commandManager.add(new Map());
