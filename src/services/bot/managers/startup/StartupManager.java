@@ -1,7 +1,7 @@
 /**
  * 
  */
-package services.bot.startup;
+package services.bot.managers.startup;
 
 import java.util.ArrayList;
 import java.util.List;

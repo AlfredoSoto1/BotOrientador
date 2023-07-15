@@ -1,7 +1,7 @@
 /**
  * 
  */
-package services.bot.buttons;
+package services.bot.managers.button;
 
 import java.util.Set;
 

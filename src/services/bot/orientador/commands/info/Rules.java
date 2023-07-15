@@ -7,7 +7,7 @@ import java.util.List;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import services.bot.commands.CommandI;
+import services.bot.managers.command.CommandI;
 
 /**
  * 

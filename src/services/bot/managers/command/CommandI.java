@@ -1,7 +1,7 @@
 /**
  * 
  */
-package services.bot.commands;
+package services.bot.managers.command;
 
 import java.util.List;
 

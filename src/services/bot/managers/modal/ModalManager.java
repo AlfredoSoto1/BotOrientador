@@ -1,7 +1,7 @@
 /**
  * 
  */
-package services.bot.modals;
+package services.bot.managers.modal;
 
 import java.util.ArrayList;
 import java.util.List;

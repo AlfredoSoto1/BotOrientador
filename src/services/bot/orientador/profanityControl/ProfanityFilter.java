@@ -13,8 +13,8 @@ import application.database.DatabaseConnections;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
+import services.bot.managers.startup.StartupI;
 import services.bot.messages.MessengerI;
-import services.bot.startup.StartupI;
 
 /**
  * @author Alfredo

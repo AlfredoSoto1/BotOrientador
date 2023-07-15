@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.events.session.ReadyEvent;
 import services.bot.dbaccess.DBLoginManager;
 import services.bot.dbaccess.DBRoleManager;
 import services.bot.entry.BotConfigs;
-import services.bot.startup.StartupI;
+import services.bot.managers.startup.StartupI;
 
 /**
  * @author Alfredo

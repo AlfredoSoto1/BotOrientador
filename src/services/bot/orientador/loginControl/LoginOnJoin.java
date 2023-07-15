@@ -15,11 +15,11 @@ import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.modals.Modal;
-import services.bot.buttons.ButtonI;
 import services.bot.dbaccess.DBLoginManager;
 import services.bot.dbaccess.DBRoleManager;
+import services.bot.managers.button.ButtonI;
+import services.bot.managers.modal.ModalI;
 import services.bot.messages.MessengerI;
-import services.bot.modals.ModalI;
 import services.bot.orientador.messages.SpecialTokens;
 import services.bot.orientador.messages.WelcomeMessages;
 
