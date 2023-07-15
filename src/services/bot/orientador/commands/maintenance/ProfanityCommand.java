@@ -10,6 +10,9 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import services.bot.dbaccess.DBProfanityManager;
+import services.bot.dbaccess.DBRoleManager;
+import services.bot.entry.BotConfigs;
 import services.bot.managers.command.CommandI;
 
 /**
@@ -20,18 +23,27 @@ public class ProfanityCommand implements CommandI {
 
 	// Defines the option for the slash command
 	// that will be used for entering the other commands
-	private static final String COMMAND_OPTION = "developer-command-profanity";
+	private static final String COMMAND_OPTION = "type";
+	private static final String COMMAND_WORD_STATEMENT = "word";
 	
 	private static final String ADD_PROFANITY_ID = "add-prof-id";
 	
+	private DBRoleManager roleManager;
+	private DBProfanityManager profanityManager;
+	
 	private List<OptionData> options;
 	
-	public ProfanityCommand() {
+	public ProfanityCommand(DBProfanityManager profanityManager, DBRoleManager roleManager) {
 		this.options = new ArrayList<>();
+		
+		this.roleManager = roleManager;
+		this.profanityManager = profanityManager;
 		
 		options.add(new OptionData(OptionType.STRING, COMMAND_OPTION, "Choose a command", true)
 			.addChoice("add", ADD_PROFANITY_ID)
 		);
+		
+		options.add(new OptionData(OptionType.STRING, COMMAND_WORD_STATEMENT, "add a word", false));
 	}
 	
 	@Override
@@ -56,9 +68,30 @@ public class ProfanityCommand implements CommandI {
 
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
-		OptionMapping programOption = event.getOption(COMMAND_OPTION);
 		
-		event.reply("Word added to database.")
-		.setEphemeral(true).queue();
+		if(!roleManager.roleValdiation(BotConfigs.DEVELOPER_ROLE_NAME, event.getMember().getRoles())) {
+			event.reply("You dont have the permissions to run this command")
+			.setEphemeral(true).queue();
+			// Exit failure
+			return;
+		}
+			
+		OptionMapping programOption = event.getOption(COMMAND_OPTION);
+		OptionMapping secondOptionVal = event.getOption(COMMAND_WORD_STATEMENT);
+		
+		switch(programOption.getAsString()) {
+		case ADD_PROFANITY_ID:
+			if(secondOptionVal != null) {
+				
+				profanityManager.pushWord(secondOptionVal.getAsString());
+				
+				event.reply("Word added to database. " + secondOptionVal.getAsString())
+				.setEphemeral(true).queue();
+			}else {
+				event.reply("Word could not be added to database")
+				.setEphemeral(true).queue();
+			}
+			break;
+		}
 	}
 }

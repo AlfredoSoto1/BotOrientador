@@ -3,16 +3,14 @@
  */
 package services.bot.orientador.profanityControl;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
-import application.database.DatabaseConnections;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
+import services.bot.dbaccess.DBProfanityManager;
 import services.bot.managers.message.MessengerI;
 import services.bot.managers.startup.StartupI;
 
@@ -34,34 +32,19 @@ public class ProfanityFilter implements MessengerI, StartupI {
 	
 	private Random random;
 	private Set<String> badWords;
+
+	private DBProfanityManager profanityManager;
 	
-	public ProfanityFilter() {
+	public ProfanityFilter(DBProfanityManager profanityManager) {
+		this.random = new Random();
 		this.badWords = new HashSet<>();
 		
-		this.random = new Random();
+		this.profanityManager = new DBProfanityManager();
 	}
 
 	@Override
 	public void onStartup(ReadyEvent event) {
-		DatabaseConnections.instance()
-		.getTeamMadeConnection()
-		.joinConnection(()->{
-			
-			String ExtractWords_SQL = "SELECT ProfanityWord FROM Profanities";
-			
-			PreparedStatement stmt = DatabaseConnections.instance()
-					.getTeamMadeConnection()
-					.getConnection()
-					.prepareStatement(ExtractWords_SQL);
-			
-			ResultSet result = stmt.executeQuery();
-			
-			while(result.next())
-				badWords.add(result.getString(1));
-			
-			result.close();
-			stmt.close();
-		});
+		badWords = profanityManager.pullProfanities();
 	}
 	
 	@Override
