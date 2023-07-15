@@ -12,12 +12,12 @@ import services.bot.managers.button.ButtonI;
 import services.bot.managers.button.ButtonManager;
 import services.bot.managers.command.CommandI;
 import services.bot.managers.command.CommandManager;
+import services.bot.managers.message.MessageManager;
+import services.bot.managers.message.MessengerI;
 import services.bot.managers.modal.ModalI;
 import services.bot.managers.modal.ModalManager;
 import services.bot.managers.startup.StartupI;
 import services.bot.managers.startup.StartupManager;
-import services.bot.messages.MessageManager;
-import services.bot.messages.MessengerI;
 
 /**
  * @author Alfredo

@@ -18,8 +18,8 @@ import net.dv8tion.jda.api.interactions.modals.Modal;
 import services.bot.dbaccess.DBLoginManager;
 import services.bot.dbaccess.DBRoleManager;
 import services.bot.managers.button.ButtonI;
+import services.bot.managers.message.MessengerI;
 import services.bot.managers.modal.ModalI;
-import services.bot.messages.MessengerI;
 import services.bot.orientador.messages.SpecialTokens;
 import services.bot.orientador.messages.WelcomeMessages;
 

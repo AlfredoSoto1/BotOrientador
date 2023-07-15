@@ -1,7 +1,7 @@
 /**
  * 
  */
-package services.bot.messages;
+package services.bot.managers.message;
 
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package services.bot.messages;
+package services.bot.managers.message;
 
 import java.util.ArrayList;
 import java.util.List;
