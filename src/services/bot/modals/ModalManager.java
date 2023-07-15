@@ -41,6 +41,8 @@ public class ModalManager extends ListenerAdapter implements ProgrammableAdapter
 
 	@Override
 	public void dispose() {
+		for(ModalI modal : modals)
+			modal.dispose();
 		modals.clear();
 	}
 	

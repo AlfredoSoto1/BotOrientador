@@ -4,12 +4,13 @@
 package services.bot.startup;
 
 import net.dv8tion.jda.api.events.session.ReadyEvent;
+import services.bot.adapters.ComponentAdapter;
 
 /**
  * @author Alfredo
  *
  */
-public interface StartupI {
+public interface StartupI extends ComponentAdapter {
 
 	/**
 	 * 
@@ -20,5 +21,5 @@ public interface StartupI {
 	/**
 	 * Disposes everything when bot 'dies'
 	 */
-	public void onDisposing();
+	public void dispose();
 }

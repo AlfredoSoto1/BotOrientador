@@ -8,7 +8,6 @@ import java.util.List;
 
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import services.bot.adapters.ProgrammableAdapter;
 
@@ -35,17 +34,18 @@ public class MessageManager extends ListenerAdapter implements ProgrammableAdapt
 
 	@Override
 	public void dispose() {
+		for(MessengerI messenger : messengers)
+			messenger.dispose();
 		messengers.clear();
 	}
 	
 	@Override
-	public void onReady(ReadyEvent event) {
-		// Prepare a message for all members when bot is ready
-		// at start-up
-	}
-	
-	@Override
 	public void onGuildMemberJoin(GuildMemberJoinEvent event) {
+		
+		// Ignore if a bot enters the server
+		if(event.getUser().isBot())
+			return;
+		
 		for(MessengerI messenger : messengers)
 			messenger.memberJoin(event);
 	}

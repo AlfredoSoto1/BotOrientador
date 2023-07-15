@@ -33,6 +33,8 @@ public class ButtonManager extends ListenerAdapter implements ProgrammableAdapte
 
 	@Override
 	public void dispose() {
+		for(ButtonI button : buttons)
+			button.dispose();
 		buttons.clear();
 	}
 	

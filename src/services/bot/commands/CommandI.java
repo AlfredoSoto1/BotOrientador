@@ -7,12 +7,13 @@ import java.util.List;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import services.bot.adapters.ComponentAdapter;
 
 /**
  * @author Alfredo
  *
  */
-public interface CommandI {
+public interface CommandI extends ComponentAdapter {
 	
 	/**
 	 * Returns the name of the command
@@ -34,6 +35,11 @@ public interface CommandI {
 	 * @return List of options
 	 */
 	public List<OptionData> getOptions();
+	
+	/**
+	 * Disposes everything that composes the command
+	 */
+	public void dispose();
 	
 	/**
 	 * Executes the command

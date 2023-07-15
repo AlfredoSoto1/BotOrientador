@@ -5,12 +5,18 @@ package services.bot.messages;
 
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import services.bot.adapters.ComponentAdapter;
 
 /**
  * @author Alfredo
  *
  */
-public interface MessengerI {
+public interface MessengerI extends ComponentAdapter {
+
+	/**
+	 * Disposes all content from messenger
+	 */
+	public void dispose();
 	
 	/**
 	 * 

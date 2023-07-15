@@ -16,32 +16,8 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import services.bot.adapters.ListenerAdapterManager;
-import services.bot.buttons.ButtonManager;
-import services.bot.commands.CommandManager;
-import services.bot.messages.MessageManager;
-import services.bot.modals.ModalManager;
-import services.bot.orientador.contacts.AsesoriaAcademica;
-import services.bot.orientador.contacts.AsistenciaEconomica;
-import services.bot.orientador.contacts.DCSP;
-import services.bot.orientador.contacts.DecanatoDeEstudiantes;
-import services.bot.orientador.contacts.Departamento;
-import services.bot.orientador.contacts.GuardiaUniversitaria;
-import services.bot.orientador.data.Curriculum;
-import services.bot.orientador.data.GuiaPrepistica;
-import services.bot.orientador.links.MadeWeb;
-import services.bot.orientador.links.SuperLinks;
-import services.bot.orientador.messages.ProfanityFilter;
-import services.bot.orientador.misc.Calendario;
-import services.bot.orientador.misc.EstudiantesOrientadores;
-import services.bot.orientador.misc.FAQ;
-import services.bot.orientador.misc.Help;
-import services.bot.orientador.misc.Map;
-import services.bot.orientador.misc.Projects;
-import services.bot.orientador.misc.Rules;
-import services.bot.orientador.misc.Salon;
-import services.bot.orientador.serverManagement.ServerManagement;
-import services.bot.orientador.welcoming.LogInModal;
-import services.bot.startup.StartupManager;
+import services.bot.orientador.loginControl.WelcomingManager;
+import services.bot.orientador.profanityControl.ProfanityManager;
 
 /**
  * @author Alfredo
@@ -49,8 +25,8 @@ import services.bot.startup.StartupManager;
  */
 public class BotEntry extends ApplicationThread {
 
-	public static volatile boolean isRunning = true;
 	public static volatile long upTime = 0L;
+	public static volatile boolean isRunning = true;
 	
 	// Discord bot token (Must be private for security reasons)
 	private String token;
@@ -61,12 +37,22 @@ public class BotEntry extends ApplicationThread {
 	// Declare default listener adapter manager
 	private ListenerAdapterManager listenerAdapterManager;
 	
+	private WelcomingManager welcomeManager;
+	private ProfanityManager profanityManager;
+	
 	public BotEntry() {
 
 	}
 
+	/**
+	 * 
+	 */
 	@Override
 	public void init() {
+		
+		// Obtain the token from assets folder
+		// you must include a token inside the bot-token.tkn file
+		// Otherwise it will throw an exception and program will not start.
 		try {
 			loadToken();
 		} catch(IOException e) {
@@ -75,100 +61,25 @@ public class BotEntry extends ApplicationThread {
 			return;
 		}
 		
+		// Create and prepare the listener adapter which is going to
+		// handle all input from Discord server from any user, command, message, etc...
 		this.listenerAdapterManager = new ListenerAdapterManager();
 		
-		this.listenerAdapterManager.createAdapters(this::createCustomAdapters);
+		// Create and prepare the component adapters to be executed inside the
+		// listener adapters properly
+		this.welcomeManager = new WelcomingManager();
+		this.profanityManager = new ProfanityManager();
 		
-		try {
-			// Create Discord bot
-			createBotConnection();
-			
-			// Prepare permissions
-			prepareBotPermissions();
-			
-			// Start running the bot on the server
-			startBot();
-		} catch (LoginException e) {
-			e.printStackTrace();
-		}
-	}
-
-	@Override
-	public void run() {
-		while(isRunning) {
-			// Keep running
-			upTime++;
-		}
-		System.out.println("Bot ended successfully Time:" + upTime);
-	}
-
-	@Override
-	public void dispose() {
-		// Shutdown the bot
-		discordJDA.shutdown();
+		// Load the components to the listener adapters
+		this.listenerAdapterManager.loadComponentAdapters(welcomeManager.getComponents());
+		this.listenerAdapterManager.loadComponentAdapters(profanityManager.getComponents());
 		
-		// Free resources
-		listenerAdapterManager.dispose();
-	}
-
-	private void createBotConnection() throws LoginException {
-		// Create new Discord connection with token
-		discordBuilder = JDABuilder.createDefault(token);
+//		ProfanityFilter filter = new ProfanityFilter();
+//		startupManager.add(filter);
+//		messageManager.add(filter);
+//		commandManager.add(filter);
 		
-		// Set custom bot status
-		discordBuilder.setStatus(OnlineStatus.ONLINE);
-//		discordBuilder.setActivity(Activity.playing("Aquí para ayudar siempre!"));
-	}
-
-	private void prepareBotPermissions() throws LoginException {
-		// Give the bot some permissions
-		discordBuilder.enableIntents(
-			GatewayIntent.GUILD_MESSAGES,
-			GatewayIntent.GUILD_MESSAGE_TYPING,
-			GatewayIntent.GUILD_MEMBERS, 
-			GatewayIntent.GUILD_PRESENCES,
-			GatewayIntent.MESSAGE_CONTENT
-		);
-		
-		// Provide to bot cache policy
-		discordBuilder.setMemberCachePolicy(MemberCachePolicy.ALL);
-	}
-	
-	private void startBot() throws LoginException {
-		// Prepare all the listeners the bot requires
-		// to function properly
-		discordBuilder.addEventListeners(
-			// Get all the adapters from the adapter's manager
-			listenerAdapterManager.getAdapters()
-		);
-		
-		// Build the Discord bot
-		discordJDA = discordBuilder.build();
-	}
-	
-	private void createCustomAdapters(
-			ModalManager modalManager,
-			ButtonManager buttonManager,
-			CommandManager commandManager,
-			MessageManager messageManager,
-			StartupManager startupManager) 
-	{
-		// Insert into the managers the elements
-
-		LogInModal loginModal = new LogInModal();
-		modalManager.add(loginModal);
-		buttonManager.add(loginModal);
-		messageManager.add(loginModal);
-		commandManager.add(loginModal);
-		startupManager.add(loginModal);
-		
-		ProfanityFilter filter = new ProfanityFilter();
-		startupManager.add(filter);
-		messageManager.add(filter);
-		
-		commandManager.add(new ServerManagement());
-		
-		commandManager.add(new Help());
+//		commandManager.add(new Help());
 //		commandManager.add(new Map());
 //		commandManager.add(new FAQ());
 //		commandManager.add(new Rules());
@@ -185,9 +96,99 @@ public class BotEntry extends ApplicationThread {
 //		commandManager.add(new AsistenciaEconomica());
 //		commandManager.add(new GuardiaUniversitaria());
 //		commandManager.add(new DecanatoDeEstudiantes());
-		commandManager.add(new EstudiantesOrientadores());
+//		commandManager.add(new EstudiantesOrientadores());
+		
+		try {
+			// Create Discord bot
+			createBotConnection();
+			
+			// Prepare permissions
+			prepareBotPermissions();
+			
+			// Start running the bot on the server
+			startBot();
+		} catch (LoginException e) {
+			e.printStackTrace();
+		}
 	}
 
+	/**
+	 * 
+	 */
+	@Override
+	public void run() {
+		while(isRunning) {
+			// Keep running
+			upTime++;
+		}
+		System.out.println("Bot ended successfully Time:" + upTime);
+	}
+
+	/**
+	 * 
+	 */
+	@Override
+	public void dispose() {
+		// Shutdown the bot
+		discordJDA.shutdown();
+		
+		// Free resources
+		welcomeManager.dispose();
+		
+		listenerAdapterManager.dispose();
+	}
+
+	/**
+	 * 
+	 * @throws LoginException
+	 */
+	private void createBotConnection() throws LoginException {
+		// Create new Discord connection with token
+		discordBuilder = JDABuilder.createDefault(token);
+		
+		// Set custom bot status
+		discordBuilder.setStatus(OnlineStatus.ONLINE);
+//		discordBuilder.setActivity(Activity.playing("Aquí para ayudar siempre!"));
+	}
+
+	/**
+	 * 
+	 * @throws LoginException
+	 */
+	private void prepareBotPermissions() throws LoginException {
+		// Give the bot some permissions
+		discordBuilder.enableIntents(
+			GatewayIntent.GUILD_MESSAGES,
+			GatewayIntent.GUILD_MESSAGE_TYPING,
+			GatewayIntent.GUILD_MEMBERS, 
+			GatewayIntent.GUILD_PRESENCES,
+			GatewayIntent.MESSAGE_CONTENT
+		);
+		
+		// Provide to bot cache policy
+		discordBuilder.setMemberCachePolicy(MemberCachePolicy.ALL);
+	}
+	
+	/**
+	 * 
+	 * @throws LoginException
+	 */
+	private void startBot() throws LoginException {
+		// Prepare all the listeners the bot requires
+		// to function properly
+		discordBuilder.addEventListeners(
+			// Get all the adapters from the adapter's manager
+			listenerAdapterManager.getAdapters()
+		);
+		
+		// Build the Discord bot
+		discordJDA = discordBuilder.build();
+	}
+	
+	/**
+	 * 
+	 * @throws IOException
+	 */
 	private void loadToken() throws IOException {
 		
 		BufferedReader reader = new BufferedReader(new FileReader("assets/bot-token/bot-token.tkn"));

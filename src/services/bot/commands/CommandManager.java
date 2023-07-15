@@ -9,8 +9,8 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import services.bot.adapters.ProgrammableAdapter;
+import services.bot.entry.BotConfigs;
 import services.bot.entry.BotEntry;
-import services.bot.orientador.messages.BotServer;
 
 /**
  * 
@@ -44,6 +44,8 @@ public class CommandManager extends ListenerAdapter implements ProgrammableAdapt
 
 	@Override
 	public void dispose() {
+		for(CommandI command : commands)
+			command.dispose();
 		commands.clear();
 	}
 	
@@ -72,7 +74,7 @@ public class CommandManager extends ListenerAdapter implements ProgrammableAdapt
 	public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
 		
 		for(Role role : event.getMember().getRoles()) {
-			if(event.getName().equals("end") && role.getName().equalsIgnoreCase(BotServer.DEVELOPER)) {
+			if(event.getName().equals("end") && role.getName().equalsIgnoreCase(BotConfigs.DEVELOPER_ROLE_NAME)) {
 				event.reply("Disconnected").queue();
 				
 				BotEntry.isRunning = false;

@@ -40,7 +40,7 @@ public class StartupManager extends ListenerAdapter implements ProgrammableAdapt
 	@Override
 	public void dispose() {
 		for(StartupI startupProgram : startupPrograms)
-			startupProgram.onDisposing();
+			startupProgram.dispose();
 		
 		startupPrograms.clear();
 	}
