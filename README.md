@@ -22,6 +22,8 @@ in a database using Microsoft Access files with secure password and encryption.
 The current version for this software is: v2023.3-Beta
 * Implement the `/salon <where>` command
 * Implement all organizations
+* Leader board and points
+* voting polls
 * test software with real users
 * debug software with all test users
 * do final touches and deploy
