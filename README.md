@@ -21,12 +21,7 @@ in a database using Microsoft Access files with secure password and encryption.
 ### Working on these features:
 The current version for this software is: v2023.3-Beta
 * Implement the `/salon <where>` command
-* `/server_management <type>` command for:
-  1) profanities (adding / removing)
-  2) obtain attendance of each team
-  3) generate votes and obtain feedback from those
-
-* Organize database, and reduce the ammount of unecessary Records objects
+* Implement all organizations
 * test software with real users
 * debug software with all test users
 * do final touches and deploy
