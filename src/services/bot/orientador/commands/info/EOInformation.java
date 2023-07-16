@@ -23,7 +23,7 @@ import services.bot.orientador.roles.TeamRole;
  * @author Alfredo
  *
  */
-public class EstudiantesOrientadores implements CommandI {
+public class EOInformation implements CommandI {
 
 	private static final String COMMAND_OPTION = "department";
 	private static final String INEL_ID = "INEL-ID";
@@ -35,7 +35,7 @@ public class EstudiantesOrientadores implements CommandI {
 	
 	private List<OptionData> options;
 	
-	public EstudiantesOrientadores() {
+	public EOInformation() {
 		this.options = new ArrayList<>();
 		
 		options.add(new OptionData(OptionType.STRING, COMMAND_OPTION, "Escoje un departamento", true)

@@ -16,11 +16,11 @@ import services.bot.managers.command.CommandI;
  * @author Alfredo
  *
  */
-public class Map implements CommandI {
+public class UprmMap implements CommandI {
 
 	private List<OptionData> options;
 	
-	public Map() {
+	public UprmMap() {
 		this.options = new ArrayList<>();
 		
 	}

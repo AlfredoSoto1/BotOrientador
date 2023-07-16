@@ -1,7 +1,7 @@
 /**
  * 
  */
-package services.bot.orientador.loginControl;
+package services.bot.orientador.controllers.login;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.session.ReadyEvent;

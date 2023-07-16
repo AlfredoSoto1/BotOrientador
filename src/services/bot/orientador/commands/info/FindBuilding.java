@@ -25,12 +25,12 @@ import services.bot.managers.command.CommandI;
  * @author Alfredo
  *
  */
-public class Salon implements CommandI {
+public class FindBuilding implements CommandI {
 
 	private List<OptionData> options;
 	private BlockingQueue<Pair<String, SlashCommandInteractionEvent>> queuedRequests;
 	
-	public Salon() {
+	public FindBuilding() {
 		this.options = new ArrayList<>();
 		this.queuedRequests = new LinkedBlockingQueue<>();
 

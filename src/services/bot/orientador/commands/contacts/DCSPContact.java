@@ -16,11 +16,11 @@ import services.bot.managers.command.CommandI;
  * @author Alfredo
  *
  */
-public class DCSP implements CommandI {
+public class DCSPContact implements CommandI {
 	
 	private List<OptionData> options;
 	
-	public DCSP() {
+	public DCSPContact() {
 		this.options = new ArrayList<>();
 		
 	}
@@ -32,7 +32,7 @@ public class DCSP implements CommandI {
 	
 	@Override
 	public String getCommandName() {
-		return "dcsp";
+		return "contact-dcsp";
 	}
 
 	@Override

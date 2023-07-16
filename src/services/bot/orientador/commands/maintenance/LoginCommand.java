@@ -14,8 +14,8 @@ import services.bot.dbaccess.DBLoginManager;
 import services.bot.dbaccess.DBRoleManager;
 import services.bot.entry.BotConfigs;
 import services.bot.managers.command.CommandI;
-import services.bot.orientador.loginControl.LoginOnJoin;
-import services.bot.orientador.loginControl.LoginStartup;
+import services.bot.orientador.controllers.login.LoginOnJoin;
+import services.bot.orientador.controllers.login.LoginStartup;
 
 /**
  * @author Alfredo

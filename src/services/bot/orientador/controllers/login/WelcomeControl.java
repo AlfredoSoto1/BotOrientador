@@ -1,7 +1,7 @@
 /**
  * 
  */
-package services.bot.orientador.loginControl;
+package services.bot.orientador.controllers.login;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,7 +16,7 @@ import services.bot.orientador.commands.maintenance.LoginCommand;
  * @author Alfredo
  *
  */
-public class WelcomingManager {
+public class WelcomeControl {
 	
 	private DBRoleManager roleManager;
 	private DBLoginManager loginManager;
@@ -30,7 +30,7 @@ public class WelcomingManager {
 	/**
 	 * 
 	 */
-	public WelcomingManager() {
+	public WelcomeControl() {
 		this.componentAdapters = new ArrayList<>();
 		
 		// Initialize the database managers

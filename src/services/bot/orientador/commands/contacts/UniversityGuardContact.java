@@ -16,11 +16,11 @@ import services.bot.managers.command.CommandI;
  * @author Alfredo
  *
  */
-public class GuardiaUniversitaria implements CommandI {
+public class UniversityGuardContact implements CommandI {
 
 	private List<OptionData> options;
 	
-	public GuardiaUniversitaria() {
+	public UniversityGuardContact() {
 		this.options = new ArrayList<>();
 		
 	}
@@ -32,7 +32,7 @@ public class GuardiaUniversitaria implements CommandI {
 	
 	@Override
 	public String getCommandName() {
-		return "guardia-univ";
+		return "contact-guardia-univ";
 	}
 
 	@Override

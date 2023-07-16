@@ -17,17 +17,27 @@ import application.database.DatabaseConnections;
 public class DBProfanityManager {
 
 	private static final String INSERT_WORD = "INSERT INTO Profanities (ProfanityWord) VALUES (?)";
-
 	private static final String SELECT_ALL_WORDS = "SELECT ProfanityWord FROM Profanities";
 	
+	/**
+	 * 
+	 */
 	public DBProfanityManager() {
 		
 	}
 	
+	/**
+	 * Dispose all content from 'this' instance
+	 */
 	public void dispose() {
 		
 	}
 	
+	/**
+	 * Stores in database a word
+	 * 
+	 * @param word
+	 */
 	public void pushWord(String word) {
 		DatabaseConnections.instance()
 		.getTeamMadeConnection()
@@ -46,6 +56,11 @@ public class DBProfanityManager {
 		});
 	}
 	
+	/**
+	 * Pull from database all the bad words
+	 * 
+	 * @return set of words
+	 */
 	public Set<String> pullProfanities(){
 		
 		Set<String> pulledProfanities = new HashSet<>();

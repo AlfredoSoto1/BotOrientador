@@ -1,7 +1,7 @@
 /**
  * 
  */
-package services.bot.orientador.loginControl;
+package services.bot.orientador.controllers.login;
 
 import java.util.HashMap;
 import java.util.Map;

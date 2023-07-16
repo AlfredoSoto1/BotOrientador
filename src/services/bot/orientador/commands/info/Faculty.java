@@ -18,7 +18,7 @@ import services.bot.managers.command.CommandI;
  * @author Alfredo
  *
  */
-public class Facultad implements CommandI {
+public class Faculty implements CommandI {
 
 	private static final String OPTION_DEPARTMENT_ID = "department";
 	private static final String OPTION_SELECTED_INEL_ICOM = "INEL/ICOM";
@@ -26,7 +26,7 @@ public class Facultad implements CommandI {
 	
 	private List<OptionData> options;
 	
-	public Facultad() {
+	public Faculty() {
 		this.options = new ArrayList<>();
 		
 		options.add(new OptionData(OptionType.STRING, OPTION_DEPARTMENT_ID, "Escoje un departamento", true)

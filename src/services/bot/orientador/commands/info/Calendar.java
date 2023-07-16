@@ -16,13 +16,13 @@ import services.bot.managers.command.CommandI;
  * @author Alfredo
  *
  */
-public class Calendario implements CommandI {
+public class Calendar implements CommandI {
 
 	private File googleCalendar;
 	
 	private List<OptionData> options;
 	
-	public Calendario() {
+	public Calendar() {
 		this.options = new ArrayList<>();
 		
 		googleCalendar = new File("assets/images/google_add_calendar.png");

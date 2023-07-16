@@ -16,11 +16,11 @@ import services.bot.managers.command.CommandI;
  * @author Alfredo
  *
  */
-public class Help implements CommandI {
+public class HelpMenu implements CommandI {
 
 	private List<OptionData> options;
 	
-	public Help() {
+	public HelpMenu() {
 		this.options = new ArrayList<>();
 		
 	}

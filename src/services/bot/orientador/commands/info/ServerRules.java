@@ -14,11 +14,11 @@ import services.bot.managers.command.CommandI;
  * @author Alfredo
  *
  */
-public class Rules implements CommandI {
+public class ServerRules implements CommandI {
 
 	private List<OptionData> options;
 	
-	public Rules() {
+	public ServerRules() {
 		this.options = new ArrayList<>();
 	}
 	
@@ -29,7 +29,7 @@ public class Rules implements CommandI {
 	
 	@Override
 	public String getCommandName() {
-		return "reglas";
+		return "rules";
 	}
 
 	@Override

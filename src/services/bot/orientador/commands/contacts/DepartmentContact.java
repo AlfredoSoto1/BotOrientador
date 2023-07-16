@@ -18,7 +18,7 @@ import services.bot.managers.command.CommandI;
  * @author Alfredo
  *
  */
-public class Departamento implements CommandI {
+public class DepartmentContact implements CommandI {
 
 	private static final String OPTION_DEPARTMENT_ID = "department";
 	private static final String OPTION_SELECTED_INEL_ICOM = "INEL/ICOM";
@@ -26,7 +26,7 @@ public class Departamento implements CommandI {
 	
 	private List<OptionData> options;
 	
-	public Departamento() {
+	public DepartmentContact() {
 		this.options = new ArrayList<>();
 		
 		options.add(new OptionData(OptionType.STRING, OPTION_DEPARTMENT_ID, "Escoje un departamento", true)
@@ -42,7 +42,7 @@ public class Departamento implements CommandI {
 	
 	@Override
 	public String getCommandName() {
-		return "departamento";
+		return "contact-department";
 	}
 
 	@Override

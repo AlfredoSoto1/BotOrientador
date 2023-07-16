@@ -16,13 +16,13 @@ import services.bot.managers.command.CommandI;
  * @author Alfredo
  *
  */
-public class GuiaPrepistica implements CommandI {
+public class FreshmanGuide implements CommandI {
 
 	private File guiaPrepistica;
 	
 	private List<OptionData> options;
 	
-	public GuiaPrepistica() {
+	public FreshmanGuide() {
 		this.options = new ArrayList<>();
 		
 		// Load the curriculums

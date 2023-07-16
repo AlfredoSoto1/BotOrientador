@@ -33,6 +33,15 @@ public class ProfanityCommand implements CommandI {
 	
 	private List<OptionData> options;
 	
+	/**
+	 * Creates and initializes the profanity command.
+	 * At the moment this can add new words to the database
+	 * to later be extracted and evaluated for every message
+	 * the bot reads.
+	 * 
+	 * @param profanityManager
+	 * @param roleManager
+	 */
 	public ProfanityCommand(DBProfanityManager profanityManager, DBRoleManager roleManager) {
 		this.options = new ArrayList<>();
 		

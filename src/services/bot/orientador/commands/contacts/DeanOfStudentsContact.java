@@ -16,11 +16,11 @@ import services.bot.managers.command.CommandI;
  * @author Alfredo
  *
  */
-public class DecanatoDeEstudiantes implements CommandI {
+public class DeanOfStudentsContact implements CommandI {
 	
 	private List<OptionData> options;
 	
-	public DecanatoDeEstudiantes() {
+	public DeanOfStudentsContact() {
 		this.options = new ArrayList<>();
 	}
 	
@@ -31,7 +31,7 @@ public class DecanatoDeEstudiantes implements CommandI {
 	
 	@Override
 	public String getCommandName() {
-		return "decanato-estudiantes";
+		return "contact-decanato-estudiantes";
 	}
 
 	@Override

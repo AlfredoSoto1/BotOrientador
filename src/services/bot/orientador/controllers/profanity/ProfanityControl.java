@@ -1,7 +1,7 @@
 /**
  * 
  */
-package services.bot.orientador.profanityControl;
+package services.bot.orientador.controllers.profanity;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,7 +16,7 @@ import services.bot.orientador.commands.maintenance.ProfanityCommand;
  * @author Alfredo
  *
  */
-public class ProfanityManager {
+public class ProfanityControl {
 
 	private DBRoleManager roleManager;
 	private DBProfanityManager profanityManager;
@@ -27,9 +27,11 @@ public class ProfanityManager {
 	private List<ComponentAdapter> componentAdapters;
 	
 	/**
-	 * 
+	 * Creates and initializes all the profanity related
+	 * content. With this instance, we can load up all
+	 * the components to the corresponding listener adapters
 	 */
-	public ProfanityManager() {
+	public ProfanityControl() {
 		this.componentAdapters = new ArrayList<>();
 		
 		this.roleManager = new DBRoleManager();
@@ -55,7 +57,7 @@ public class ProfanityManager {
 	}
 	
 	/**
-	 * 
+	 * Disposes all content from 'this' instance
 	 */
 	public void dispose() {
 		roleManager.dispose();

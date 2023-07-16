@@ -16,11 +16,11 @@ import services.bot.managers.command.CommandI;
  * @author Alfredo
  *
  */
-public class SuperLinks implements CommandI {
+public class UsefulLinks implements CommandI {
 
 	private List<OptionData> options;
 	
-	public SuperLinks() {
+	public UsefulLinks() {
 		this.options = new ArrayList<>();
 		
 	}

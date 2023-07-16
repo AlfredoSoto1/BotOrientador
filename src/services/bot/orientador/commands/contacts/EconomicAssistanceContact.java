@@ -16,11 +16,11 @@ import services.bot.managers.command.CommandI;
  * @author Alfredo
  *
  */
-public class AsistenciaEconomica implements CommandI {
+public class EconomicAssistanceContact implements CommandI {
 	
 	private List<OptionData> options;
 	
-	public AsistenciaEconomica() {
+	public EconomicAssistanceContact() {
 		this.options = new ArrayList<>();
 		
 	}
@@ -32,7 +32,7 @@ public class AsistenciaEconomica implements CommandI {
 	
 	@Override
 	public String getCommandName() {
-		return "asistencia-economica";
+		return "contact-asistencia-economica";
 	}
 
 	@Override

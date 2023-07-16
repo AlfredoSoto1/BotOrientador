@@ -16,8 +16,12 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import services.bot.adapters.ListenerAdapterManager;
-import services.bot.orientador.loginControl.WelcomingManager;
-import services.bot.orientador.profanityControl.ProfanityManager;
+import services.bot.orientador.controllers.contacts.ContactsControl;
+import services.bot.orientador.controllers.fileuploads.FileUploadControl;
+import services.bot.orientador.controllers.info.InfoControl;
+import services.bot.orientador.controllers.links.LinksControl;
+import services.bot.orientador.controllers.login.WelcomeControl;
+import services.bot.orientador.controllers.profanity.ProfanityControl;
 
 /**
  * @author Alfredo
@@ -37,8 +41,12 @@ public class BotEntry extends ApplicationThread {
 	// Declare default listener adapter manager
 	private ListenerAdapterManager listenerAdapterManager;
 	
-	private WelcomingManager welcomeManager;
-	private ProfanityManager profanityManager;
+	private InfoControl infoControl;
+	private LinksControl linkControl;
+	private WelcomeControl welcomeManager;
+	private ContactsControl contactsManager;
+	private ProfanityControl profanityManager;
+	private FileUploadControl fileUploadControl;
 	
 	public BotEntry() {
 
@@ -67,36 +75,20 @@ public class BotEntry extends ApplicationThread {
 		
 		// Create and prepare the component adapters to be executed inside the
 		// listener adapters properly
-		this.welcomeManager = new WelcomingManager();
-		this.profanityManager = new ProfanityManager();
-		
+		this.infoControl = new InfoControl();
+		this.linkControl = new LinksControl();
+		this.welcomeManager = new WelcomeControl();
+		this.contactsManager = new ContactsControl();
+		this.profanityManager = new ProfanityControl();
+		this.fileUploadControl = new FileUploadControl();
+
 		// Load the components to the listener adapters
+		this.listenerAdapterManager.loadComponentAdapters(infoControl.getComponents());
+		this.listenerAdapterManager.loadComponentAdapters(linkControl.getComponents());
 		this.listenerAdapterManager.loadComponentAdapters(welcomeManager.getComponents());
+		this.listenerAdapterManager.loadComponentAdapters(contactsManager.getComponents());
 		this.listenerAdapterManager.loadComponentAdapters(profanityManager.getComponents());
-		
-//		ProfanityFilter filter = new ProfanityFilter();
-//		startupManager.add(filter);
-//		messageManager.add(filter);
-//		commandManager.add(filter);
-		
-//		commandManager.add(new Help());
-//		commandManager.add(new Map());
-//		commandManager.add(new FAQ());
-//		commandManager.add(new Rules());
-//		commandManager.add(new Salon());
-//		commandManager.add(new MadeWeb());
-//		commandManager.add(new Calendario());
-//		commandManager.add(new SuperLinks());
-//		commandManager.add(new Curriculum());
-//		commandManager.add(new GuiaPrepistica());
-//		commandManager.add(new DCSP());
-//		commandManager.add(new Projects());
-//		commandManager.add(new Departamento());
-//		commandManager.add(new AsesoriaAcademica());
-//		commandManager.add(new AsistenciaEconomica());
-//		commandManager.add(new GuardiaUniversitaria());
-//		commandManager.add(new DecanatoDeEstudiantes());
-//		commandManager.add(new EstudiantesOrientadores());
+		this.listenerAdapterManager.loadComponentAdapters(fileUploadControl.getComponents());
 		
 		try {
 			// Create Discord bot
@@ -133,7 +125,12 @@ public class BotEntry extends ApplicationThread {
 		discordJDA.shutdown();
 		
 		// Free resources
+		infoControl.dispose();
+		linkControl.dispose();
 		welcomeManager.dispose();
+		contactsManager.dispose();
+		profanityManager.dispose();
+		fileUploadControl.dispose();
 		
 		listenerAdapterManager.dispose();
 	}
