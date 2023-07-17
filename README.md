@@ -20,7 +20,6 @@ in a database using Microsoft Access files with secure password and encryption.
 ## Features
 ### Working on these features:
 The current version for this software is: v2023.3-Beta
-* Implement the `/salon <where>` command
 * Implement all organizations
 * Leader board and points
 * voting polls
@@ -41,7 +40,7 @@ You will also need to create a custom Discord token to feed the bot with, in thi
 the software starts it knows to where connect and start running the bot in the corresponding server.
 For this software you will also need Git installed in your preferred Operating system. This will be
 important for cloning the repository, working with branches and git staging commits to later
-push and/or pull from cloud's repository
+push and/or pull from/to remote repository
 ### Installation
 To install this software first clone the repository to a folder of your choice in your device. After cloning,
 you can open Eclipse IDE and import with git (smart import) the already cloned repository.
@@ -54,7 +53,7 @@ Then use the following git command:
 git clone `GitHub's repository link here`
 ```
 ## Usage
-## How to use bot?
+### How to use bot?
 <details>
 <summary>Here are the bot commands that can be used in any chat inside the pre-defined server</summary>
   
@@ -66,12 +65,16 @@ git clone `GitHub's repository link here`
 | `/links`                            | Provides a list of links with important general information about the campus and the department.                                    |
 | `/salon <letra>`                    | Provides a link to an official UPRM site that contains information about a specific classroom.                                      |
 | `/calendario`                       | Provides a link containing the academic calendar of UPRM.                                                                           |
-| `/telephone_guide <who?>`           | Contains a list of contact numbers to choose.                                                                                       |
+| `/contact <who?>`                   | Contains a list of contact numbers to choose.                                                                                       |
 | `/ls_projects <select>`             | Provides a list of projects and research done in relation to the __INEL/ICOM/INSO/CIIC__ departments.                               |
 | `/estudiante-orientador <dept>`     | Provides a list of all the EO's in the server with the department provided as a parameter in the command.                           |
 | `/ls_student_orgs <select>`         | Provides a list of student organizations.                                                                                           |
-| `/rules`                            | Provides a list of rules for the server.                                                                                            |
+| `/reglas`                           | Provides a list of rules for the server.                                                                                            |
 | `/guia-prepistica`                  | Provides a PDF containing the guide on how-to for prepas.                                                                           |
+
+### Program flow
+
+insert image of how the program executes and it's levels of abstraction
 
 </details>
 
@@ -94,7 +97,13 @@ git clone `GitHub's repository link here`
 
 #### Where to start debugging?
 To start running the software in Eclipse IDE, you need to run the java file named
-`ApplicationEntry.java`, located at `application.client` package
+`ApplicationEntry.java`, located at `application.client` package.
+
+Note that once the program starts running you will need to wait a couple of minutes
+before start testing all commands. This is because the JDA is loading all the data
+and it might take a few minutes or seconds. If you want to reduce this time you can
+do so by commenting the `listenerAdapterManager.loadComponentAdapter(...@Component)` methods inside the
+bot entry class. 
 
 ### Configuration
 (Currently Depricated)
