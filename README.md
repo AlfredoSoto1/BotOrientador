@@ -20,7 +20,6 @@ in a database using Microsoft Access files with secure password and encryption.
 ## Features
 ### Working on these features:
 The current version for this software is: v2023.3-Beta
-* Implement all organizations
 * Leader board and points
 * voting polls
 * test software with real users
