@@ -155,11 +155,15 @@ public class BotEntry extends ApplicationThread {
 	private void prepareBotPermissions() throws LoginException {
 		// Give the bot some permissions
 		discordBuilder.enableIntents(
-			GatewayIntent.GUILD_MESSAGES,
-			GatewayIntent.GUILD_MESSAGE_TYPING,
-			GatewayIntent.GUILD_MEMBERS, 
-			GatewayIntent.GUILD_PRESENCES,
-			GatewayIntent.MESSAGE_CONTENT
+				GatewayIntent.GUILD_MEMBERS, 
+				GatewayIntent.GUILD_MESSAGES,
+				GatewayIntent.GUILD_PRESENCES,
+				GatewayIntent.MESSAGE_CONTENT,
+				GatewayIntent.GUILD_MODERATION,
+				GatewayIntent.GUILD_MESSAGE_TYPING,
+				GatewayIntent.GUILD_WEBHOOKS,
+				GatewayIntent.GUILD_MESSAGE_REACTIONS,
+				GatewayIntent.GUILD_EMOJIS_AND_STICKERS
 		);
 		
 		// Provide to bot cache policy

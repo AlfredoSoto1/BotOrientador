@@ -26,6 +26,10 @@ public class DBRoleManager {
 		this.loadedRoles = new HashMap<>();
 	}
 
+	public void dispose() {
+		loadedRoles.clear();
+	}
+	
 	/**
 	 * This is a temporal method. This will be
 	 * removed when the bot is capable of generating
@@ -62,48 +66,49 @@ public class DBRoleManager {
 			try {
 				server.addRoleToMember(serverMember, loadedRoles.get("prepa")).queue();
 			} catch(HierarchyException e) {
-
+				consoleLog(record, "prepa");
 			}
 		
 		if(record.getRoles().isEstudianteOrientador())
 			try {
 				server.addRoleToMember(serverMember, loadedRoles.get("EstudianteOrientador")).queue();
 			} catch(HierarchyException e) {
-				
+				consoleLog(record, "EstudianteOrientador");
 			}
 
 		if(record.getRoles().isEstudianteGraduado())
 			try {
 				server.addRoleToMember(serverMember, loadedRoles.get("EstudianteGraduado")).queue();
 			} catch(HierarchyException e) {
-				
+				consoleLog(record, "EstudianteGraduado");
 			}
 		
 		if(record.getRoles().isConsejeroProfesional())
 			try {
 				server.addRoleToMember(serverMember, loadedRoles.get("ConsejeraProfesional")).queue();
 			} catch(HierarchyException e) {
-				
+				consoleLog(record, "ConsejeraProfesional");
 			}
 		
 		if(loadedRoles.containsKey(record.getTeam().getName()))
 			try {
 				server.addRoleToMember(serverMember, loadedRoles.get(record.getTeam().getName())).queue();
 			} catch(HierarchyException e) {
-				
+				consoleLog(record, record.getTeam().getName());
 			}
 		
 		if(loadedRoles.containsKey(record.getDepartment().getName()))
 			try {
 				server.addRoleToMember(serverMember, loadedRoles.get(record.getDepartment().getName())).queue();
 			} catch(HierarchyException e) {
-				
+				consoleLog(record, record.getDepartment().getName());
 			}
 		
 
 		try {
 			server.modifyNickname(serverMember, record.getFullName()).queue();
 		} catch(HierarchyException e) {
+			consoleLog(record, record.getFullName());
 			return false;
 		}
 		
@@ -126,8 +131,8 @@ public class DBRoleManager {
 			return false;
 		}
 	}
-
-	public void dispose() {
-		loadedRoles.clear();
+	
+	private void consoleLog(MemberRecord record, String roleName) {
+		System.out.println("[WARNING]: " + record.getFullName() + ", cannot assign role -> " + roleName);
 	}
 }
