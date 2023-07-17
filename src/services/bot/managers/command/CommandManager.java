@@ -3,11 +3,14 @@ package services.bot.managers.command;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.poi.util.SystemOutLogger;
+
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.Command;
 import services.bot.adapters.ProgrammableAdapter;
 import services.bot.entry.BotConfigs;
 import services.bot.entry.BotEntry;
@@ -54,6 +57,16 @@ public class CommandManager extends ListenerAdapter implements ProgrammableAdapt
 		// For all the servers the bot has joined,
 		// prepare the slash commands required
 		for(Guild server : event.getJDA().getGuilds()) {
+			
+			server.retrieveCommands().queue(oldCommands -> {
+				for (Command command : oldCommands) {
+					
+					System.out.println(command.getName());
+					// Check if the command is an old command that you want to remove
+//					server.deleteCommandById(command.getId()).queue();
+				}
+			});
+			
 			for(CommandI command : commands) {
 				// Create the commands that will be visible
 				// for the server the bot is connected currently
