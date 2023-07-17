@@ -79,7 +79,11 @@ insert image of how the program executes and it's levels of abstraction
 </details>
 
 ### API Usage (for developers)
+
 #### Prepare software before debugging!!!
+<details>
+<summary>Basic setup</summary>
+  
 1) Setting up the database
 * You first need to create a `database/` folder in the main project's directory.
   You will need to reach to one of the managers of TeamMade to give you access to our
@@ -95,24 +99,32 @@ insert image of how the program executes and it's levels of abstraction
 * You will need to create a file inside the `assets/bot-token/` directory named
   `bot-token.tkn`. There you will paste the bot token and you should be ready to go.
 
-#### Where to start debugging?
+</details>
+
+#### How to start debugging?
+
+<details>
+<summary>Entry point location</summary>
+
 To start running the software in Eclipse IDE, you need to run the java file named
 `ApplicationEntry.java`, located at `application.client` package.
+</details>
+  
+<details>
+<summary>Important notes before debugging</summary>
 
+* Note that once the program starts running you will need to wait a couple of minutes
+  before start testing all commands. This is because the JDA is loading all the data
+  and it might take a few minutes or seconds. If you want to reduce this time you can
+  do so by commenting the `listenerAdapterManager.loadComponentAdapter(...@Component)` methods inside the
+  bot entry class. 
+</details>
+
+### Configuration
 Before running the program you **MUST** check and change the variables inside the
 `BotConfigs.java` interface. Some variables need to be changed if you plan to run
 and test the bot in a custom server.
 
-Note that once the program starts running you will need to wait a couple of minutes
-before start testing all commands. This is because the JDA is loading all the data
-and it might take a few minutes or seconds. If you want to reduce this time you can
-do so by commenting the `listenerAdapterManager.loadComponentAdapter(...@Component)` methods inside the
-bot entry class. 
-
-### Configuration
-(Currently Depricated)
-This software will start running in debug mode by default for developers. If you want to deploy the bot as an official
-build version, you will need to turn off the debug flag located at the `ApplicationEntry.java` file by switching the flag to false
 
 ## Contributing
 ### How can you help?
