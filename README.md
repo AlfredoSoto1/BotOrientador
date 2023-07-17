@@ -99,6 +99,10 @@ insert image of how the program executes and it's levels of abstraction
 To start running the software in Eclipse IDE, you need to run the java file named
 `ApplicationEntry.java`, located at `application.client` package.
 
+Before running the program you **MUST** check and change the variables inside the
+`BotConfigs.java` interface. Some variables need to be changed if you plan to run
+and test the bot in a custom server.
+
 Note that once the program starts running you will need to wait a couple of minutes
 before start testing all commands. This is because the JDA is loading all the data
 and it might take a few minutes or seconds. If you want to reduce this time you can
