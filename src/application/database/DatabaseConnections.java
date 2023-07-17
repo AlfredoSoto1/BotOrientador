@@ -58,7 +58,7 @@ public final class DatabaseConnections {
 	/*
 	 * Private members
 	 */
-	private final static Credentials TM_DB_Credentials = new Credentials("", "s909s", "jdbc:ucanaccess://database/TeamMadeDB-A.mdb");
+	private final static Credentials TM_DB_Credentials = new Credentials("", "s909s", "jdbc:ucanaccess://database/TeamMadeDB.accdb");
 	
 	// Declaration of the built-in database object
 	// that this software uses.
