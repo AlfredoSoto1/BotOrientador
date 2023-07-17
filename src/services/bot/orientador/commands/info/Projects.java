@@ -20,7 +20,7 @@ import services.bot.managers.command.CommandI;
  */
 public class Projects implements CommandI {
 
-	private static final String OPTION_DEPARTMENT_ID = "department";
+	private static final String OPTION_DEPARTMENT_ID = "select-projects";
 	private static final String OPTION_SELECTED_AIR = "air";
 	private static final String OPTION_SELECTED_NASA = "nasa";
 	private static final String OPTION_SELECTED_SEDS = "seds";

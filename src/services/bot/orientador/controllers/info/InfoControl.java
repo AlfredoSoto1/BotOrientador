@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import services.bot.adapters.ComponentAdapter;
+import services.bot.dbaccess.DBBuildingManager;
 import services.bot.orientador.commands.info.Calendar;
 import services.bot.orientador.commands.info.EOInformation;
 import services.bot.orientador.commands.info.FAQ;
@@ -32,10 +33,14 @@ public class InfoControl {
 	private ServerRules serverRules;
 	private FindBuilding findBuilding;
 	
+	private DBBuildingManager dbBuildingManager;
+	
 	private List<ComponentAdapter> componentAdapters;
 
 	public InfoControl() {
 		this.componentAdapters = new ArrayList<>();
+		
+		this.dbBuildingManager = new DBBuildingManager();
 		
 		this.faq = new FAQ();
 		this.faculty = new Faculty();
@@ -45,7 +50,7 @@ public class InfoControl {
 		this.calendar = new Calendar();
 		this.eoInfo = new EOInformation();
 		this.serverRules = new ServerRules();
-		this.findBuilding = new FindBuilding();
+		this.findBuilding = new FindBuilding(dbBuildingManager);
 		
 		componentAdapters.add(faq);
 		componentAdapters.add(faculty);
@@ -69,6 +74,7 @@ public class InfoControl {
 	 * 
 	 */
 	public void dispose() {
+		dbBuildingManager.dispose();
 		componentAdapters.clear();
 	}
 }

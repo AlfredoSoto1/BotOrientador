@@ -8,33 +8,40 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import application.database.DatabaseConnections;
+import application.records.GoogleMapPin;
 import application.utils.Pair;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import services.bot.dbaccess.DBBuildingManager;
 import services.bot.managers.command.CommandI;
+import services.bot.managers.startup.StartupI;
 
 /**
  * @author Alfredo
  *
  */
-public class FindBuilding implements CommandI {
+public class FindBuilding implements CommandI, StartupI {
 
-	private List<OptionData> options;
-	private BlockingQueue<Pair<String, SlashCommandInteractionEvent>> queuedRequests;
+	private static final String COMMAND_OPTION = "location";
 	
-	public FindBuilding() {
+	private DBBuildingManager dbBuildingManager;
+	
+	private List<OptionData> options;
+	
+	public FindBuilding(DBBuildingManager dbBuildingManager) {
 		this.options = new ArrayList<>();
-		this.queuedRequests = new LinkedBlockingQueue<>();
-
-		options.add(new OptionData(OptionType.STRING, "salon", "Dime que salón necesitas encontrar", true));
+		
+		this.dbBuildingManager = dbBuildingManager;
+		
+		options.add(new OptionData(OptionType.STRING, COMMAND_OPTION, "Dime que salón necesitas encontrar", true));
 	}
 	
 	@Override
@@ -57,97 +64,78 @@ public class FindBuilding implements CommandI {
 		return options;
 	}
 
-	public boolean hasQueuedQueries() {
-		return !queuedRequests.isEmpty();
+	@Override
+	public void onStartup(ReadyEvent event) {
+		// When bot starts, pull from database all google
+		// pins of all buildings stored in database. This is
+		// to completely avoid the access, reading and writing to
+		// database every time the command is called. This speeds
+		// up the command execution for all members
+		dbBuildingManager.loadBuildingPins();
 	}
 	
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
 		
-		// From the option box provided to the user,
-		// Obtain the Classroom given
-		OptionMapping programOption = event.getOption("salon");
+		// Obtain from executed command the values inserted as
+		// parameters when member wrote the command
+		OptionMapping commandOptions = event.getOption(COMMAND_OPTION);
 		
-		// Queue the event to later give
-		// a response to the user
-		queuedRequests.add(new Pair<>(programOption.getAsString(), event));
+		// Extract the value written and treat it as the building code
+		String buildingCode = commandOptions.getAsString();
 		
-		// Let the bot think until answer is ready to be displayed
-		event.deferReply().queue();
+		// Extract the code once formatted
+		Optional<String> code = dbBuildingManager.formatCode(buildingCode);
 		
-		// Delete the message so that it stops thinking
-		event.getHook().deleteOriginal().queue();
-	}
-
-	public void processQueuedQuery() throws SQLException {
+		// Look for the building pin inside the table with all
+		// the pins uploaded from database initially
+		Optional<GoogleMapPin> building = dbBuildingManager.getBuilding(code.get());
 		
-		String SQLCommand = "SELECT BuildingName, Links FROM GoogleMapPins WHERE code = ?";
-
-		// Prepare a new SQL statement
-		PreparedStatement stmt = DatabaseConnections.instance()
-				.getTeamMadeConnection()
-				.getConnection()
-				.prepareStatement(SQLCommand);
-
-		// Iterate over all queued requests
-		// and deliver a message to the corresponding user
-		// with the correct information
-		while (!queuedRequests.isEmpty()) {
-			Pair<?, ?> entry = queuedRequests.poll();
-
-			// Obtain the event to send the message
-			SlashCommandInteractionEvent event = (SlashCommandInteractionEvent) entry.getValue();
+		if(building.isPresent()) {
+			// If the google pin is present, reply
+			// to the member the information of where is the building located
+			// with the given building-code as target
+			event.reply(
+				event.getUser().getAsMention() + 
+				", Es posible que el salón '" + buildingCode + "' " +  
+				"se encuentre en el edificio: *" + building.get().getName() +
+				"* \n" + building.get().getLink()
+			)
+			// This message can only be seen by the one
+			// who wrote the command. This is to avoid command
+			// cluttering in the channel
+			.setEphemeral(true)
+			.queue();
 			
-			String code = formatClassroom((String) entry.getKey());
-
-			// Set value to prepared statement
-			stmt.setString(1, code.toLowerCase());
-
-			// Process results
-			ResultSet result = stmt.executeQuery();
-
-			if (result.next()) {
-				// These values are from database
-				// Use them to fill the reply message
-				String name = result.getString(1);
-				String link = result.getString(2);
-				
-				event.getHook().sendMessage(
-					event.getUser().getAsMention() + ", Es posible que el salón '" + code + "' " +
-					"se encuentre en el edificio: *" + name + "* \n" + link
-				).queue();
-			} else {
-				event.getHook().sendMessage(
-					event.getUser().getAsMention() + ", No encuentro en mi base de datos el salón '" + (String) entry.getKey() + "' :pensive:"
-				).queue();
-			}
-
-			// Free results
-			result.close();
+		} else if(code.get().contains(",")) {
+			event.reply(
+				// If the google pin is not present in the database, reply to
+				// the member other alternatives on how to fix his problem.
+				event.getUser().getAsMention() +
+				", No encuentro en mi base de datos el salón '" + buildingCode + "' :pensive:\n" + 
+				"Quizás te referías a unos de estos: __**" + code.get() + "**__"
+			)
+			// This message can only be seen by the one
+			// who wrote the command. This is to avoid command
+			// cluttering in the channel
+			.setEphemeral(true)
+			.queue();
+		} else {
+			event.reply(
+				// If the google pin is not present in the database, reply to
+				// the member other alternatives on how to fix his problem.
+				event.getUser().getAsMention() +
+				", No encuentro en mi base de datos el salón '" + buildingCode + "' :pensive:\n" + 
+				"""
+				Si entiendes que el salón que buscas está correctamente escrito, notifícale
+				a un estudiante orientador o a un Bot-Developer para que pueda atender el asunto.		
+				"""
+			)
+			// This message can only be seen by the one
+			// who wrote the command. This is to avoid command
+			// cluttering in the channel
+			.setEphemeral(true)
+			.queue();
 		}
-
-		// Free resources
-		stmt.close();
 	}
-	
-    private String formatClassroom(String salon) {
-        String internal_ = salon.replace("-", "");
-        Pattern lettersPattern = Pattern.compile("^\\D+");
-        Matcher lettersMatcher = lettersPattern.matcher(internal_);
-        Pattern numbersPattern = Pattern.compile("\\d+$");
-        Matcher numbersMatcher = numbersPattern.matcher(internal_);
-
-        if (numbersMatcher.find() && lettersMatcher.find()) {
-            String letters = lettersMatcher.group();
-            String numbers = numbersMatcher.group();
-            return letters.toUpperCase() + "-" + numbers;
-        }
-
-        if (lettersMatcher.find()) {
-            String letters = lettersMatcher.group();
-            return letters.toUpperCase();
-        }
-
-        return salon;
-    }
 }

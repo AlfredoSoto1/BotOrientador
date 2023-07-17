@@ -89,7 +89,7 @@ public class HelpMenu implements CommandI {
 			""", true);
 		
 		embedBuilder.addField(
-			"7) ``/guia_prepistica``", "Guia para prepas:straight_ruler:", true);
+			"7) ``/guia-prepistica``", "Guia para prepas:straight_ruler:", true);
 		
 		embedBuilder.addField(
 			"", "", false);
@@ -105,32 +105,32 @@ public class HelpMenu implements CommandI {
 			"", false);
 		
 		embedBuilder.addField(
-			"8) ``/salon`` ``<letra>``",
+			"8) ``/salon <letra>``",
 			"""
 			Provee información sobre el edificio donde se puede encontrar ese salón.
 			""", true);
 		
 		embedBuilder.addField(
-			"9) ``/curriculo`` ``<departamento>``",
+			"9) ``/curriculo <departamento>``",
 			"""
 			Te proveera un PDF del curriculo del departamento que tú
 			escojas **(INEL/ICOM/INSO/CIIC)**
 			""", true);
 		
 		embedBuilder.addField(
-			"10) ``/ls_projects`` `<select-projects>`",
+			"10) ``/ls_projects <select-projects>``",
 			"""
 			Provee información sobre proyectos e investigaciones relacionadas a **INEL/ICOM/INSO/CIIC**
 			""", false);
 		
 		embedBuilder.addField(
-			"11) ``/estudiantes-orientadores`` ``<departamento>``",
+			"11) ``/estudiantes-orientadores <departamento>``",
 			"""
 			Provee una lista los usernames (@'s) de los Estudiantes Orientadores de ese DEPT. Puedes escoger entre: **INEL, ICOM, INSO o CIIC**
 			""", true);
 		
 		embedBuilder.addField(
-			"12) ``/ls_student_orgs`` `<select-orgs>`",
+			"12) ``/ls_student_orgs <select-orgs>``",
 			"""
 			Provee información sobre organizaciones estudiantiles relacionadas a 
 			**INEL/ICOM/INSO/CIIC**,
@@ -138,9 +138,15 @@ public class HelpMenu implements CommandI {
 			""", false);
 		
 		embedBuilder.addField(
-			"13) ``/telephone_guide`` `<who?>`",
+			"13) ``/contact <who?>``",
 			"""
-			Mostrara una lista de todos los teléfonos que tengo disponible para ofrecerte.
+			Mostrara una lista de todos los contactos que tengo disponible para ofrecerte. Ej:
+			**Asesoría académica**,
+			**Asistencia académica**,
+			**DCSP**,
+			**Decanato de Estudiantes**,
+			**Departamento (INEL/ICOM/INSO/CIIC)**,
+			**Guardia Universitaria**
 			""", true);
 	}
 }
