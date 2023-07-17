@@ -3,18 +3,11 @@
  */
 package services.bot.orientador.commands.info;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import application.database.DatabaseConnections;
 import application.records.GoogleMapPin;
-import application.utils.Pair;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
