@@ -194,7 +194,7 @@ public class BotEntry extends ApplicationThread {
 		
 		String line = null;
 		while((line = reader.readLine()) != null)
-			tokenBuilder.append(line.replace(" ", "").replace("BOT_TOKEN=", ""));
+			tokenBuilder.append(line);
 		reader.close();
 
 		this.token = tokenBuilder.toString();

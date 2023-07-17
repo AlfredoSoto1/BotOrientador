@@ -12,6 +12,7 @@ import services.bot.orientador.commands.info.FAQ;
 import services.bot.orientador.commands.info.Faculty;
 import services.bot.orientador.commands.info.FindBuilding;
 import services.bot.orientador.commands.info.HelpMenu;
+import services.bot.orientador.commands.info.Organizations;
 import services.bot.orientador.commands.info.Projects;
 import services.bot.orientador.commands.info.ServerRules;
 import services.bot.orientador.commands.info.UprmMap;
@@ -32,6 +33,7 @@ public class InfoControl {
 	private EOInformation eoInfo;
 	private ServerRules serverRules;
 	private FindBuilding findBuilding;
+	private Organizations organizations;
 	
 	private DBBuildingManager dbBuildingManager;
 	
@@ -51,6 +53,7 @@ public class InfoControl {
 		this.eoInfo = new EOInformation();
 		this.serverRules = new ServerRules();
 		this.findBuilding = new FindBuilding(dbBuildingManager);
+		this.organizations = new Organizations();
 		
 		componentAdapters.add(faq);
 		componentAdapters.add(faculty);
@@ -61,6 +64,7 @@ public class InfoControl {
 		componentAdapters.add(eoInfo);
 		componentAdapters.add(serverRules);
 		componentAdapters.add(findBuilding);
+		componentAdapters.add(organizations);
 	}
 	
 	/**
