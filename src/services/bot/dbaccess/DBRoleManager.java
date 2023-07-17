@@ -59,29 +59,55 @@ public class DBRoleManager {
 		// For this version of the bot, the roles are going to be hard-coded
 		
 		if(record.getRoles().isPrepa())
-			server.addRoleToMember(serverMember, loadedRoles.get("prepa")).queue();
+			try {
+				server.addRoleToMember(serverMember, loadedRoles.get("prepa")).queue();
+			} catch(HierarchyException e) {
+
+			}
 		
 		if(record.getRoles().isEstudianteOrientador())
-			server.addRoleToMember(serverMember, loadedRoles.get("EstudianteOrientador")).queue();
+			try {
+				server.addRoleToMember(serverMember, loadedRoles.get("EstudianteOrientador")).queue();
+			} catch(HierarchyException e) {
+				
+			}
 
 		if(record.getRoles().isEstudianteGraduado())
-			server.addRoleToMember(serverMember, loadedRoles.get("EstudianteGraduado")).queue();
+			try {
+				server.addRoleToMember(serverMember, loadedRoles.get("EstudianteGraduado")).queue();
+			} catch(HierarchyException e) {
+				
+			}
 		
 		if(record.getRoles().isConsejeroProfesional())
-			server.addRoleToMember(serverMember, loadedRoles.get("ConsejeraProfesional")).queue();
+			try {
+				server.addRoleToMember(serverMember, loadedRoles.get("ConsejeraProfesional")).queue();
+			} catch(HierarchyException e) {
+				
+			}
 		
 		if(loadedRoles.containsKey(record.getTeam().getName()))
-			server.addRoleToMember(serverMember, loadedRoles.get(record.getTeam().getName())).queue();
+			try {
+				server.addRoleToMember(serverMember, loadedRoles.get(record.getTeam().getName())).queue();
+			} catch(HierarchyException e) {
+				
+			}
 		
 		if(loadedRoles.containsKey(record.getDepartment().getName()))
-			server.addRoleToMember(serverMember, loadedRoles.get(record.getDepartment().getName())).queue();
+			try {
+				server.addRoleToMember(serverMember, loadedRoles.get(record.getDepartment().getName())).queue();
+			} catch(HierarchyException e) {
+				
+			}
 		
+
 		try {
 			server.modifyNickname(serverMember, record.getFullName()).queue();
-			return true;
 		} catch(HierarchyException e) {
 			return false;
 		}
+		
+		return true;
 	}
 	
 	public boolean removeRoles(Guild server, String discordUser) {

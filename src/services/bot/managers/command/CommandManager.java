@@ -73,6 +73,9 @@ public class CommandManager extends ListenerAdapter implements ProgrammableAdapt
 	@Override
 	public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
 		
+		
+		// FIXME: NOT WORKING ON PRIVATE CHANNELS
+		
 		for(Role role : event.getMember().getRoles()) {
 			if(event.getName().equals("end") && role.getName().equalsIgnoreCase(BotConfigs.DEVELOPER_ROLE_NAME)) {
 				event.reply("Disconnected").queue();
