@@ -32,7 +32,7 @@ public class LoginStartup implements StartupI {
 	@Override
 	public void onStartup(ReadyEvent event) {
 		// Get the server that matches the server ID 
-		uniqueServer = event.getJDA().getGuildById(BotConfigs.SEVER_ID);
+		uniqueServer = event.getJDA().getGuildById(BotConfigs.SERVER_ID);
 		
 		if(uniqueServer == null)
 			return;

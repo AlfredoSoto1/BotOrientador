@@ -9,7 +9,9 @@ package services.bot.entry;
  */
 public interface BotConfigs {
 	
-	public long SEVER_ID = 1117522522188038224L;
+	public long SERVER_ID = 1108318200749371402L;
+	
+//	public long SEVER_ID = 1117522522188038224L;
 	
 	public String DEVELOPER_ROLE_NAME = "Bot Developer";
 	
