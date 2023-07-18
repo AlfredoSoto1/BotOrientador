@@ -22,9 +22,13 @@ public class DCSPCmd implements CommandI {
 	private boolean isGlobal;
 	private List<OptionData> options;
 	
+	public DCSPCmd() {
+		this.options = new ArrayList<>();
+		
+	}
+	
 	@Override
 	public void init(ReadyEvent event) {
-		this.options = new ArrayList<>();
 		
 	}
 

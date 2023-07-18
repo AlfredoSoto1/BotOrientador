@@ -22,9 +22,14 @@ public class UniversityGuardCmd implements CommandI {
 	private boolean isGlobal;
 	private List<OptionData> options;
 
+	public UniversityGuardCmd() {
+		this.options = new ArrayList<>();
+		
+	}
+	
 	@Override
 	public void init(ReadyEvent event) {
-		this.options = new ArrayList<>();
+
 	}
 
 	@Override

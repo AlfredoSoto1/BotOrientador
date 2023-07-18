@@ -44,27 +44,27 @@ public class OrgsCmd implements CommandI {
 	public OrgsCmd() {
 		this.options = new ArrayList<>();
 		
+		this.options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje una organización", true)
+			.addChoice("IEEE", OPTION_SELECTED_IEEE)
+			.addChoice("HKN-Eta Kappa Nu", OPTION_SELECTED_HKN)
+			.addChoice("WIE-Women in Engineering", OPTION_SELECTED_WIE)
+			.addChoice("PES-Power & Energy Society", OPTION_SELECTED_PES)
+			.addChoice("ALPHA_AST-Alpha Astrum", OPTION_SELECTED_ALPHA_AST)
+			.addChoice("EMC-Electromagnetics Council", OPTION_SELECTED_EMC)
+			.addChoice("COMP_SOC-Computer Society", OPTION_SELECTED_COMP_SOC)
+			.addChoice("CAS-Circuits And Systems Society", OPTION_SELECTED_CAS)
+			.addChoice("PHOTONICS-Photonics Society", OPTION_SELECTED_PHOTONICS)
+			.addChoice("ACM_CSE-Association for Computing Machinery", OPTION_SELECTED_ACM_CSE)
+			.addChoice("SHPE-Society of Hispanic Professional Engineers", OPTION_SELECTED_SHPE)
+			.addChoice("CASHI-Computing Alliance of Hispanic-Serving Institution", OPTION_SELECTED_CASHI)
+			.addChoice("RAS_CSS-Robotics and Automation Society & Control Systems Society", OPTION_SELECTED_RAS_CSS)
+			.addChoice("EBM-Engineering in Medicine and Biology Society UPRM Student Chapter (EMB)", OPTION_SELECTED_EBM)
+		);
 	}
 	
 	@Override
 	public void init(ReadyEvent event) {
 		
-		options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje una organización", true)
-				.addChoice("IEEE", OPTION_SELECTED_IEEE)
-				.addChoice("HKN-Eta Kappa Nu", OPTION_SELECTED_HKN)
-				.addChoice("WIE-Women in Engineering", OPTION_SELECTED_WIE)
-				.addChoice("PES-Power & Energy Society", OPTION_SELECTED_PES)
-				.addChoice("ALPHA_AST-Alpha Astrum", OPTION_SELECTED_ALPHA_AST)
-				.addChoice("EMC-Electromagnetics Council", OPTION_SELECTED_EMC)
-				.addChoice("COMP_SOC-Computer Society", OPTION_SELECTED_COMP_SOC)
-				.addChoice("CAS-Circuits And Systems Society", OPTION_SELECTED_CAS)
-				.addChoice("PHOTONICS-Photonics Society", OPTION_SELECTED_PHOTONICS)
-				.addChoice("ACM_CSE-Association for Computing Machinery", OPTION_SELECTED_ACM_CSE)
-				.addChoice("SHPE-Society of Hispanic Professional Engineers", OPTION_SELECTED_SHPE)
-				.addChoice("CASHI-Computing Alliance of Hispanic-Serving Institution", OPTION_SELECTED_CASHI)
-				.addChoice("RAS_CSS-Robotics and Automation Society & Control Systems Society", OPTION_SELECTED_RAS_CSS)
-				.addChoice("EBM-Engineering in Medicine and Biology Society UPRM Student Chapter (EMB)", OPTION_SELECTED_EBM)
-		);
 	}
 
 	@Override

@@ -22,9 +22,14 @@ public class DeanOfStudentsCmd implements CommandI {
 	private boolean isGlobal;
 	private List<OptionData> options;
 	
+	public DeanOfStudentsCmd() {
+		this.options = new ArrayList<>();
+		
+	}
+	
 	@Override
 	public void init(ReadyEvent event) {
-		this.options = new ArrayList<>();
+
 	}
 
 	@Override

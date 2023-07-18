@@ -26,12 +26,12 @@ public class MadeWeb implements CommandI {
 	
 	public MadeWeb() {
 		this.options = new ArrayList<>();
-		this.madeImage = new File("assets/images/MadeWeb.png");
 		
 	}
 	
 	@Override
 	public void init(ReadyEvent event) {
+		this.madeImage = new File("assets/images/MadeWeb.png");
 
 	}
 

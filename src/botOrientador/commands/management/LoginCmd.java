@@ -69,11 +69,16 @@ public class LoginCmd implements CommandI, ButtonI, ModalI, MessengerI {
 		this.loginPrompts = new HashMap<>();
 
 		this.loginManager = new DBLoginManager();
+		
+		this.options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "Choose a command", true)
+			.addChoice("log-me", LOGIN_ME_ID)
+			.addChoice("log-me-off", LOG_ME_OFF_ID)
+			.addChoice("log-off-all", LOG_OFF_ALL_ID)
+		);
 	}
 	
 	@Override
 	public void init(ReadyEvent event) {
-
 		// Get the server that matches the server ID 
 		uniqueServer = event.getJDA().getGuildById(BotConfigs.SERVER_ID);
 		// extract the roles from the server
@@ -81,12 +86,6 @@ public class LoginCmd implements CommandI, ButtonI, ModalI, MessengerI {
 		// Prepare all the roles stored in database to be
 		// later used in this log-in modal
 		loginManager.prepareRolesFromDatabase();
-		
-		options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "Choose a command", true)
-			.addChoice("log-me", LOGIN_ME_ID)
-			.addChoice("log-me-off", LOG_ME_OFF_ID)
-			.addChoice("log-off-all", LOG_OFF_ALL_ID)
-		);
 	}
 
 	@Override

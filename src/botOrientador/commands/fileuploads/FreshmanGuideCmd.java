@@ -24,11 +24,15 @@ public class FreshmanGuideCmd implements CommandI {
 	private boolean isGlobal;
 	private List<OptionData> options;
 	
-	@Override
-	public void init(ReadyEvent event) {
+	public FreshmanGuideCmd() {
 		this.options = new ArrayList<>();
 		// Load the curriculums
 		this.guiaPrepistica = new File("assets/pdfs/guia-prepistica/GuiaPrepistica.pdf");
+	}
+	
+	@Override
+	public void init(ReadyEvent event) {
+
 	}
 
 	@Override

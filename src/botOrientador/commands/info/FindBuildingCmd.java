@@ -32,6 +32,8 @@ public class FindBuildingCmd implements CommandI {
 	public FindBuildingCmd() {
 		this.options = new ArrayList<>();
 		this.dbBuildingManager = new DBBuildingManager();
+		
+		this.options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "Dime que salón necesitas encontrar", true));
 	}
 	
 	@Override
@@ -42,8 +44,6 @@ public class FindBuildingCmd implements CommandI {
 		// database every time the command is called. This speeds
 		// up the command execution for all members
 		dbBuildingManager.loadBuildingPins();
-		
-		options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "Dime que salón necesitas encontrar", true));
 	}
 
 	@Override

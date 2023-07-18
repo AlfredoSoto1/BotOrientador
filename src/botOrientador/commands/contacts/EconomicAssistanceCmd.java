@@ -22,9 +22,13 @@ public class EconomicAssistanceCmd implements CommandI {
 	private boolean isGlobal;
 	private List<OptionData> options;
 	
+	public EconomicAssistanceCmd() {
+		this.options = new ArrayList<>();
+		
+	}
+	
 	@Override
 	public void init(ReadyEvent event) {
-		this.options = new ArrayList<>();
 		
 	}
 

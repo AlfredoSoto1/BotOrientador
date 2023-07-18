@@ -38,16 +38,17 @@ public class ProfanityCmd implements CommandI {
 	public ProfanityCmd(DBRoleManager roleManager) {
 		this.roleManager = roleManager;
 		this.options = new ArrayList<>();
+		
+		options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "Choose a command", true)
+				.addChoice("add", ADD_PROFANITY_ID)
+		);
+		
+		options.add(new OptionData(OptionType.STRING, COMMAND_WORD_STATEMENT, "add a word", false));
 	}
 	
 	@Override
 	public void init(ReadyEvent event) {
 		
-		options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "Choose a command", true)
-			.addChoice("add", ADD_PROFANITY_ID)
-		);
-		
-		options.add(new OptionData(OptionType.STRING, COMMAND_WORD_STATEMENT, "add a word", false));
 	}
 
 	@Override

@@ -53,6 +53,9 @@ public class CommandManager implements ProgrammableAdapter<CommandI> {
 				server.upsertCommand("end", "Shutdown").queue();
 			}
 		}
+		
+		for(CommandI command : commands)
+			command.init(event);
 	}
 
 	@Override
@@ -75,6 +78,8 @@ public class CommandManager implements ProgrammableAdapter<CommandI> {
 		for(Role role : event.getMember().getRoles()) {
 			if(event.getName().equals("end") && role.getName().equalsIgnoreCase(BotConfigs.DEVELOPER_ROLE_NAME)) {
 				event.reply("Disconnected").queue();
+				
+				// Disconnect bot and make this command a server-management
 				return;
 			}
 		}

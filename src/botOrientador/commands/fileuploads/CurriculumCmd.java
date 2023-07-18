@@ -53,8 +53,7 @@ public class CurriculumCmd implements CommandI {
 	private boolean isGlobal;
 	private List<OptionData> options;
 	
-	@Override
-	public void init(ReadyEvent event) {
+	public CurriculumCmd() {
 		this.options = new ArrayList<>();
 		
 		// Load the curriculums
@@ -64,11 +63,16 @@ public class CurriculumCmd implements CommandI {
 		this.CIICcurriculum = new File("assets/pdfs/curriculos/CIIC.pdf");
 		
 		options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje un programa de estudio", true)
-			.addChoice("INEL - Electrical Engineering", OPTION_CHOICE_INEL)
-			.addChoice("ICOM - Computer Engineering", OPTION_CHOICE_ICOM)
-			.addChoice("INSO - Software Engineering", OPTION_CHOICE_INSO)
-			.addChoice("CIIC - Computer Science & Engineering", OPTION_CHOICE_CIIC)
+				.addChoice("INEL - Electrical Engineering", OPTION_CHOICE_INEL)
+				.addChoice("ICOM - Computer Engineering", OPTION_CHOICE_ICOM)
+				.addChoice("INSO - Software Engineering", OPTION_CHOICE_INSO)
+				.addChoice("CIIC - Computer Science & Engineering", OPTION_CHOICE_CIIC)
 		);
+	}
+	
+	@Override
+	public void init(ReadyEvent event) {
+		
 	}
 
 	@Override

@@ -39,12 +39,7 @@ public class ProjectsCmd implements CommandI {
 	public ProjectsCmd() {
 		this.options = new ArrayList<>();
 		
-	}
-	
-	@Override
-	public void init(ReadyEvent event) {
-		
-		options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje un departamento", true)
+		this.options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje un departamento", true)
 			.addChoice("RUM-Air", OPTION_SELECTED_AIR)
 			.addChoice("NASA RASC-AL", OPTION_SELECTED_NASA)
 			.addChoice("RUMarino", OPTION_SELECTED_RUMARINO)
@@ -55,6 +50,11 @@ public class ProjectsCmd implements CommandI {
 			.addChoice("The Solar Engineering Research and Racing Team", OPTION_SELECTED_SOLAR)
 			.addChoice("Student for the Exploration and Development of Space", OPTION_SELECTED_SEDS)
 		);
+	}
+	
+	@Override
+	public void init(ReadyEvent event) {
+		
 	}
 
 	@Override

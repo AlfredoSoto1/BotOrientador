@@ -29,14 +29,19 @@ public class AcademicAdvisoryCmd implements CommandI {
 	private boolean isGlobal;
 	private List<OptionData> options;
 	
-	@Override
-	public void init(ReadyEvent event) {
+	public AcademicAdvisoryCmd() {
 		this.options = new ArrayList<>();
 		
 		options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje un departamento", true)
-			.addChoice("INEL/ICOM - Department", OPTION_SELECTED_INEL_ICOM)
-			.addChoice("INSO/CIIC - Department", OPTION_SELECTED_INSO_CIIC)
+				.addChoice("INEL/ICOM - Department", OPTION_SELECTED_INEL_ICOM)
+				.addChoice("INSO/CIIC - Department", OPTION_SELECTED_INSO_CIIC)
 		);
+		
+	}
+	
+	@Override
+	public void init(ReadyEvent event) {
+	
 	}
 
 	@Override

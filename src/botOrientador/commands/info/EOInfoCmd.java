@@ -41,11 +41,6 @@ public class EOInfoCmd implements CommandI {
 	public EOInfoCmd() {
 		this.options = new ArrayList<>();
 		
-	}
-	
-	@Override
-	public void init(ReadyEvent event) {
-		
 		options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje un departamento", true)
 			.addChoice("INEL - Electrical Engineering", INEL_ID)
 			.addChoice("ICOM - Computer Engineering", ICOM_ID)
@@ -54,6 +49,10 @@ public class EOInfoCmd implements CommandI {
 			.addChoice("ININ - Ingeniería Industrial", ININ_ID)
 			.addChoice("GERH - Gerencia", GERH_ID)
 		);
+	}
+	
+	@Override
+	public void init(ReadyEvent event) {
 	}
 
 	@Override

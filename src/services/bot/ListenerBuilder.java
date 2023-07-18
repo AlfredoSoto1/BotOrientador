@@ -61,6 +61,9 @@ public class ListenerBuilder extends ListenerAdapter {
 		this.programmableAdapters.put(MessengerI.class, messageManager);
 	}
 	
+	/**
+	 * @param components
+	 */
 	public void addComponents(Collection<ComponentAdapter> components) {
 		for(ComponentAdapter component : components) {
 			if(component instanceof ModalI modal)

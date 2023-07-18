@@ -32,15 +32,15 @@ public class FacultyCmd implements CommandI {
 	public FacultyCmd() {
 		this.options = new ArrayList<>();
 		
+		options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje un departamento", true)
+				.addChoice("INEL/ICOM - Department", OPTION_SELECTED_INEL_ICOM)
+				.addChoice("INSO/CIIC - Department", OPTION_SELECTED_INSO_CIIC)
+		);
 	}
 	
 	@Override
 	public void init(ReadyEvent event) {
 		
-		options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje un departamento", true)
-				.addChoice("INEL/ICOM - Department", OPTION_SELECTED_INEL_ICOM)
-				.addChoice("INSO/CIIC - Department", OPTION_SELECTED_INSO_CIIC)
-		);
 	}
 
 	@Override
@@ -75,6 +75,7 @@ public class FacultyCmd implements CommandI {
 
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
+		
 		OptionMapping programOption = event.getOption(COMMAND_LABEL);
 		
 		EmbedBuilder embedBuilder = null;
