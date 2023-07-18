@@ -11,14 +11,13 @@ import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import services.bot.dbaccess.DBProfanityManager;
-import services.bot.managers.message.MessengerI;
-import services.bot.managers.startup.StartupI;
+import services.bot.managers.MessengerI;
 
 /**
  * @author Alfredo
  *
  */
-public class ProfanityFilter implements MessengerI, StartupI {
+public class ProfanityFilter implements MessengerI {
 
 	private static final String[] warningMessages = {
 			"@member dijo una profanidad, borré el mensaje...",
@@ -35,16 +34,16 @@ public class ProfanityFilter implements MessengerI, StartupI {
 
 	private DBProfanityManager profanityManager;
 	
-	public ProfanityFilter(DBProfanityManager profanityManager) {
+	public ProfanityFilter() {
 		this.random = new Random();
 		this.badWords = new HashSet<>();
-		
+
 		this.profanityManager = new DBProfanityManager();
 	}
 
 	@Override
-	public void onStartup(ReadyEvent event) {
-		badWords = profanityManager.pullProfanities();
+	public void init(ReadyEvent event) {
+		this.badWords = profanityManager.pullProfanities();
 	}
 	
 	@Override
@@ -55,14 +54,13 @@ public class ProfanityFilter implements MessengerI, StartupI {
 	@Override
 	@Deprecated
 	public void memberJoin(GuildMemberJoinEvent event) {
-		// TODO Auto-generated method stub
+
 	}
 
 	@Override
 	public void messageReceived(MessageReceivedEvent event) {
 		if(event.getAuthor().isBot())
 			return;
-		
 		String message = event.getMessage().getContentRaw();
 		
 		String[] words = message.split(" ");
@@ -70,12 +68,10 @@ public class ProfanityFilter implements MessengerI, StartupI {
 		for(String word : words) {
 			if(badWords.contains(word.toLowerCase())) {
 				// contains bad word... remove the message and reply to the user
-				
 				String messageToSend = warningMessages[random.nextInt(0, warningMessages.length)]
 						.replace("@member", event.getAuthor().getAsMention());
 				
 				event.getMessage().delete().queue();
-				
 				event.getMessage().reply(messageToSend).queue();
 			}
 		}
