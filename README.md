@@ -22,9 +22,9 @@ in a database using Microsoft Access files with secure password and encryption.
 The current version for this software is: v2023.3-Beta
 * Leader board and points
 * voting polls
+* some games.. not to fancy
 * test software with real users
 * debug software with all test users
-* do final touches and deploy
 * present to team
 
 ## Getting Started
