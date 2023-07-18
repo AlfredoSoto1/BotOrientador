@@ -11,6 +11,7 @@ import java.util.Optional;
 import application.core.ApplicationThread;
 import services.bot.GenericBot;
 import services.bot.ListenerBuilder;
+import services.bot.controllers.ContactsControl;
 import services.bot.controllers.FileUploadControl;
 import services.bot.controllers.InfoControl;
 import services.bot.controllers.LinksControl;
@@ -28,6 +29,7 @@ public class BotOrientador extends ApplicationThread {
 	
 	private InfoControl infoControl;
 	private LinksControl linkControl;
+	private ContactsControl contactsControl;
 	private ManagementControl managementControl;
 	private FileUploadControl fileUploadControl;
 	
@@ -58,11 +60,13 @@ public class BotOrientador extends ApplicationThread {
 		
 		this.infoControl = new InfoControl();
 		this.linkControl = new LinksControl();
-		this.managementControl = new ManagementControl();
+		this.contactsControl = new ContactsControl();
 		this.fileUploadControl = new FileUploadControl();
+		this.managementControl = new ManagementControl(discordBot);
 
 		botListener.addComponents(infoControl.getComponents());
 		botListener.addComponents(linkControl.getComponents());
+		botListener.addComponents(contactsControl.getComponents());
 		botListener.addComponents(managementControl.getComponents());
 		botListener.addComponents(fileUploadControl.getComponents());
 		
@@ -90,6 +94,7 @@ public class BotOrientador extends ApplicationThread {
 		
 		this.infoControl.dispose();
 		this.linkControl.dispose();
+		this.contactsControl.dispose();
 		this.managementControl.dispose();
 		this.fileUploadControl.dispose();
 	}

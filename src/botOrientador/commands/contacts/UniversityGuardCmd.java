@@ -134,7 +134,7 @@ public class UniversityGuardCmd implements CommandI {
 			https://www.uprm.edu/transitoyvigilancia/
 			""", true);
 		
-		event.replyEmbeds(embedBuilder.build()).queue();
+		event.replyEmbeds(embedBuilder.build()).setEphemeral(event.isFromGuild()).queue();
 	}
 
 }

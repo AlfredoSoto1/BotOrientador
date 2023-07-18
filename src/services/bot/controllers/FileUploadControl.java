@@ -28,6 +28,9 @@ public class FileUploadControl {
 		this.curriculum = new CurriculumCmd();
 		this.freshmanGuide = new FreshmanGuideCmd();
 		
+		this.curriculum.setGlobal(true);
+		this.freshmanGuide.setGlobal(true);
+		
 		componentAdapters.add(curriculum);
 		componentAdapters.add(freshmanGuide);
 	}

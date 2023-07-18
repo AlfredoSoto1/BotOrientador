@@ -111,7 +111,7 @@ public class EconomicAssistanceCmd implements CommandI {
 			https://www.uprm.edu/asistenciaeconomica/fechas-importantes/
 			""", true);
 		
-		event.replyEmbeds(embedBuilder.build()).queue();
+		event.replyEmbeds(embedBuilder.build()).setEphemeral(event.isFromGuild()).queue();
 	}
 
 }

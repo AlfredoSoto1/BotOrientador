@@ -162,7 +162,7 @@ public class FAQCmd implements CommandI {
 			Colegio2019
 			""", true);
 
-		event.replyEmbeds(embedBuider.build()).queue();
+		event.replyEmbeds(embedBuider.build()).setEphemeral(event.isFromGuild()).queue();
 	}
 
 }

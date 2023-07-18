@@ -107,7 +107,7 @@ public class FindBuildingCmd implements CommandI {
 			// This message can only be seen by the one
 			// who wrote the command. This is to avoid command
 			// cluttering in the channel
-			.setEphemeral(true)
+			.setEphemeral(event.isFromGuild())
 			.queue();
 			
 		} else if(code.get().contains(",")) {
@@ -121,7 +121,7 @@ public class FindBuildingCmd implements CommandI {
 			// This message can only be seen by the one
 			// who wrote the command. This is to avoid command
 			// cluttering in the channel
-			.setEphemeral(true)
+			.setEphemeral(event.isFromGuild())
 			.queue();
 		} else {
 			event.reply(
@@ -137,7 +137,7 @@ public class FindBuildingCmd implements CommandI {
 			// This message can only be seen by the one
 			// who wrote the command. This is to avoid command
 			// cluttering in the channel
-			.setEphemeral(true)
+			.setEphemeral(event.isFromGuild())
 			.queue();
 		}
 	}

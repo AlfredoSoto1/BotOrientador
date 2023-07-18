@@ -174,7 +174,7 @@ public class DCSPCmd implements CommandI {
 			• Sistema San Juan Capestrano: 787-760-0222
 			""", false);
 		
-		event.replyEmbeds(embedBuilder.build()).queue();
+		event.replyEmbeds(embedBuilder.build()).setEphemeral(event.isFromGuild()).queue();
 	}
 
 }

@@ -35,9 +35,9 @@ public class ProfanityCmd implements CommandI {
 	private boolean isGlobal;
 	private List<OptionData> options;
 	
-	public ProfanityCmd(DBRoleManager roleManager) {
-		this.roleManager = roleManager;
+	public ProfanityCmd() {
 		this.options = new ArrayList<>();
+		this.roleManager = new DBRoleManager();
 		
 		options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "Choose a command", true)
 				.addChoice("add", ADD_PROFANITY_ID)

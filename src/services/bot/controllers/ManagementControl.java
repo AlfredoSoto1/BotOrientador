@@ -7,11 +7,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import botOrientador.commands.management.BotServiceCmd;
 import botOrientador.commands.management.LoginCmd;
 import botOrientador.commands.management.ProfanityCmd;
+import services.bot.GenericBot;
 import services.bot.adapters.ComponentAdapter;
-import services.bot.dbaccess.DBRoleManager;
-import services.bot.orientador.controllers.profanity.ProfanityFilter;
 
 /**
  * @author Alfredo
@@ -19,11 +19,10 @@ import services.bot.orientador.controllers.profanity.ProfanityFilter;
  */
 public class ManagementControl {
 
-	private DBRoleManager roleManager;
-	
 	private LoginCmd loginCmd;
 	private ProfanityFilter filter;
 	private ProfanityCmd profanityCmd;
+	private BotServiceCmd serviceCmd;
 	
 	private List<ComponentAdapter> componentAdapters;
 	
@@ -32,19 +31,20 @@ public class ManagementControl {
 	 * content. With this instance, we can load up all
 	 * the components to the corresponding listener adapters
 	 */
-	public ManagementControl() {
+	public ManagementControl(GenericBot genericBot) {
 		this.componentAdapters = new ArrayList<>();
-		
-		this.roleManager = new DBRoleManager();
 		
 		// Create and prepare the profanity command
 		// This is only accessible for bot developers
-		this.loginCmd = new LoginCmd(roleManager);
+		this.loginCmd = new LoginCmd();
 		this.filter = new ProfanityFilter();
-		this.profanityCmd = new ProfanityCmd(roleManager);
+		this.profanityCmd = new ProfanityCmd();
 
-		componentAdapters.add(loginCmd);
+		this.serviceCmd = new BotServiceCmd(genericBot);
+
 		componentAdapters.add(filter);
+		componentAdapters.add(loginCmd);
+		componentAdapters.add(serviceCmd);
 		componentAdapters.add(profanityCmd);
 	}
 	
@@ -60,7 +60,7 @@ public class ManagementControl {
 	 */
 	public void dispose() {
 		loginCmd.dispose();
-		roleManager.dispose();
+		serviceCmd.dispose();
 		profanityCmd.dispose();
 		componentAdapters.clear();
 	}

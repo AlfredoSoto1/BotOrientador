@@ -43,6 +43,13 @@ public class ContactsControl {
 		this.academicAdvisory = new AcademicAdvisoryCmd();
 		this.economicAssistance = new EconomicAssistanceCmd();
 		
+		this.dcsp.setGlobal(true);
+		this.department.setGlobal(true);
+		this.deanOfStudents.setGlobal(true);
+		this.universityGuard.setGlobal(true);
+		this.academicAdvisory.setGlobal(true);
+		this.economicAssistance.setGlobal(true);
+		
 		componentAdapters.add(dcsp);
 		componentAdapters.add(department);
 		componentAdapters.add(academicAdvisory);

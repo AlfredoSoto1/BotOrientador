@@ -73,7 +73,7 @@ public class UprmMapCmd implements CommandI {
 			"Mapa:",
 			"https://www.uprm.edu/portales/mapa/", false);
 		
-		event.replyEmbeds(embedBuider.build()).queue();
+		event.replyEmbeds(embedBuider.build()).setEphemeral(event.isFromGuild()).queue();
 	}
 
 }

@@ -130,7 +130,7 @@ public class EOInfoCmd implements CommandI {
 				"""
 				No hay estudiantes orientadores de ese departamento que escogiste. :pensive:
 				"""
-			).queue();
+			).setEphemeral(event.isFromGuild()).queue();
 			return;
 		}
 		
@@ -149,7 +149,7 @@ public class EOInfoCmd implements CommandI {
 			);
 		}
 		
-		event.replyEmbeds(embedBuider.build()).queue();
+		event.replyEmbeds(embedBuider.build()).setEphemeral(event.isFromGuild()).queue();
 	}
 	
 	private List<MemberRecord> fetch(String department) {

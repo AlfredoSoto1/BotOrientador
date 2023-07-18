@@ -24,14 +24,14 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.modals.Modal;
+import services.bot.controllers.LoginButton;
+import services.bot.controllers.LoginModalPrompt;
 import services.bot.dbaccess.DBLoginManager;
 import services.bot.dbaccess.DBRoleManager;
 import services.bot.managers.ButtonI;
 import services.bot.managers.CommandI;
 import services.bot.managers.MessengerI;
 import services.bot.managers.ModalI;
-import services.bot.orientador.controllers.login.LoginButton;
-import services.bot.orientador.controllers.login.LoginModalPrompt;
 import services.bot.orientador.messages.SpecialTokens;
 import services.bot.orientador.messages.WelcomeMessages;
 
@@ -61,13 +61,12 @@ public class LoginCmd implements CommandI, ButtonI, ModalI, MessengerI {
 	private DBRoleManager roleManager;
 	private DBLoginManager loginManager;
 	
-	public LoginCmd(DBRoleManager roleManager) {
-		this.roleManager = roleManager;
-
+	public LoginCmd() {
 		this.options = new ArrayList<>();
 		this.loginButtons = new HashMap<>();
 		this.loginPrompts = new HashMap<>();
 
+		this.roleManager = new DBRoleManager();
 		this.loginManager = new DBLoginManager();
 		
 		this.options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "Choose a command", true)
@@ -128,6 +127,9 @@ public class LoginCmd implements CommandI, ButtonI, ModalI, MessengerI {
 		options.clear();
 		loginButtons.clear();
 		loginPrompts.clear();
+		
+		roleManager.dispose();
+		loginManager.dispose();
 	}
 
 	@Override

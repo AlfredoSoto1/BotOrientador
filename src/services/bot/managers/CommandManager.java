@@ -3,9 +3,7 @@ package services.bot.managers;
 import java.util.ArrayList;
 import java.util.List;
 
-import botOrientador.entry.BotConfigs;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.Event;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
@@ -33,24 +31,31 @@ public class CommandManager implements ProgrammableAdapter<CommandI> {
 
 //		List<Command> allCommands = event.getJDA().retrieveCommands().complete();
 //        for (Command command : allCommands) {
-//        	System.out.println(command.getName());
-//        	command.delete().queue();
+//        	System.out.println("Global command: " + command.getName());
+////        	command.delete().queue();
 //        }
         
 		for(Guild server : event.getJDA().getGuilds()) {
 			
 			for(CommandI command : commands) {
-				// Create the commands that will be visible
-				// for the server the bot is connected currently
-				server.upsertCommand(
+				if(command.isGlobal()) {
+					// Upsert the command if and only if the command is also global
+					event.getJDA().upsertCommand(
+						command.getCommandName(), 
+						command.getDescription()
+					)
+					.addOptions(command.getOptions())
+					.queue();
+				} else {
+					// Create the commands that will be visible
+					// for the server the bot is connected currently
+					server.upsertCommand(
 						command.getCommandName(),
 						command.getDescription()
-						)
-				.addOptions(command.getOptions())
-				.queue();
-				
-				// Create a shutdown command for every server
-				server.upsertCommand("end", "Shutdown").queue();
+					)
+					.addOptions(command.getOptions())
+					.queue();
+				}
 			}
 		}
 		
@@ -73,17 +78,6 @@ public class CommandManager implements ProgrammableAdapter<CommandI> {
 	@Override
 	public void onInteraction(Event genericEvent) {
 		SlashCommandInteractionEvent event = (SlashCommandInteractionEvent) genericEvent;
-		// FIXME: NOT WORKING ON PRIVATE CHANNELS
-
-		for(Role role : event.getMember().getRoles()) {
-			if(event.getName().equals("end") && role.getName().equalsIgnoreCase(BotConfigs.DEVELOPER_ROLE_NAME)) {
-				event.reply("Disconnected").queue();
-				
-				// Disconnect bot and make this command a server-management
-				return;
-			}
-		}
-		
 		// Do linear search to find which command is currently being called
 		for(CommandI command : commands)
 			if(command.getCommandName().equals(event.getName())) {

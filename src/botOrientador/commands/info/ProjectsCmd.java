@@ -127,7 +127,7 @@ public class ProjectsCmd implements CommandI {
 			return;
 		}
 		
-		event.replyEmbeds(embedBuilder.build()).queue();
+		event.replyEmbeds(embedBuilder.build()).setEphemeral(event.isFromGuild()).queue();
 	}
 	
 	private EmbedBuilder createAIREmbed() {

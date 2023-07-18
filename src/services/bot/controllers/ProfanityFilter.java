@@ -1,7 +1,7 @@
 /**
  * 
  */
-package services.bot.orientador.controllers.profanity;
+package services.bot.controllers;
 
 import java.util.HashSet;
 import java.util.Random;

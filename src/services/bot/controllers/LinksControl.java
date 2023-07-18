@@ -26,6 +26,9 @@ public class LinksControl {
 		this.madeWeb = new MadeWeb();
 		this.usefulLinks = new LinksCmd();
 		
+		this.madeWeb.setGlobal(true);
+		this.usefulLinks.setGlobal(true);
+
 		componentAdapters.add(madeWeb);
 		componentAdapters.add(usefulLinks);
 	}

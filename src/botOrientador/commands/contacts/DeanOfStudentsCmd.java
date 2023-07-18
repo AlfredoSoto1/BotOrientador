@@ -137,7 +137,7 @@ public class DeanOfStudentsCmd implements CommandI {
 			• Facebook - Decanato De Estudiantes Uprm | https://www.facebook.com/decano.estudiantes/
 			""", false);
 
-		event.replyEmbeds(embedBuilder.build()).queue();
+		event.replyEmbeds(embedBuilder.build()).setEphemeral(event.isFromGuild()).queue();
 	}
 
 }

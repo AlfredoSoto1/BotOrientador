@@ -50,6 +50,13 @@ public class InfoControl {
 		this.findBuilding = new FindBuildingCmd();
 		this.organizations = new OrgsCmd();
 		
+		this.faq.setGlobal(true);
+		this.faculty.setGlobal(true);
+		this.uprmMap.setGlobal(true);
+		this.helpMenu.setGlobal(true);
+		this.calendar.setGlobal(true);
+		this.findBuilding.setGlobal(true);
+		
 		componentAdapters.add(faq);
 		componentAdapters.add(faculty);
 		componentAdapters.add(uprmMap);
