@@ -14,13 +14,14 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import services.bot.dbaccess.DBBuildingManager;
+import services.bot.managers.BotEventHandler;
 import services.bot.managers.CommandI;
 
 /**
  * @author Alfredo
  *
  */
-public class FindBuildingCmd implements CommandI {
+public class FindBuildingCmd extends BotEventHandler implements CommandI {
 
 	private static final String COMMAND_LABEL = "location";
 	
@@ -45,6 +46,17 @@ public class FindBuildingCmd implements CommandI {
 		// up the command execution for all members
 		dbBuildingManager.loadBuildingPins();
 	}
+	
+	@Override
+	public void dispose() {
+		if(!BotEventHandler.validateEventDispose(this.getClass()))
+			return;
+		
+		options.clear();
+		dbBuildingManager.dispose();
+		
+		BotEventHandler.registerDisposeEvent(this);
+	}
 
 	@Override
 	public boolean isGlobal() {
@@ -54,12 +66,6 @@ public class FindBuildingCmd implements CommandI {
 	@Override
 	public void setGlobal(boolean isGlobal) {
 		this.isGlobal = isGlobal;
-	}
-	
-	@Override
-	public void dispose() {
-		options.clear();
-		dbBuildingManager.dispose();
 	}
 	
 	@Override

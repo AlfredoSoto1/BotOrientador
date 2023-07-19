@@ -11,25 +11,36 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import services.bot.managers.BotEventHandler;
 import services.bot.managers.CommandI;
 
 /**
  * @author Alfredo
  *
  */
-public class UprmMapCmd implements CommandI {
+public class UprmMapCmd extends BotEventHandler implements CommandI {
 
 	private boolean isGlobal;
 	private List<OptionData> options;
 	
 	public UprmMapCmd() {
 		this.options = new ArrayList<>();
+	}
+	
+	@Override
+	@Deprecated
+	public void init(ReadyEvent event) {
 		
 	}
 	
 	@Override
-	public void init(ReadyEvent event) {
+	public void dispose() {
+		if(!BotEventHandler.validateEventDispose(this.getClass()))
+			return;
 		
+		options.clear();
+		
+		BotEventHandler.registerDisposeEvent(this);
 	}
 
 	@Override
@@ -40,11 +51,6 @@ public class UprmMapCmd implements CommandI {
 	@Override
 	public void setGlobal(boolean isGlobal) {
 		this.isGlobal = isGlobal;
-	}
-	
-	@Override
-	public void dispose() {
-		options.clear();
 	}
 	
 	@Override

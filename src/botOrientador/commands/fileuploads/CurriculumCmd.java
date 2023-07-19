@@ -13,13 +13,14 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.utils.FileUpload;
+import services.bot.managers.BotEventHandler;
 import services.bot.managers.CommandI;
 
 /**
  * @author Alfredo
  *
  */
-public class CurriculumCmd implements CommandI {
+public class CurriculumCmd extends BotEventHandler implements CommandI {
 
 	private static final String COMMAND_LABEL = "program";
 	
@@ -71,8 +72,19 @@ public class CurriculumCmd implements CommandI {
 	}
 	
 	@Override
+	@Deprecated
 	public void init(ReadyEvent event) {
 		
+	}
+	
+	@Override
+	public void dispose() {
+		if(!BotEventHandler.validateEventDispose(this.getClass()))
+			return;
+		
+		options.clear();
+		
+		BotEventHandler.registerDisposeEvent(this);
 	}
 
 	@Override
@@ -83,11 +95,6 @@ public class CurriculumCmd implements CommandI {
 	@Override
 	public void setGlobal(boolean isGlobal) {
 		this.isGlobal = isGlobal;
-	}
-	
-	@Override
-	public void dispose() {
-		options.clear();
 	}
 	
 	@Override

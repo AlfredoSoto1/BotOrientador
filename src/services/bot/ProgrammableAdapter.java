@@ -1,7 +1,7 @@
 /**
  * 
  */
-package services.bot.adapters;
+package services.bot;
 
 import net.dv8tion.jda.api.events.Event;
 import net.dv8tion.jda.api.events.session.ReadyEvent;

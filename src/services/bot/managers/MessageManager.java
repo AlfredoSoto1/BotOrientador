@@ -10,7 +10,7 @@ import net.dv8tion.jda.api.events.Event;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
-import services.bot.adapters.ProgrammableAdapter;
+import services.bot.ProgrammableAdapter;
 
 /**
  * @author Alfredo
@@ -27,13 +27,15 @@ public class MessageManager implements ProgrammableAdapter<MessengerI> {
 	@Override
 	public void init(ReadyEvent event) {
 		for(MessengerI messenger : messengers)
-			messenger.init(event);
+			if(messenger instanceof BotEventHandler handler)
+				handler.init(event);
 	}
 
 	@Override
 	public void dispose() {
 		for(MessengerI messenger : messengers)
-			messenger.dispose();
+			if(messenger instanceof BotEventHandler handler)
+				handler.dispose();
 		messengers.clear();
 	}
 

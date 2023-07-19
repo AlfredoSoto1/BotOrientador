@@ -6,27 +6,13 @@ package services.bot.managers;
 import java.util.List;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import services.bot.adapters.ComponentAdapter;
 
 /**
  * @author Alfredo
  *
  */
-public interface CommandI extends ComponentAdapter {
-	
-	/**
-	 * Initiates the command
-	 * 
-	 * @param event
-	 */
-	public void init(ReadyEvent event);
-	
-	/**
-	 * Disposes everything that composes the command
-	 */
-	public void dispose();
+public interface CommandI {
 	
 	/**
 	 * @return true if the command is global

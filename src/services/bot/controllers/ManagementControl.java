@@ -7,11 +7,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import botOrientador.behavior.ProfanityFilter;
 import botOrientador.commands.management.BotServiceCmd;
 import botOrientador.commands.management.LoginCmd;
 import botOrientador.commands.management.ProfanityCmd;
 import services.bot.GenericBot;
-import services.bot.adapters.ComponentAdapter;
+import services.bot.managers.BotEventHandler;
 
 /**
  * @author Alfredo
@@ -24,7 +25,7 @@ public class ManagementControl {
 	private ProfanityCmd profanityCmd;
 	private BotServiceCmd serviceCmd;
 	
-	private List<ComponentAdapter> componentAdapters;
+	private List<BotEventHandler> componentAdapters;
 	
 	/**
 	 * Creates and initializes all the profanity related
@@ -51,7 +52,7 @@ public class ManagementControl {
 	/**
 	 * @return Collection of component adapters
 	 */
-	public Collection<ComponentAdapter> getComponents() {
+	public Collection<BotEventHandler> getComponents() {
 		return componentAdapters;
 	}
 	

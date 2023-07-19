@@ -11,6 +11,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import application.records.MemberRecord;
+import botOrientador.behavior.LoginButton;
+import botOrientador.behavior.LoginModalPrompt;
 import botOrientador.entry.BotConfigs;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
@@ -24,10 +26,9 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.modals.Modal;
-import services.bot.controllers.LoginButton;
-import services.bot.controllers.LoginModalPrompt;
 import services.bot.dbaccess.DBLoginManager;
 import services.bot.dbaccess.DBRoleManager;
+import services.bot.managers.BotEventHandler;
 import services.bot.managers.ButtonI;
 import services.bot.managers.CommandI;
 import services.bot.managers.MessengerI;
@@ -39,7 +40,7 @@ import services.bot.orientador.messages.WelcomeMessages;
  * @author Alfredo
  *
  */
-public class LoginCmd implements CommandI, ButtonI, ModalI, MessengerI {
+public class LoginCmd extends BotEventHandler implements CommandI, ButtonI, ModalI, MessengerI {
 
 	// Defines the option for the slash command
 	// that will be used for entering the other commands
@@ -78,6 +79,8 @@ public class LoginCmd implements CommandI, ButtonI, ModalI, MessengerI {
 	
 	@Override
 	public void init(ReadyEvent event) {
+		if(!BotEventHandler.validateEventInit(this.getClass()))
+			return;
 		// Get the server that matches the server ID 
 		uniqueServer = event.getJDA().getGuildById(BotConfigs.SERVER_ID);
 		// extract the roles from the server
@@ -85,6 +88,24 @@ public class LoginCmd implements CommandI, ButtonI, ModalI, MessengerI {
 		// Prepare all the roles stored in database to be
 		// later used in this log-in modal
 		loginManager.prepareRolesFromDatabase();
+		
+		// Register this method
+		BotEventHandler.registerInitEvent(this);
+	}
+	
+	@Override
+	public void dispose() {
+		if(!BotEventHandler.validateEventDispose(this.getClass()))
+			return;
+		
+		options.clear();
+		loginButtons.clear();
+		loginPrompts.clear();
+		
+		roleManager.dispose();
+		loginManager.dispose();
+		
+		BotEventHandler.registerDisposeEvent(this);
 	}
 
 	@Override
@@ -120,16 +141,6 @@ public class LoginCmd implements CommandI, ButtonI, ModalI, MessengerI {
 	@Override
 	public Set<String> getButtonIDs() {
 		return loginButtons.keySet();
-	}
-	
-	@Override
-	public void dispose() {
-		options.clear();
-		loginButtons.clear();
-		loginPrompts.clear();
-		
-		roleManager.dispose();
-		loginManager.dispose();
 	}
 
 	@Override

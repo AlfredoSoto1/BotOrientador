@@ -6,13 +6,12 @@ package services.bot.managers;
 import java.util.Set;
 
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
-import services.bot.adapters.ComponentAdapter;
 
 /**
  * @author Alfredo
  *
  */
-public interface ModalI extends ComponentAdapter {
+public interface ModalI {
 	
 	/**
 	 * Returns the modal ID

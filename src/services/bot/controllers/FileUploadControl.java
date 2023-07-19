@@ -9,7 +9,7 @@ import java.util.List;
 
 import botOrientador.commands.fileuploads.CurriculumCmd;
 import botOrientador.commands.fileuploads.FreshmanGuideCmd;
-import services.bot.adapters.ComponentAdapter;
+import services.bot.managers.BotEventHandler;
 
 /**
  * @author Alfredo
@@ -20,7 +20,7 @@ public class FileUploadControl {
 	private CurriculumCmd curriculum;
 	private FreshmanGuideCmd freshmanGuide;
 	
-	private List<ComponentAdapter> componentAdapters;
+	private List<BotEventHandler> componentAdapters;
 
 	public FileUploadControl() {
 		this.componentAdapters = new ArrayList<>();
@@ -38,7 +38,7 @@ public class FileUploadControl {
 	/**
 	 * @return Collection of component adapters
 	 */
-	public Collection<ComponentAdapter> getComponents() {
+	public Collection<BotEventHandler> getComponents() {
 		return componentAdapters;
 	}
 	

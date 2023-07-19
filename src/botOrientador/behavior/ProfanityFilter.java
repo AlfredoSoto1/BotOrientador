@@ -1,7 +1,7 @@
 /**
  * 
  */
-package services.bot.controllers;
+package botOrientador.behavior;
 
 import java.util.HashSet;
 import java.util.Random;
@@ -11,13 +11,14 @@ import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import services.bot.dbaccess.DBProfanityManager;
+import services.bot.managers.BotEventHandler;
 import services.bot.managers.MessengerI;
 
 /**
  * @author Alfredo
  *
  */
-public class ProfanityFilter implements MessengerI {
+public class ProfanityFilter extends BotEventHandler implements MessengerI {
 
 	private static final String[] warningMessages = {
 			"@member dijo una profanidad, borré el mensaje...",
@@ -43,12 +44,23 @@ public class ProfanityFilter implements MessengerI {
 
 	@Override
 	public void init(ReadyEvent event) {
+		if(!BotEventHandler.validateEventInit(this.getClass()))
+			return;
+		
 		this.badWords = profanityManager.pullProfanities();
+		
+		// Register this method
+		BotEventHandler.registerInitEvent(this);
 	}
 	
 	@Override
 	public void dispose() {
+		if(!BotEventHandler.validateEventDispose(this.getClass()))
+			return;
+		
 		badWords.clear();
+		
+		BotEventHandler.registerDisposeEvent(this);
 	}
 	
 	@Override

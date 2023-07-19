@@ -14,7 +14,7 @@ import botOrientador.commands.info.OrgsCmd;
 import botOrientador.commands.info.ProjectsCmd;
 import botOrientador.commands.info.RulesCmd;
 import botOrientador.commands.info.UprmMapCmd;
-import services.bot.adapters.ComponentAdapter;
+import services.bot.managers.BotEventHandler;
 
 /**
  * 
@@ -34,7 +34,7 @@ public class InfoControl {
 	private FindBuildingCmd findBuilding;
 	private OrgsCmd organizations;
 	
-	private List<ComponentAdapter> componentAdapters;
+	private List<BotEventHandler> componentAdapters;
 
 	public InfoControl() {
 		this.componentAdapters = new ArrayList<>();
@@ -72,7 +72,7 @@ public class InfoControl {
 	/**
 	 * @return Collection of component adapters
 	 */
-	public Collection<ComponentAdapter> getComponents() {
+	public Collection<BotEventHandler> getComponents() {
 		return componentAdapters;
 	}
 	

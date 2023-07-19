@@ -6,13 +6,12 @@ package services.bot.managers;
 import java.util.Set;
 
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import services.bot.adapters.ComponentAdapter;
 
 /**
  * @author Alfredo
  *
  */
-public interface ButtonI extends ComponentAdapter {
+public interface ButtonI {
 	
 	/**
 	 * Return a set containing all the buttonIDs

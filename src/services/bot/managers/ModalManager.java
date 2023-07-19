@@ -9,7 +9,7 @@ import java.util.List;
 import net.dv8tion.jda.api.events.Event;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
-import services.bot.adapters.ProgrammableAdapter;
+import services.bot.ProgrammableAdapter;
 
 /**
  * @author Alfredo
@@ -26,13 +26,16 @@ public class ModalManager implements ProgrammableAdapter<ModalI> {
 	
 	@Override
 	public void init(ReadyEvent event) {
-
+		for(ModalI modal : modals)
+			if(modal instanceof BotEventHandler handler)
+				handler.init(event);
 	}
 
 	@Override
 	public void dispose() {
 		for(ModalI modal : modals)
-			modal.dispose();
+			if(modal instanceof BotEventHandler handler)
+				handler.dispose();
 		modals.clear();
 	}
 

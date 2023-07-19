@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import botOrientador.commands.links.MadeWeb;
 import botOrientador.commands.links.LinksCmd;
-import services.bot.adapters.ComponentAdapter;
+import botOrientador.commands.links.MadeWebCmd;
+import services.bot.managers.BotEventHandler;
 
 /**
  * 
@@ -15,15 +15,15 @@ import services.bot.adapters.ComponentAdapter;
  */
 public class LinksControl {
 	
-	private MadeWeb madeWeb;
+	private MadeWebCmd madeWeb;
 	private LinksCmd usefulLinks;
 	
-	private List<ComponentAdapter> componentAdapters;
+	private List<BotEventHandler> componentAdapters;
 
 	public LinksControl() {
 		this.componentAdapters = new ArrayList<>();
 		
-		this.madeWeb = new MadeWeb();
+		this.madeWeb = new MadeWebCmd();
 		this.usefulLinks = new LinksCmd();
 		
 		this.madeWeb.setGlobal(true);
@@ -36,7 +36,7 @@ public class LinksControl {
 	/**
 	 * @return Collection of component adapters
 	 */
-	public Collection<ComponentAdapter> getComponents() {
+	public Collection<BotEventHandler> getComponents() {
 		return componentAdapters;
 	}
 	

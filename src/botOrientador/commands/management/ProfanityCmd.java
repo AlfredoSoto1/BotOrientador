@@ -14,13 +14,14 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import services.bot.dbaccess.DBProfanityManager;
 import services.bot.dbaccess.DBRoleManager;
+import services.bot.managers.BotEventHandler;
 import services.bot.managers.CommandI;
 
 /**
  * @author Alfredo
  *
  */
-public class ProfanityCmd implements CommandI {
+public class ProfanityCmd extends BotEventHandler implements CommandI {
 
 	// Defines the option for the slash command
 	// that will be used for entering the other commands
@@ -47,8 +48,9 @@ public class ProfanityCmd implements CommandI {
 	}
 	
 	@Override
+	@Deprecated
 	public void init(ReadyEvent event) {
-		
+		// No need to register this method since nothing is running here
 	}
 
 	@Override

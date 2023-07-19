@@ -13,7 +13,7 @@ import botOrientador.commands.contacts.DeanOfStudentsCmd;
 import botOrientador.commands.contacts.DepartmentCmd;
 import botOrientador.commands.contacts.EconomicAssistanceCmd;
 import botOrientador.commands.contacts.UniversityGuardCmd;
-import services.bot.adapters.ComponentAdapter;
+import services.bot.managers.BotEventHandler;
 
 /**
  * @author Alfredo
@@ -28,7 +28,7 @@ public class ContactsControl {
 	private AcademicAdvisoryCmd academicAdvisory;
 	private EconomicAssistanceCmd economicAssistance;
 	
-	private List<ComponentAdapter> componentAdapters;
+	private List<BotEventHandler> componentAdapters;
 	
 	/**
 	 * 
@@ -61,7 +61,7 @@ public class ContactsControl {
 	/**
 	 * @return Collection of component adapters
 	 */
-	public Collection<ComponentAdapter> getComponents() {
+	public Collection<BotEventHandler> getComponents() {
 		return componentAdapters;
 	}
 	

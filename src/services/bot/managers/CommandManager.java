@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.Event;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
-import services.bot.adapters.ProgrammableAdapter;
+import services.bot.ProgrammableAdapter;
 
 /**
  * 
@@ -60,13 +60,15 @@ public class CommandManager implements ProgrammableAdapter<CommandI> {
 		}
 		
 		for(CommandI command : commands)
-			command.init(event);
+			if(command instanceof BotEventHandler handler)
+				handler.init(event);
 	}
 
 	@Override
 	public void dispose() {
 		for(CommandI command : commands)
-			command.dispose();
+			if(command instanceof BotEventHandler handler)
+				handler.dispose();
 		commands.clear();
 	}
 	

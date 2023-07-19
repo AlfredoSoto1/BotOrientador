@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import services.bot.managers.BotEventHandler;
 import services.bot.managers.CommandI;
 import services.bot.orientador.roles.TeamRole;
 
@@ -24,7 +25,7 @@ import services.bot.orientador.roles.TeamRole;
  * @author Alfredo
  *
  */
-public class EOInfoCmd implements CommandI {
+public class EOInfoCmd extends BotEventHandler implements CommandI {
 
 	private static final String COMMAND_LABEL = "department";
 	
@@ -52,6 +53,7 @@ public class EOInfoCmd implements CommandI {
 	}
 	
 	@Override
+	@Deprecated
 	public void init(ReadyEvent event) {
 	}
 
@@ -67,7 +69,12 @@ public class EOInfoCmd implements CommandI {
 	
 	@Override
 	public void dispose() {
+		if(!BotEventHandler.validateEventDispose(this.getClass()))
+			return;
+
 		options.clear();
+		
+		BotEventHandler.registerDisposeEvent(this);
 	}
 	
 	@Override

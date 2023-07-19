@@ -14,13 +14,14 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import services.bot.GenericBot;
 import services.bot.dbaccess.DBRoleManager;
+import services.bot.managers.BotEventHandler;
 import services.bot.managers.CommandI;
 
 /**
  * @author Alfredo
  *
  */
-public class BotServiceCmd implements CommandI {
+public class BotServiceCmd extends BotEventHandler implements CommandI {
 
 	private static final String COMMAND_LABEL = "service";
 
@@ -43,13 +44,18 @@ public class BotServiceCmd implements CommandI {
 	}
 	
 	@Override
+	@Deprecated
 	public void init(ReadyEvent event) {
 
 	}
 	
 	@Override
 	public void dispose() {
+		if(!BotEventHandler.validateEventDispose(this.getClass()))
+			return;
 		options.clear();
+		
+		BotEventHandler.registerDisposeEvent(this);
 	}
 	
 	@Override

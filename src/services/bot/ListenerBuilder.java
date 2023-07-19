@@ -14,8 +14,7 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import services.bot.adapters.ComponentAdapter;
-import services.bot.adapters.ProgrammableAdapter;
+import services.bot.managers.BotEventHandler;
 import services.bot.managers.ButtonI;
 import services.bot.managers.ButtonManager;
 import services.bot.managers.CommandI;
@@ -64,15 +63,15 @@ public class ListenerBuilder extends ListenerAdapter {
 	/**
 	 * @param components
 	 */
-	public void addComponents(Collection<ComponentAdapter> components) {
-		for(ComponentAdapter component : components) {
-			if(component instanceof ModalI modal)
+	public void addComponents(Collection<BotEventHandler> components) {
+		for(BotEventHandler handler : components) {
+			if(handler instanceof ModalI modal)
 				this.modalManager.add(modal);
-			if(component instanceof ButtonI button)
+			if(handler instanceof ButtonI button)
 				this.buttonManager.add(button);
-			if(component instanceof CommandI command)
+			if(handler instanceof CommandI command)
 				this.commandManager.add(command);
-			if(component instanceof MessengerI message)
+			if(handler instanceof MessengerI message)
 				this.messageManager.add(message);
 		}
 	}

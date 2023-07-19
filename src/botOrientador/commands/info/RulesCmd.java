@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import services.bot.managers.BotEventHandler;
 import services.bot.managers.CommandI;
 
 /**
@@ -15,7 +16,7 @@ import services.bot.managers.CommandI;
  * @author Alfredo
  *
  */
-public class RulesCmd implements CommandI {
+public class RulesCmd extends BotEventHandler implements CommandI {
 
 	private boolean isGlobal;
 	private List<OptionData> options;
@@ -26,8 +27,19 @@ public class RulesCmd implements CommandI {
 	}
 	
 	@Override
+	@Deprecated
 	public void init(ReadyEvent event) {
 		
+	}
+	
+	@Override
+	public void dispose() {
+		if(!BotEventHandler.validateEventDispose(this.getClass()))
+			return;
+		
+		options.clear();
+		
+		BotEventHandler.registerDisposeEvent(this);
 	}
 
 	@Override
@@ -38,11 +50,6 @@ public class RulesCmd implements CommandI {
 	@Override
 	public void setGlobal(boolean isGlobal) {
 		this.isGlobal = isGlobal;
-	}
-	
-	@Override
-	public void dispose() {
-		options.clear();
 	}
 	
 	@Override

@@ -11,28 +11,39 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.utils.FileUpload;
+import services.bot.managers.BotEventHandler;
 import services.bot.managers.CommandI;
 
 /**
  * @author Alfredo
  *
  */
-public class MadeWeb implements CommandI {
+public class MadeWebCmd extends BotEventHandler implements CommandI {
 
 	private File madeImage;
 	
 	private boolean isGlobal;
 	private List<OptionData> options;
 	
-	public MadeWeb() {
+	public MadeWebCmd() {
 		this.options = new ArrayList<>();
-		
+		this.madeImage = new File("assets/images/MadeWeb.png");
 	}
 	
 	@Override
+	@Deprecated
 	public void init(ReadyEvent event) {
-		this.madeImage = new File("assets/images/MadeWeb.png");
 
+	}
+	
+	@Override
+	public void dispose() {
+		if(!BotEventHandler.validateEventDispose(this.getClass()))
+			return;
+		
+		options.clear();
+		
+		BotEventHandler.registerDisposeEvent(this);
 	}
 
 	@Override
@@ -43,11 +54,6 @@ public class MadeWeb implements CommandI {
 	@Override
 	public void setGlobal(boolean isGlobal) {
 		this.isGlobal = isGlobal;
-	}
-	
-	@Override
-	public void dispose() {
-		options.clear();
 	}
 	
 	@Override

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package services.bot.controllers;
+package botOrientador.behavior;
 
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.ActionRow;

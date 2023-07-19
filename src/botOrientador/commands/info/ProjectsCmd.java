@@ -13,13 +13,14 @@ import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import services.bot.managers.BotEventHandler;
 import services.bot.managers.CommandI;
 
 /**
  * @author Alfredo
  *
  */
-public class ProjectsCmd implements CommandI {
+public class ProjectsCmd extends BotEventHandler implements CommandI {
 
 	private static final String COMMAND_LABEL = "select-projects";
 	
@@ -53,8 +54,19 @@ public class ProjectsCmd implements CommandI {
 	}
 	
 	@Override
+	@Deprecated
 	public void init(ReadyEvent event) {
 		
+	}
+	
+	@Override
+	public void dispose() {
+		if(!BotEventHandler.validateEventDispose(this.getClass()))
+			return;
+		
+		options.clear();
+		
+		BotEventHandler.registerDisposeEvent(this);
 	}
 
 	@Override
@@ -65,11 +77,6 @@ public class ProjectsCmd implements CommandI {
 	@Override
 	public void setGlobal(boolean isGlobal) {
 		this.isGlobal = isGlobal;
-	}
-	
-	@Override
-	public void dispose() {
-		options.clear();
 	}
 	
 	@Override
