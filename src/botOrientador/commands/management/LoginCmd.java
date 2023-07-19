@@ -150,7 +150,7 @@ public class LoginCmd extends BotEventHandler implements CommandI, ButtonI, Moda
 		event.getUser().openPrivateChannel().queue(this::receiveMemberPrivately);
 	}
 	
-	public void receiveMemberPrivately(PrivateChannel channel) {
+	private void receiveMemberPrivately(PrivateChannel channel) {
 		
 		// Prepare the welcome message string
 		String welcomeMessage = WelcomeMessages.WELCOME_MESSAGE;
@@ -189,6 +189,7 @@ public class LoginCmd extends BotEventHandler implements CommandI, ButtonI, Moda
 	@Override
 	public void modalResults(ModalInteractionEvent event) {
 		
+		
 		// Find on database the student
 		Optional<MemberRecord> member = loginManager.getStudent(loginPrompts.get(event.getModalId()).getUsernameValue(event));
 		
@@ -201,6 +202,8 @@ public class LoginCmd extends BotEventHandler implements CommandI, ButtonI, Moda
 			return;
 		}
 		
+		System.out.println("entered: " + member.get().getFullName());
+
 		// Test if user has already logged in
 		if(member.get().isLogged()) {
 			// Send message of already logged into server
