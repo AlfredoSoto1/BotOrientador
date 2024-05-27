@@ -1,0 +1,125 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>BotOrientador</groupId>
+	<artifactId>BotOrientador</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<dependencies>
+		
+		<!-- Discord Dependencies -->
+		<dependency>
+			<groupId>net.dv8tion</groupId>
+			<artifactId>JDA</artifactId>
+			<version>5.0.0-beta.13</version>
+			<!-- Optionally disable audio natives to reduce jar size by
+			excluding `opus-java`
+		    <exclusions>
+		        <exclusion>
+		            <groupId>club.minnced</groupId>
+		            <artifactId>opus-java</artifactId>
+		        </exclusion>
+		    </exclusions>
+		    -->
+		</dependency>
+
+		<!-- Application Dependencies -->
+
+		<!-- Dark theme -->
+		<dependency>
+			<groupId>com.formdev</groupId>
+			<artifactId>flatlaf</artifactId>
+			<version>3.3</version>
+		</dependency>
+
+		<!-- Reflection for finding classes under packages -->
+		<dependency>
+			<groupId>org.reflections</groupId>
+			<artifactId>reflections</artifactId>
+			<version>0.9.12</version>
+		</dependency>
+
+		<!-- Add Jackson dependencies for JSON processing -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.13.1</version>
+		</dependency>
+		
+		<!-- Database Dependencies -->
+
+		<!-- For accessing a database we have two options, either a postgres database or a Microsoft access DB file -->
+		
+		<!-- PostgreSQL -->
+		<dependency>
+		    <groupId>org.postgresql</groupId>
+		    <artifactId>postgresql</artifactId>
+		    <version>42.3.10</version>
+		</dependency>
+
+		<!-- UCanAccess | it needs all the dependencies bellow in order to work -->
+		<dependency>
+			<groupId>net.sf.ucanaccess</groupId>
+			<artifactId>ucanaccess</artifactId>
+			<version>5.0.1</version>
+		</dependency>
+
+		<!-- Apache Commons Lang -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.12.0</version>
+		</dependency>
+
+		<!-- Apache Commons Logging -->
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>1.2</version>
+		</dependency>
+
+		<!-- HSQLDB -->
+		<dependency>
+			<groupId>org.hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+			<version>2.6.1</version>
+		</dependency>
+
+		<!-- Apache POI for reading and writing Excel files -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>5.2.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>5.2.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml-schemas</artifactId>
+			<version>4.1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.xmlbeans</groupId>
+			<artifactId>xmlbeans</artifactId>
+			<version>5.2.0</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<sourceDirectory>src</sourceDirectory>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
+				<configuration>
+					<release>20</release>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

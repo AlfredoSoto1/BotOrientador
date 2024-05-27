@@ -1,5 +1,5 @@
-package client.accounts;
-
+package server.crud.connections;
+@Deprecated
 public class Credentials {
 	
 	private String user;

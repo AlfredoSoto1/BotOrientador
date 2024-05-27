@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import application.database.DatabaseConnections.ConnectableDatabase;
-import client.accounts.Credentials;
+import server.crud.connections.Credentials;
 
 /**
  * 

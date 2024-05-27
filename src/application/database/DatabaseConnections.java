@@ -5,12 +5,13 @@ package application.database;
 
 import java.sql.SQLException;
 
-import client.accounts.Credentials;
+import server.crud.connections.Credentials;
 
 /**
  * @author Alfredo
  *
  */
+@Deprecated
 public final class DatabaseConnections {
 
 	/**
