@@ -19,7 +19,6 @@ import services.bot.controllers.ManagementControl;
 
 /**
  * @author Alfredo
- *
  */
 public class BotOrientador extends ApplicationThread {
 
