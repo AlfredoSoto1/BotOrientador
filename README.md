@@ -143,6 +143,6 @@ and test the bot in a custom server.
   others for testing and approving.
 
 ## License
- Copyright © 2023 Team-Made and Developer team. All rights reserved.
+ Copyright © 2024 INEL/ICOM-INSO/CIIC Developer team. All rights reserved.
 
  Prior version link: https://github.com/CarolinaZRM/bot-discord
