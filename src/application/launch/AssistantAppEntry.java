@@ -24,6 +24,7 @@ public class AssistantAppEntry extends Application {
 	
 	public static final String DEVELOPER_ROLE_NAME = "BotDeveloper"; // Reserved name for JUST bot developers
 	
+	
 	private ECEAssistant INEL_ICOM_ASSISTANT;
 	
 	/**
