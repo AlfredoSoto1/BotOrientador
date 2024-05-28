@@ -1,4 +1,4 @@
-# Bot-Orientador Official Software Documentation
+# Smart-Assistant Software Guide
 This is a new re-built version from the original Discord bot for Team-Made's Developer team.
 This software is a fully autonomous Discord bot for managing incomming students main Discord server.
 Assigning roles, replying, deleting and running commands as its main feature holding its main data
@@ -143,6 +143,6 @@ and test the bot in a custom server.
   others for testing and approving.
 
 ## License
- Copyright © 2024 INEL/ICOM-INSO/CIIC Developer team. All rights reserved.
+ Copyright © 2024 Discord Assistant Developer team. All rights reserved.
 
  Prior version link: https://github.com/CarolinaZRM/bot-discord
