@@ -10,7 +10,7 @@ import net.dv8tion.jda.api.events.Event;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
-import services.bot.ProgrammableAdapter;
+import services.bot.core.ProgrammableAdapter;
 
 /**
  * @author Alfredo

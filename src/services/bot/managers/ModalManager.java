@@ -9,7 +9,7 @@ import java.util.List;
 import net.dv8tion.jda.api.events.Event;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
-import services.bot.ProgrammableAdapter;
+import services.bot.core.ProgrammableAdapter;
 
 /**
  * @author Alfredo

@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.events.Event;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.interactions.commands.Command;
-import services.bot.ProgrammableAdapter;
+import services.bot.core.ProgrammableAdapter;
 
 /**
  * 
@@ -21,7 +21,6 @@ public class CommandManager implements ProgrammableAdapter<CommandI> {
 	
 	public CommandManager() {
 		this.commands = new ArrayList<>();
-		
 	}
 	
 	@Override

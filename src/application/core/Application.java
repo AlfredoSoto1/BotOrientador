@@ -3,96 +3,60 @@
  */
 package application.core;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * @author Alfredo
- *
+ * 
  */
-public final class Application {
+public abstract class Application {
 	
-	private static Application instance = null;
-	
-	public static final void create(RunnableApplication runnableApplication) {
-		if(instance != null)
-			throw new IllegalAccessError("Application has already initiated");
-		// Create instance of application
-		instance = new Application(runnableApplication);
-
-		// Initiate application
-		instance.runnableApplication.init();
-	}
-	
-	public static final void start() {
-		if(instance == null)
-			throw new IllegalAccessError("There is no application to start");
-		// Start running application
-		instance.runnableApplication.run();
-		
-		// Free all the application data
-		instance.runnableApplication.dispose();
-		
-		// Free the application
-		instance.free();
-	}
-	
-	public static final Application instance() {
-		return instance;
-	}
-	
-	/*
-	 * 
-	 * Private members
-	 * 
-	 */
-	private List<ApplicationThread> localThreads;
-	
-	private RunnableApplication runnableApplication;
-	
-	private Application(RunnableApplication runnableApplication) {
-		this.runnableApplication = runnableApplication;
-		
-		// Initiate private members
-		this.localThreads = new ArrayList<>();
-	}
-	
-	private void free() {
-		// Free from memory all threads
-		localThreads.clear();
-	}
-
+	private static Application singleton;
 	
 	/**
-	 * Creates a thread for this application
-	 * 
-	 * @param dispatchedApp
+	 * Initiates the application
 	 */
-	public void createThread(ApplicationThread dispatchedApp) {
-		localThreads.add(dispatchedApp);
+	public abstract void start();
+
+	/**
+	 * Shuts down the application
+	 * 
+	 * This gets called manually or ends with unexpected behavior
+	 */
+	public abstract void shutdown();
+	
+	/**
+	 * @return application singleton
+	 */
+	public static Application instance() {
+		return singleton;
 	}
 	
 	/**
-	 * Build the threads created dispatched to application
+	 * Starts running the given application
 	 * 
+	 * @param application
 	 */
-	public void build() {
-		// Start the local threads
-		for (ApplicationThread applicationThread : localThreads) {
-			applicationThread.init();
-			applicationThread.start();
+	public static void run(Application application) {
+		if(Application.singleton != null)
+			throw new RuntimeException("Application already exists");
+		Application.singleton = application;
+
+		// Initialize application
+		Application.singleton.initialize();
+	}
+	
+	private void initialize() {
+		// Print to the console the application
+		if(this.getClass().isAnnotationPresent(RegisterApplication.class)) {
+			RegisterApplication applicationRegistration = this.getClass().getAnnotation(RegisterApplication.class);
+			System.out.println("[Application] : " + applicationRegistration.name() + " | version: " + applicationRegistration.version());
 		}
 		
-		// Join each thread and free the memory
-		for (ApplicationThread applicationThread : localThreads) {
-			try {
-				applicationThread.join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} finally {
-				// Always dispose thread
-				applicationThread.dispose();
-			}
-		}
+		// Initiates the application content
+		System.out.println("[Application] : STARTED");
+		this.start();
+		
+		// Shuts down the application
+		this.shutdown();
+		System.out.println("[Application] : ENDED");
 	}
 }
