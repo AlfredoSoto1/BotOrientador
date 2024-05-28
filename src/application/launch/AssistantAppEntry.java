@@ -58,7 +58,6 @@ public class AssistantAppEntry extends Application {
 		INEL_ICOM_ASSISTANT.start();
 	}
 	
-	// This cannot be called yet
 	@Override
 	public void shutdown() {
 		DatabaseConnectionManager.dispose();
