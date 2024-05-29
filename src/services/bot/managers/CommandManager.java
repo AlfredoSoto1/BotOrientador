@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.events.Event;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.interactions.commands.Command;
+import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import services.bot.core.ProgrammableAdapter;
 
 /**
@@ -26,15 +27,7 @@ public class CommandManager implements ProgrammableAdapter<CommandI> {
 	@Override
 	public void init(ReadyEvent event) {
 		
-		// For all the servers the bot has joined,
-		// prepare the slash commands required
-
-//		List<Command> allCommands = event.getJDA().retrieveCommands().complete();
-//        for (Command command : allCommands) {
-//        	System.out.println("Global command: " + command.getName());
-////        	command.delete().queue();
-//        }
-        
+		// TODO: Validate this
 		for(Guild server : event.getJDA().getGuilds()) {
 			
 			for(CommandI command : commands) {
@@ -50,10 +43,9 @@ public class CommandManager implements ProgrammableAdapter<CommandI> {
 					// Create the commands that will be visible
 					// for the server the bot is connected currently
 					server.upsertCommand(
-						command.getCommandName(),
-						command.getDescription()
+						Commands.slash(command.getCommandName(), command.getDescription())
+						.addOptions(command.getOptions())
 					)
-					.addOptions(command.getOptions())
 					.queue();
 				}
 			}

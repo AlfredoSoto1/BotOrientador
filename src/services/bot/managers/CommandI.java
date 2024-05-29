@@ -20,30 +20,26 @@ public interface CommandI {
 	public boolean isGlobal();
 
 	/**
-	 * Changes the command status of being
-	 * attached to a guild to now being global
+	 * Changes the command status of being attached
+	 * to a guild to now being global this means,
+	 * that you can DM the bot and use such command.
+	 * 
 	 * @param isGlobal
 	 */
 	public void setGlobal(boolean isGlobal);
 	
 	/**
-	 * Returns the name of the command
-	 * 
-	 * @return String name
+	 * @return name of the command
 	 */
 	public String getCommandName();
 	
 	/**
-	 * Returns the description of the command
-	 * 
-	 * @return String description
+	 * @return description of the command
 	 */
 	public String getDescription();
 	
 	/**
-	 * Returns the options attached to the command
-	 * 
-	 * @return List of options
+	 * @return List of options that the command has
 	 */
 	public List<OptionData> getOptions();
 	

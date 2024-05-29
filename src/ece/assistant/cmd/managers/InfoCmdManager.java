@@ -4,16 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import ece.assistant.cmd.info.CalendarCmd;
-import ece.assistant.cmd.info.EOInfoCmd;
 import ece.assistant.cmd.info.FAQCmd;
 import ece.assistant.cmd.info.FacultyCmd;
-import ece.assistant.cmd.info.FindBuildingCmd;
-import ece.assistant.cmd.info.HelpCmd;
-import ece.assistant.cmd.info.OrgsCmd;
-import ece.assistant.cmd.info.ProjectsCmd;
-import ece.assistant.cmd.info.RulesCmd;
-import ece.assistant.cmd.info.UprmMapCmd;
 import services.bot.managers.BotEventHandler;
 
 /**
@@ -23,24 +15,13 @@ import services.bot.managers.BotEventHandler;
  */
 public class InfoCmdManager {
 	
-	private FAQCmd faq;
-	private FacultyCmd faculty;
-	private UprmMapCmd uprmMap;
-	private ProjectsCmd projects;
-	private HelpCmd helpMenu;
-	private CalendarCmd calendar;
-	private EOInfoCmd eoInfo;
-	private RulesCmd serverRules;
-	private FindBuildingCmd findBuilding;
-	private OrgsCmd organizations;
-	
 	private List<BotEventHandler> componentAdapters;
 
 	public InfoCmdManager() {
 		this.componentAdapters = new ArrayList<>();
 		
-		this.faq = new FAQCmd();
-//		this.faculty = new FacultyCmd();
+		FAQCmd faq = new FAQCmd();
+		FacultyCmd faculty = new FacultyCmd();
 //		this.uprmMap = new UprmMapCmd();
 //		this.projects = new ProjectsCmd();
 //		this.helpMenu = new HelpCmd();
@@ -50,23 +31,23 @@ public class InfoCmdManager {
 //		this.findBuilding = new FindBuildingCmd();
 //		this.organizations = new OrgsCmd();
 		
-		this.faq.setGlobal(true);
-		this.faculty.setGlobal(true);
-		this.uprmMap.setGlobal(true);
-		this.helpMenu.setGlobal(true);
-		this.calendar.setGlobal(true);
-		this.findBuilding.setGlobal(true);
+		faq.setGlobal(false);
+		faculty.setGlobal(false);
+//		uprmMap.setGlobal(true);
+//		helpMenu.setGlobal(true);
+//		calendar.setGlobal(true);
+//		findBuilding.setGlobal(true);
 		
 		componentAdapters.add(faq);
 		componentAdapters.add(faculty);
-		componentAdapters.add(uprmMap);
-		componentAdapters.add(projects);
-		componentAdapters.add(helpMenu);
-		componentAdapters.add(calendar);
-		componentAdapters.add(eoInfo);
-		componentAdapters.add(serverRules);
-		componentAdapters.add(findBuilding);
-		componentAdapters.add(organizations);
+//		componentAdapters.add(uprmMap);
+//		componentAdapters.add(projects);
+//		componentAdapters.add(helpMenu);
+//		componentAdapters.add(calendar);
+//		componentAdapters.add(eoInfo);
+//		componentAdapters.add(serverRules);
+//		componentAdapters.add(findBuilding);
+//		componentAdapters.add(organizations);
 	}
 	
 	/**
@@ -80,6 +61,8 @@ public class InfoCmdManager {
 	 * 
 	 */
 	public void dispose() {
+		for(BotEventHandler handler : componentAdapters)
+			handler.dispose();
 		componentAdapters.clear();
 	}
 }

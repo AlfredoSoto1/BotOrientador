@@ -17,9 +17,6 @@ import services.bot.managers.BotEventHandler;
  */
 public class ModeratorCmdManager {
 
-//	private LoginCmd loginCmd;
-	private BotServiceCmd serviceCmd;
-	
 	private List<BotEventHandler> componentAdapters;
 	
 	/**
@@ -29,11 +26,14 @@ public class ModeratorCmdManager {
 	public ModeratorCmdManager(BotApplication bot) {
 		this.componentAdapters = new ArrayList<>();
 		
-//		this.loginCmd = new LoginCmd();
-		this.serviceCmd = new BotServiceCmd(bot);
-
-//		componentAdapters.add(loginCmd);
-		componentAdapters.add(serviceCmd);
+		/*
+		 * Create the commands, preferably load them
+		 * directly from a json file and upsert them to the jda.
+		 */
+//		componentAdapters.add(new LoginCmd());
+		componentAdapters.add(new BotServiceCmd(bot));
+		
+		// Do a registration server command
 	}
 	
 	/**
@@ -47,8 +47,8 @@ public class ModeratorCmdManager {
 	 * Disposes all content from 'this' instance
 	 */
 	public void dispose() {
-//		loginCmd.dispose();
-		serviceCmd.dispose();
+		for(BotEventHandler handler : componentAdapters)
+			handler.dispose();
 		componentAdapters.clear();
 	}
 }

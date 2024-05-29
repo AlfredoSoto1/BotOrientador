@@ -21,26 +21,20 @@ import services.bot.managers.CommandI;
 public class FAQCmd extends BotEventHandler implements CommandI {
 
 	private boolean isGlobal;
-	private List<OptionData> options;
 	
 	public FAQCmd() {
-		this.options = new ArrayList<>();
+
 	}
 	
 	@Override
 	@Deprecated
 	public void init(ReadyEvent event) {
-		
+	
 	}
 	
 	@Override
 	public void dispose() {
-		if(!BotEventHandler.validateEventDispose(this.getClass()))
-			return;
 		
-		options.clear();
-		
-		BotEventHandler.registerDisposeEvent(this);
 	}
 
 	@Override
@@ -65,11 +59,15 @@ public class FAQCmd extends BotEventHandler implements CommandI {
 
 	@Override
 	public List<OptionData> getOptions() {
-		return options;
+		return new ArrayList<>();
 	}
 	
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
+		/*
+		 * Call the FAQ DAO here to access DB to read the info and place it into an embed
+		 */
+		
 		EmbedBuilder embedBuider = new EmbedBuilder();
 
 		embedBuider.setColor(new Color(70, 150, 90));
@@ -171,5 +169,4 @@ public class FAQCmd extends BotEventHandler implements CommandI {
 
 		event.replyEmbeds(embedBuider.build()).setEphemeral(event.isFromGuild()).queue();
 	}
-
 }

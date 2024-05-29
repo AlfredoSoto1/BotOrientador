@@ -83,6 +83,10 @@ public class FacultyCmd extends BotEventHandler implements CommandI {
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
 		
+		/*
+		 * Check if the request is done in a specific server
+		 */
+		
 		OptionMapping programOption = event.getOption(COMMAND_LABEL);
 		
 		EmbedBuilder embedBuilder = null;

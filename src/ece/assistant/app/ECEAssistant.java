@@ -33,22 +33,22 @@ public class ECEAssistant extends BotApplication {
 
 	@Override
 	protected void prepareListeners(ListenerManager listener) {
-//		this.infoControl = new InfoCmdManager();
+		this.infoControl = new InfoCmdManager();
 //		this.linkControl = new LinksCmdManager();
 //		this.contactsControl = new ContactsCmdManager();
 //		this.fileUploadControl = new FileCmdManager();
 		this.moderatorManager = new ModeratorCmdManager(this);
 
-//		listener.addComponents(infoControl.getComponents());
+		listener.upsertComponents(infoControl.getComponents());
 //		listener.addComponents(linkControl.getComponents());
 //		listener.addComponents(contactsControl.getComponents());
-		listener.addComponents(moderatorManager.getComponents());
+		listener.upsertComponents(moderatorManager.getComponents());
 //		listener.addComponents(fileUploadControl.getComponents());
 	}
 
 	@Override
 	protected void dispose() {
-//		this.infoControl.dispose();
+		this.infoControl.dispose();
 //		this.linkControl.dispose();
 //		this.contactsControl.dispose();
 		this.moderatorManager.dispose();

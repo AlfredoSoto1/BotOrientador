@@ -53,7 +53,7 @@ public class AssistantAppEntry extends Application {
 		);
 
 		// Initiate the Discord Application
-		INEL_ICOM_ASSISTANT = new ECEAssistant("put token here");
+		INEL_ICOM_ASSISTANT = new ECEAssistant("Token here");
 		
 		// Star the ECE bot
 		INEL_ICOM_ASSISTANT.start();

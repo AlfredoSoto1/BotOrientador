@@ -126,7 +126,7 @@
 //
 //	@Override
 //	public String getDescription() {
-//		return "Log-in to TM server!";
+//		return "User verification filter to access server content";
 //	}
 //
 //	@Override

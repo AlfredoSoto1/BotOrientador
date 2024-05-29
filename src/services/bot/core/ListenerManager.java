@@ -81,7 +81,7 @@ public class ListenerManager extends ListenerAdapter {
 	/**
 	 * @param components
 	 */
-	public void addComponents(Collection<BotEventHandler> components) {
+	public void upsertComponents(Collection<BotEventHandler> components) {
 		for(BotEventHandler handler : components) {
 			if(handler instanceof ModalI modal)
 				this.modalManager.add(modal);
