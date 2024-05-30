@@ -20,7 +20,7 @@ public abstract class BotApplication {
 	
 	private JDA jdaConstructed;
 	private JDABuilder jdaBuilder;
-	private ListenerManager listenerManager;
+	private ListenerAdapterManager listenerManager;
 	private CountDownLatch latch;
 	
 	// Make this later be saved on a config file
@@ -46,7 +46,7 @@ public abstract class BotApplication {
 	 * 
 	 * @param listener
 	 */
-	protected abstract void prepareListeners(ListenerManager listener);
+	protected abstract void prepareListeners(ListenerAdapterManager listener);
 	
 	/**
 	 * 
@@ -83,7 +83,7 @@ public abstract class BotApplication {
 	public void start() {
 		// Create a new listener manager to handle the I/O
 		// from any Discord server from any user, command, message, etc...
-		listenerManager = new ListenerManager(latch);
+		listenerManager = new ListenerAdapterManager(latch);
 		
 		// Pass the listener manager to handle by custom bot
 		// This lets the programmer have more freedom when developing a custom bot
@@ -95,7 +95,12 @@ public abstract class BotApplication {
 		jdaBuilder.addEventListeners(listenerManager);
 		
 		// Build and start
-		jdaConstructed = jdaBuilder.build();
+		try {
+			jdaConstructed = jdaBuilder.build().awaitReady();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			return; // Exit application
+		}
 		
 		// Awaits for the latch to open. This occurs
 		// when the bot get shutdown.
@@ -114,12 +119,11 @@ public abstract class BotApplication {
 		// Shuts down the jda constructed
 		jdaConstructed.shutdown();
 		
-		dispose();
-		
 		// dispose all resources that the listener has keep
 		// during the life time of the application. This has
-		// to be called after shutdown(). This is due all subclasses
-		// that still active prior shutdown() that still using the resources from listeners.
+		// to be called before shutdown().
 		listenerManager.dispose();
+
+		dispose();
 	}
 }

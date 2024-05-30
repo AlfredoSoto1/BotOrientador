@@ -13,7 +13,7 @@ database/
 
 # Ignore the bot token file. For testing purposes
 # if you plan to test the bot you have to follow the bot-token.tkn.example
-
 bot-token.tkn
+bot-token-unused.tkn
 
 /target/

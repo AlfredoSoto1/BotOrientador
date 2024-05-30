@@ -4,11 +4,11 @@
 package application.launch;
 
 import application.core.Application;
+import application.core.Configs;
 import application.core.RegisterApplication;
-import ece.assistant.app.ECEAssistant;
+import assistant.app.ECEAssistant;
 import services.database.connections.DatabaseConnection;
 import services.database.connections.DatabaseConnectionManager;
-import services.database.connections.DatabaseCredentials;
 
 /**
  * @author Alfredo
@@ -16,16 +16,6 @@ import services.database.connections.DatabaseCredentials;
  */
 @RegisterApplication(name = "Discord Assistants", version = "v2024.2.SO4")
 public class AssistantAppEntry extends Application {
-	
-	// Read from file (Json file)
-	public static final String DB_DRIVER = "org.postgresql.Driver";
-	public static final String DB_CONNECTION = "Assistant-DB";
-	public static final DatabaseCredentials DB_CREDENTIALS = new DatabaseCredentials("username", "password", "jdbc:postgresql://localhost:5432/sodb");
-	
-	public static final String DEVELOPER_ROLE_NAME = "BotDeveloper"; // Reserved name for JUST bot developers
-	
-	
-	private ECEAssistant INEL_ICOM_ASSISTANT;
 	
 	/**
 	 * @param args
@@ -38,10 +28,6 @@ public class AssistantAppEntry extends Application {
 	@Override
 	public void start() {
 		
-		// Load configuration file data here
-		// provide the data to the application
-		
-		// Add a new Database connection to the factory
 		DatabaseConnectionManager.instance().addDatabaseConnection(
 			/**
 			 *  Create a new database connection
@@ -49,18 +35,18 @@ public class AssistantAppEntry extends Application {
 			 *  This is the database that the entire program will be based on.
 			 *  Database location is not accessible anywhere inside the project.
 			 */
-			new DatabaseConnection(DB_CONNECTION, DB_DRIVER, DB_CREDENTIALS)
+			new DatabaseConnection(Configs.DB_CONNECTION, Configs.DB_DRIVER, Configs.get().databaseCredentials())
 		);
 
 		// Initiate the Discord Application
-		INEL_ICOM_ASSISTANT = new ECEAssistant("Token here");
+		ECEAssistant BOT_ASSISTANT = new ECEAssistant(Configs.get().token());
 		
-		// Star the ECE bot
-		INEL_ICOM_ASSISTANT.start();
+		BOT_ASSISTANT.start();
 	}
 	
 	@Override
 	public void shutdown() {
 		DatabaseConnectionManager.dispose();
 	}
+	
 }
