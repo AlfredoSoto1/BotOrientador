@@ -14,7 +14,14 @@ import assistant.cmd.contacts.EconomicAssistanceCmd;
 import assistant.cmd.contacts.UniversityGuardCmd;
 import assistant.cmd.files.CurriculumCmd;
 import assistant.cmd.files.FreshmanGuideCmd;
+import assistant.cmd.info.CalendarCmd;
 import assistant.cmd.info.FAQCmd;
+import assistant.cmd.info.FacultyCmd;
+import assistant.cmd.info.HelpCmd;
+import assistant.cmd.info.OrgsCmd;
+import assistant.cmd.info.ProjectsCmd;
+import assistant.cmd.info.RulesCmd;
+import assistant.cmd.info.UprmMapCmd;
 import assistant.cmd.links.LinksCmd;
 import assistant.cmd.links.MadeWebCmd;
 import assistant.cmd.moderation.BotServiceCmd;
@@ -57,13 +64,13 @@ public class ECEAssistant extends BotApplication {
 	
 	private void prepareInfoCommands() {
 		FAQCmd faq = new FAQCmd();
-//		FacultyCmd faculty = new FacultyCmd();
-//		UprmMapCmd uprmMap = new UprmMapCmd();
-//		HelpCmd helpMenu = new HelpCmd();
-//		ProjectsCmd projects = new ProjectsCmd();
-//		CalendarCmd calendar = new CalendarCmd();
-//		RulesCmd serverRules = new RulesCmd();
-//		OrgsCmd organizations = new OrgsCmd();
+		FacultyCmd faculty = new FacultyCmd();
+		UprmMapCmd uprmMap = new UprmMapCmd();
+		HelpCmd helpMenu = new HelpCmd();
+		ProjectsCmd projects = new ProjectsCmd();
+		CalendarCmd calendar = new CalendarCmd();
+		RulesCmd serverRules = new RulesCmd();
+		OrgsCmd organizations = new OrgsCmd();
 		
 //		EOInfoCmd eoInfo = new EOInfoCmd();
 //		FindBuildingCmd findBuilding = new FindBuildingCmd();

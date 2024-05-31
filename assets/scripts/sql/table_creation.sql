@@ -39,8 +39,7 @@ create table if not exists Organization (
 create table if not exists Team (
     teamid  serial primary key,
     name    varchar(50) not null,
-    orgname varchar(50) not null,
-    fadvid  int references Advancement(advid)
+    orgname varchar(50) not null
 );
 
 create table if not exists Room (
@@ -55,6 +54,13 @@ create table if not exists Department (
     description varchar(1024) not null,
     fbuildid    int references Building(buildid)
 );
+
+create table if not exists ServerOwnership (
+    seoid     serial primary key,
+    discserid bigint,
+    fdepid    int references Department(depid)
+);
+
 
 create table if not exists Faculty (
     facid          serial primary key,
@@ -95,10 +101,15 @@ create table if not exists Program (
 
 create table if not exists Member (
     memid   serial primary key,
-    role    varchar(50) not null,
     fteamid int references Team(teamid),
     fadvid  int references Advancement(advid),
     fverid  int references Verification(verid)
+);
+
+create table if not exists Role (
+    roleid serial primary key,
+    name   varchar(50) not null,
+    fmemid int references Member(memid)
 );
 
 create table if not exists Service (
@@ -124,3 +135,26 @@ create table if not exists Consejero (
     fcontid     int references Contact(contid),
     fservid     int references Service(servid)
 );
+
+
+-- drop table orientador cascade;
+-- drop table prepa cascade;
+-- drop table verification cascade;
+-- drop table member cascade;
+-- drop table team cascade;
+-- drop table advancement cascade;
+-- drop table acesor cascade;
+-- drop table program cascade;
+-- drop table serverownership cascade;
+-- drop table department cascade;
+-- drop table service cascade;
+-- drop table consejero cascade;
+-- drop table building cascade;
+-- drop table contact cascade;
+-- drop table faculty cascade;
+-- drop table organization cascade;
+-- drop table project cascade;
+-- drop table room cascade;
+
+
+-- insert into team (name, orgname, fadvid) values('aliens', 'Team-Made', 1);
