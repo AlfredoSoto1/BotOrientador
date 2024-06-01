@@ -13,8 +13,8 @@ def process_file(input_file, output_file):
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Specify the input and output file paths
-input_file = os.path.join(script_dir, 'input.txt')
-output_file = os.path.join(script_dir, 'output.txt')
+input_file = os.path.join(script_dir, 'fillblanks_input.txt')
+output_file = os.path.join(script_dir, 'fillblanks_output.txt')
 
 # Process the file
 process_file(input_file, output_file)

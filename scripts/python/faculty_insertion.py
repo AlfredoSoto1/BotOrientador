@@ -21,8 +21,8 @@ def execute_sql_from_csv(csv_filename):
                 # Insert into contact table and return contid
                 cur.execute("""
                     WITH contact_insertion AS (
-                        INSERT INTO contact(ext, web, phone, media, email)
-                        VALUES (%s, %s, %s, %s, %s)
+                        INSERT INTO contact(ext, web, phone, facebook, instagram, email)
+                        VALUES (%s, %s, %s, %s, %s, %s)
                         RETURNING contid
                     ),
                     department_selected AS (
@@ -34,7 +34,7 @@ def execute_sql_from_csv(csv_filename):
                         SELECT %s, %s, %s, %s, department_selected.depid, contact_insertion.contid
                             FROM department_selected, contact_insertion;
                 """, (
-                    row['ext'], row['web'], row['phone'], row['media'], row['email'],
+                    row['ext'], row['web'], row['phone'], row['facebook'], row['instagram'], row['email'],
                     row['abreviation'],
                     row['office'], row['name'], row['job_entitlement'], row['description']
                 ))
@@ -48,4 +48,4 @@ def execute_sql_from_csv(csv_filename):
         print(f"An error occurred: {e}")
 
 # Execute the function to insert data from CSV to database
-execute_sql_from_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'input.csv'))
+execute_sql_from_csv(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'faculty_insertion.csv'))

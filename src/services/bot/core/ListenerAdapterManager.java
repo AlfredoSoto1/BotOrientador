@@ -85,18 +85,14 @@ public class ListenerAdapterManager extends ListenerAdapter {
 	 * Free all memory after bot shuts down
 	 */
 	public void dispose() {
-		for(ModalI modal : modals) {
+		for(ModalI modal : modals)
 			modal.dispose();
-		}
-		for(ButtonI button : buttons) {
+		for(ButtonI button : buttons)
 			button.dispose();
-		}
-		for(CommandI command : commands) {
+		for(CommandI command : commands)
 			command.dispose();
-		}
-		for(MessengerI messenger : messages) {
+		for(MessengerI messenger : messages)
 			messenger.dispose();
-		}
 		
 		modals.clear();
 		buttons.clear();
@@ -134,6 +130,8 @@ public class ListenerAdapterManager extends ListenerAdapter {
 		if(event.getUser().isBot())
 			return;
 		
+		// This results as a message output to a
+		// user when it joins the server
 		for(MessengerI messenger : messages)
 			messenger.memberJoin(event);
 	}

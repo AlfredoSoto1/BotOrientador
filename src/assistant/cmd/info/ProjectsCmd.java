@@ -139,9 +139,7 @@ public class ProjectsCmd implements CommandI {
 		embedBuilder.addField(
 			"Descripción",
 			"""
-			A student team that designs, manufactures and programs
-			an autonomous boat and drone. The purpose of this team is to
-			encourage female participation by having 50% female members.	
+			A student team that designs, manufactures and programs an autonomous boat and drone. The purpose of this team is to encourage female participation by having 50% female members.	
 			""", false);
 
 		embedBuilder.addField(
@@ -165,8 +163,7 @@ public class ProjectsCmd implements CommandI {
 		embedBuilder.addField(
 			"Descripción",
 			"""
-			A student team that designs, manufactures and programs an autonomous boat and drone.
-			The purpose of this team is to encourage female participation by having 50% female members.	
+			A student team that designs, manufactures and programs an autonomous boat and drone.The purpose of this team is to encourage female participation by having 50% female members.	
 			""", false);
 
 		embedBuilder.addField(
@@ -190,9 +187,7 @@ public class ProjectsCmd implements CommandI {
 		embedBuilder.addField(
 			"Descripción",
 			"""
-			The Solar Engineering Research and Racing Team (SERRT) is one of the flagship engineering projects
-			of the University of Puerto Rico at Mayaguez. This team currently develops a solar powered car
-			to compete in the American Solar Challenge and Formula Sun Grand Prix.
+			The Solar Engineering Research and Racing Team (SERRT) is one of the flagship engineering projects of the University of Puerto Rico at Mayaguez. This team currently develops a solar powered car to compete in the American Solar Challenge and Formula Sun Grand Prix.
 			""", false);
 
 		embedBuilder.addField(
@@ -215,10 +210,7 @@ public class ProjectsCmd implements CommandI {
 		embedBuilder.addField(
 			"Descripción",
 			"""
-			Alpha Astrum is a non-profit student association at UPRM focused on providing
-			students with valuable hands-on experience in the field of rocketry
-			and aerospace, as well as expanding the aerospace industry and developing
-			sustainable spaceflight capabilities in Puerto Rico.
+			Alpha Astrum is a non-profit student association at UPRM focused on providing students with valuable hands-on experience in the field of rocketry and aerospace, as well as expanding the aerospace industry and developing sustainable spaceflight capabilities in Puerto Rico.
 			""", false);
 
 		embedBuilder.addField(
@@ -242,9 +234,7 @@ public class ProjectsCmd implements CommandI {
 		embedBuilder.addField(
 			"Descripción",
 			"""
-			The main objective of the project is to promote and
-			strengthen the passion for engineering and project management,
-			among other areas, through the application of the concepts learned in university courses.
+			The main objective of the project is to promote and strengthen the passion for engineering and project management, among other areas, through the application of the concepts learned in university courses.
 			""", false);
 
 		embedBuilder.addField(
@@ -267,9 +257,7 @@ public class ProjectsCmd implements CommandI {
 		embedBuilder.addField(
 			"Descripción",
 			"""
-			The NASA RASC-AL team from SEDS-UPRM designs and analyzes advanced
-			human and robotic space exploration missions that solve
-			the greatest challenges in this field.
+			The NASA RASC-AL team from SEDS-UPRM designs and analyzes advanced human and robotic space exploration missions that solve the greatest challenges in this field.
 			""", false);
 
 		embedBuilder.addField(
@@ -292,8 +280,7 @@ public class ProjectsCmd implements CommandI {
 		embedBuilder.addField(
 			"Descripción",
 			"""
-			An undergraduate research and development team dedicated
-			to creating UAV solutions for the betterment of Puerto Rico.
+			An undergraduate research and development team dedicated to creating UAV solutions for the betterment of Puerto Rico.
 			""", false);
 
 		embedBuilder.addField(
@@ -315,8 +302,7 @@ public class ProjectsCmd implements CommandI {
 		embedBuilder.addField(
 			"Descripción",
 			"""
-			RUMarino is a multidisciplinary team that develops and
-			programs its own autonomous underwater vehicle (AUV).
+			RUMarino is a multidisciplinary team that develops and programs its own autonomous underwater vehicle (AUV).
 			""", false);
 
 		embedBuilder.addField(
@@ -339,9 +325,7 @@ public class ProjectsCmd implements CommandI {
 		embedBuilder.addField(
 			"Descripción",
 			"""
-			Student for the Exploration and Development of Space,
-			Mayagüez Chapter, or (SEDS-UPRM) is an interdisciplinary
-			student organization focused on space sciences, engineering, and exploration.
+			Student for the Exploration and Development of Space, Mayagüez Chapter, or (SEDS-UPRM) is an interdisciplinary student organization focused on space sciences, engineering, and exploration.
 			""", false);
 
 		embedBuilder.addField(

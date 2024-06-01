@@ -15,8 +15,10 @@ import assistant.cmd.contacts.UniversityGuardCmd;
 import assistant.cmd.files.CurriculumCmd;
 import assistant.cmd.files.FreshmanGuideCmd;
 import assistant.cmd.info.CalendarCmd;
+import assistant.cmd.info.EOInfoCmd;
 import assistant.cmd.info.FAQCmd;
 import assistant.cmd.info.FacultyCmd;
+import assistant.cmd.info.FindBuildingCmd;
 import assistant.cmd.info.HelpCmd;
 import assistant.cmd.info.OrgsCmd;
 import assistant.cmd.info.ProjectsCmd;
@@ -63,17 +65,24 @@ public class ECEAssistant extends BotApplication {
 	}
 	
 	private void prepareInfoCommands() {
-		FAQCmd faq = new FAQCmd();
+		/*
+		 * Require manual update to work with database
+		 */
 		FacultyCmd faculty = new FacultyCmd();
-		UprmMapCmd uprmMap = new UprmMapCmd();
-		HelpCmd helpMenu = new HelpCmd();
 		ProjectsCmd projects = new ProjectsCmd();
-		CalendarCmd calendar = new CalendarCmd();
-		RulesCmd serverRules = new RulesCmd();
 		OrgsCmd organizations = new OrgsCmd();
+		EOInfoCmd eoInfo = new EOInfoCmd();
+		FindBuildingCmd findBuilding = new FindBuildingCmd();
 		
-//		EOInfoCmd eoInfo = new EOInfoCmd();
-//		FindBuildingCmd findBuilding = new FindBuildingCmd();
+		/*
+		 * Require update the hard coded data
+		 */
+		FAQCmd faq = new FAQCmd();
+		HelpCmd helpMenu = new HelpCmd();
+		UprmMapCmd uprmMap = new UprmMapCmd();
+		RulesCmd serverRules = new RulesCmd();
+		CalendarCmd calendar = new CalendarCmd();
+		
 		
 		// TODO: Update global variable to commands that actually needs them
 		faq.setGlobal(false);
@@ -96,6 +105,9 @@ public class ECEAssistant extends BotApplication {
 	}
 	
 	private void prepareLinksCommands() {
+		/*
+		 * Require manual update to work with database
+		 */
 		LinksCmd usefulLinks = new LinksCmd();
 		MadeWebCmd madeWeb = new MadeWebCmd();
 		
@@ -107,6 +119,9 @@ public class ECEAssistant extends BotApplication {
 	}
 	
 	private void prepareContactsCommands() {
+		/*
+		 * Require manual update to work with database
+		 */
 		DCSPCmd dcsp = new DCSPCmd();
 		DepartmentCmd department = new DepartmentCmd();
 		DeanOfStudentsCmd deanOfStudents = new DeanOfStudentsCmd();
@@ -130,6 +145,9 @@ public class ECEAssistant extends BotApplication {
 	}
 	
 	private void prepareFilesCommands() {
+		/*
+		 * Require manual update to work with database
+		 */
 		CurriculumCmd curriculum = new CurriculumCmd();
 		FreshmanGuideCmd freshmanGuide = new FreshmanGuideCmd();
 		
