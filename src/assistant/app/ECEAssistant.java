@@ -51,6 +51,9 @@ public class ECEAssistant extends BotApplication {
 	protected void prepareListeners(ListenerAdapterManager listener) {
 		
 		prepareInfoCommands();
+		prepareLinksCommands();
+		prepareContactsCommands();
+		prepareFilesCommands();
 		prepareModeratorCommands();
 		
 		// Load all the interactions to JDA once it starts
@@ -111,8 +114,8 @@ public class ECEAssistant extends BotApplication {
 		LinksCmd usefulLinks = new LinksCmd();
 		MadeWebCmd madeWeb = new MadeWebCmd();
 		
-		madeWeb.setGlobal(true);
-		usefulLinks.setGlobal(true);
+		madeWeb.setGlobal(false);
+		usefulLinks.setGlobal(false);
 
 		interactions.add(madeWeb);
 		interactions.add(usefulLinks);
@@ -129,12 +132,12 @@ public class ECEAssistant extends BotApplication {
 		AcademicAdvisoryCmd academicAdvisory = new AcademicAdvisoryCmd();
 		EconomicAssistanceCmd economicAssistance = new EconomicAssistanceCmd();
 		
-		dcsp.setGlobal(true);
-		department.setGlobal(true);
-		deanOfStudents.setGlobal(true);
-		universityGuard.setGlobal(true);
-		academicAdvisory.setGlobal(true);
-		economicAssistance.setGlobal(true);
+		dcsp.setGlobal(false);
+		department.setGlobal(false);
+		deanOfStudents.setGlobal(false);
+		universityGuard.setGlobal(false);
+		academicAdvisory.setGlobal(false);
+		economicAssistance.setGlobal(false);
 		
 		interactions.add(dcsp);
 		interactions.add(department);
@@ -151,11 +154,11 @@ public class ECEAssistant extends BotApplication {
 		CurriculumCmd curriculum = new CurriculumCmd();
 		FreshmanGuideCmd freshmanGuide = new FreshmanGuideCmd();
 		
-		curriculum.setGlobal(true);
-		freshmanGuide.setGlobal(true);
-		
-		interactions.add(curriculum);
-		interactions.add(freshmanGuide);
+//		curriculum.setGlobal(true);
+//		freshmanGuide.setGlobal(true);
+//		
+//		interactions.add(curriculum);
+//		interactions.add(freshmanGuide);
 	}
 	
 	private void prepareModeratorCommands() {
