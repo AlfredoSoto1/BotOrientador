@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -62,108 +63,132 @@ public class FAQCmd implements CommandI {
 	
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
+		
+		// Mentioned Roles in embedded message
+		Role bdeRole = event.getGuild().getRolesByName("BotDeveloper", true).get(0);
+		Role esoRole = event.getGuild().getRolesByName("EstudianteOrientador", true).get(0);
+		
 		/*
-		 * Call the FAQ DAO here to access DB to read the info and place it into an embed
+		 * Embedded messages
 		 */
+		String faq_title = "Frequently Asked Questions";
+
+		String dq_1_title = "1. ¿Cómo puedo adiestrarme mejor en Discord?";
+		String dq_1_description = 
+			"""
+			Puede leer el PDF que se le proveyó o comunicarse con algunos de los %s.
+			""";
+		String dq_2_title = "2. ¿Por qué no puedo ver los canales de otros grupos?";
+		String dq_2_description = 
+			"""
+			Se diseño de esta manera para tener una comunicación efectiva 
+			entre los integrantes de cada grupo individual y sus lideres.
+			""";
+		String dq_3_title = "3. Tengo una idea para el bot. ¿Con quién me puedo contactar?";
+		String dq_3_description = 
+			"""
+			Con los %s o los %s.
+			""";
+		String dq_4_title = "4. ¿Cómo consigo los comandos para el bot?";
+		String dq_4_description = 
+			"""
+			Escribe `/help` en el chat de su preferencia.
+			""";
+		String dq_5_title = "5. ¿Cómo crearon el bot?";
+		String dq_5_description = 
+			"""
+			El bot fue programado inicialmente por nuestros Ex-alumnos Fernando y Gabriel 
+			con el lenguaje Python. Pero para esta nueva versión con la que estas interactuando 
+			está programado en Java!! Cualquier pregunta le pueden escribir a Alfredo o a cualquier 
+			%s. Ellos te pueden explicar y enseñar algunos detalles de como se hizo si estas interesad@!
+			""";
+		String dq_6_title = "6. Me siento indeciso sobre mi departamento. ¿Con quién hablo?";
+		String dq_6_description = 
+			"""
+			Hable con su asesor académico de su departamento el día de ajustes de matrícula, 
+			con uno de sus líderes o con Madeline Rodríguez.
+			""";
+		String dq_7_title = "7. Tengo unas clases convalidadas por el CEEB ¿Con quién hablo?";
+		String dq_7_description = 
+			"""
+			Atienda bien a las orientaciones de la semana en como se convalidan esos cursos, 
+			sino hable con su departamento en ajustes.
+			""";
+		String dq_8_title = "8. ¿A quién voy para conseguir mi curriculo?";
+		String dq_8_description = 
+			"""
+			Preguntale al bot! El te lo provee en PDF si escribes `/curriculo`.
+			""";
+		String dq_9_title = "9. ¿Qué significa la letra al lado de la sección de una clase?";
+		String dq_9_description = 
+			"""
+			D - a distancia, sin horario fijo
+			E - a distancia, con horario fijo
+			H - híbrida
+			""";
+		String dq_10_title = "10. ¿Cuántos créditos necesito?";
+		String dq_10_description = 
+			"""
+			Para ser estudiante regular se necesita un mínimo de 12 créditos.
+			""";
+		String dq_11_title = "11. ¿Qué es Moodle?";
+		String dq_11_description = 
+			"""
+			Moodle es la plataforma principal para clases virtuales :link: [Moodle](https://online.upr.edu)
+			""";
+		String dq_12_title = "12. ¿Dónde me puedo estacionar?";
+		String dq_12_description = 
+			"""
+			Zoológico de Mayagüez, Palacio de Recreación y Deportes. 
+			Luego de las 4:30 se puede estacionar el cualquier lado.
+			""";
+		String dq_13_title = "13. ¿Cuál es la clave del WIFI del Colegio?";
+		String dq_13_description = 
+			"""
+			Colegio2019
+			""";
+		
+		dq_1_description = String.format(dq_1_description, bdeRole.getAsMention());
+		dq_3_description = String.format(dq_3_description, bdeRole.getAsMention(), esoRole.getAsMention());
+		dq_5_description = String.format(dq_5_description, bdeRole.getAsMention());
+		
 		
 		EmbedBuilder embedBuider = new EmbedBuilder();
 
-		embedBuider.setColor(new Color(70, 150, 90));
-		embedBuider.setTitle("Frequently Asked Questions");
-		embedBuider.setDescription("Aquí puedes encontrar ciertas preguntas que pueden surgir durante la semana");
+		embedBuider.setColor(new Color(40, 130, 138));
+		embedBuider.setTitle(faq_title);
 
-		embedBuider.addField(
-			"Preguntas acerca del Discord", "", false);
+		embedBuider.addField(dq_1_title, dq_1_description, true);
+		embedBuider.addField(dq_2_title, dq_2_description, true);
 		
-		embedBuider.addField(
-			"""
-			1) ¿Cómo puedo adiestrarme mejor en Discord?
-			No entiendo muchas cosas sobre la plataforma
-			""",
-			"""
-			Puede leer el PDF que se le proveyó o comunicarse con algunos de los Bot-Developers
-			""", true);
+		embedBuider.addField("", "", false);
+
+		embedBuider.addField(dq_3_title, dq_3_description, true);
+		embedBuider.addField(dq_4_title, dq_4_description, true);
 		
-		embedBuider.addField(
-			"2) ¿Por qué no puedo ver los canales de otros grupos?",
-			"""
-			Se diseño de esta manera para tener una comunicación efectiva entre los integrantes de cada grupo individual y sus lideres
-			""", true);
+		embedBuider.addField("", "", false);
+
+		embedBuider.addField(dq_5_title, dq_5_description, true);
+		embedBuider.addField(dq_6_title, dq_6_description, true);
 		
-		embedBuider.addField(
-			"3) Tengo una idea para el bot. ¿Con quién me puedo contactar?",
-			"Con los Bot-Developers o los Estudiantes Orientadores", true);
+		embedBuider.addField("", "", false);
 		
-		embedBuider.addField(
-			"4) ¿Cómo consigo los comandos para el bot?",
-			"Escribe ``/help`` en el chat de su preferencia", true);
+		embedBuider.addField(dq_7_title, dq_7_description, true);
+		embedBuider.addField(dq_8_title, dq_8_description, true);
 		
-		embedBuider.addField(
-			"5) ¿Cómo crearon el bot?",
-			"""
-			El bot fue programado inicialmente por nuestros Ex-alumnos Fernando y Gabriel con el lenguaje Python.
-			Pero para esta nueva versión con la que estas interactuando está programado en Java!! Cualquier pregunta
-			le pueden escribir a Alfredo o a cualquier Bot-Developer. Ellos te pueden explicar y enseñar algunos
-			detalles de como se hizo si estas interesad@!
-			""", false);
+		embedBuider.addField("", "", false);
 		
-		embedBuider.addField(
-			"", "", false);
+		embedBuider.addField(dq_9_title, dq_9_description, true);
+		embedBuider.addField(dq_10_title, dq_10_description, true);
 		
-		embedBuider.addField(
-			"Preguntas acerca del departamento, facilidades y académico", "", false);
+		embedBuider.addField("", "", false);
 		
-		embedBuider.addField(
-			"6) Me siento indeciso sobre mi departamento. ¿Con quién hablo?",
-			"""
-			Hable con su asesor académico de su departamento el día de ajustes de matrícula, con uno de sus líderes o con Madeline Rodríguez
-			""", true);
-		embedBuider.addField(
-			"7) Tengo unas clases convalidadas por el CEEB ¿Con quién hablo?",
-			"""
-			Atienda bien a las orientaciones de la semana en como se convalidan esos cursos, sino hable con su departamento en ajustes
-			""", true);
-		embedBuider.addField(
-			"8) ¿A quién voy para conseguir mi curriculo?",
-			"""
-			Preguntale al bot! El te lo provee en PDF si escribes ``/curriculo``
-			""", true);
-	
-		embedBuider.addField(
-			"""
-			9) ¿Qué significa la letra al lado de la sección de una clase?
-			""",
-			"""
-			D - a distancia, sin horario fijo, E - a distancia, con horario fijo, H - híbrida
-			""", true);
-		embedBuider.addField(
-			"""
-			10) ¿Cuántos créditos necesito?
-			""",
-			"""
-			Para ser estudiante regular se necesita un mínimo de 12 créditos
-			""", true);
-		embedBuider.addField(
-			"""
-			11) ¿Qué es Moodle?
-			""",
-			"""
-			Moodle es la plataforma principal para clases virtuales (https://online.upr.edu)
-			""", true);
-		embedBuider.addField(
-			"""
-			12) ¿Dónde me puedo estacionar?
-			""",
-			"""
-			Zoológico de Mayagüez, Palacio de Recreación y Deportes. Luego de las 4:30 se puede estacionar el cualquier lado
-			""", true);
-		embedBuider.addField(
-			"""
-			13) ¿Cuál es la clave del WIFI del Colegio?
-			""",
-			"""
-			Colegio2019
-			""", true);
+		embedBuider.addField(dq_11_title, dq_11_description, true);
+		embedBuider.addField(dq_12_title, dq_12_description, true);
+		
+		embedBuider.addField("", "", false);
+
+		embedBuider.addField(dq_13_title, dq_13_description, true);
 
 		event.replyEmbeds(embedBuider.build()).setEphemeral(event.isFromGuild()).queue();
 	}

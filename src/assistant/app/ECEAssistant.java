@@ -69,6 +69,15 @@ public class ECEAssistant extends BotApplication {
 	
 	private void prepareInfoCommands() {
 		/*
+		 * TODO:
+		 * - Verification command and behavior
+		 * - Role selection command and behavior
+		 * - Role implanting when joining server
+		 * - DAO and model implementation for command
+		 * - Command with DAOs implementation
+		 */
+		
+		/*
 		 * Require manual update to work with database
 		 */
 		FacultyCmd faculty = new FacultyCmd();
@@ -91,18 +100,18 @@ public class ECEAssistant extends BotApplication {
 		faq.setGlobal(false);
 //		faculty.setGlobal(false);
 //		uprmMap.setGlobal(false);
-//		helpMenu.setGlobal(false);
+		helpMenu.setGlobal(false);
 //		calendar.setGlobal(false);
 //		findBuilding.setGlobal(false);
 		
 		interactions.add(faq);
 //		interactions.add(faculty);
 //		interactions.add(uprmMap);
-//		interactions.add(helpMenu);
+		interactions.add(helpMenu);
 //		interactions.add(projects);
 //		interactions.add(calendar);
 //		interactions.add(eoInfo);
-//		interactions.add(serverRules);
+		interactions.add(serverRules);
 //		interactions.add(findBuilding);
 //		interactions.add(organizations);
 	}
