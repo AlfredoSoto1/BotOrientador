@@ -26,7 +26,9 @@ import assistant.cmd.info.RulesCmd;
 import assistant.cmd.info.UprmMapCmd;
 import assistant.cmd.links.LinksCmd;
 import assistant.cmd.links.MadeWebCmd;
-import assistant.cmd.moderation.BotServiceCmd;
+import assistant.cmd.moderation.AssistantCmd;
+import assistant.cmd.moderation.RegistrationCmd;
+import assistant.cmd.moderation.VerificationCmd;
 import services.bot.core.BotApplication;
 import services.bot.core.ListenerAdapterManager;
 import services.bot.interactions.InteractableEvent;
@@ -176,7 +178,9 @@ public class ECEAssistant extends BotApplication {
 		 * directly from a json file and upsert them to the jda.
 		 */
 //		interactions.add(new LoginCmd());
-		interactions.add(new BotServiceCmd(this));
+		interactions.add(new AssistantCmd(this));
+		interactions.add(new VerificationCmd());
+		interactions.add(new RegistrationCmd());
 		
 		// Do a registration server command
 	}

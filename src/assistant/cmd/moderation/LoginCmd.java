@@ -28,11 +28,11 @@
 //import net.dv8tion.jda.api.interactions.modals.Modal;
 //import services.bot.dbaccess.DBLoginManager;
 //import services.bot.dbaccess.DBRoleManager;
+//import services.bot.interactions.ButtonI;
+//import services.bot.interactions.CommandI;
+//import services.bot.interactions.MessengerI;
+//import services.bot.interactions.ModalI;
 //import services.bot.managers.BotEventHandler;
-//import services.bot.managers.ButtonI;
-//import services.bot.managers.CommandI;
-//import services.bot.managers.MessengerI;
-//import services.bot.managers.ModalI;
 //import services.bot.orientador.messages.SpecialTokens;
 //import services.bot.orientador.messages.WelcomeMessages;
 //
@@ -79,8 +79,6 @@
 //	
 //	@Override
 //	public void init(ReadyEvent event) {
-//		if(!BotEventHandler.validateEventInit(this.getClass()))
-//			return;
 //		// FIXME
 //		// Get the server that matches the server ID 
 ////		uniqueServer = event.getJDA().getGuildById(BotConfigs.SERVER_ID);
@@ -89,24 +87,16 @@
 //		// Prepare all the roles stored in database to be
 //		// later used in this log-in modal
 //		loginManager.prepareRolesFromDatabase();
-//		
-//		// Register this method
-//		BotEventHandler.registerInitEvent(this);
 //	}
 //	
 //	@Override
 //	public void dispose() {
-//		if(!BotEventHandler.validateEventDispose(this.getClass()))
-//			return;
-//		
 //		options.clear();
 //		loginButtons.clear();
 //		loginPrompts.clear();
 //		
 //		roleManager.dispose();
 //		loginManager.dispose();
-//		
-//		BotEventHandler.registerDisposeEvent(this);
 //	}
 //
 //	@Override

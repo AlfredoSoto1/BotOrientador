@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import assistant.cmd.moderation.BotServiceCmd;
+import assistant.cmd.moderation.AssistantCmd;
 import services.bot.core.BotApplication;
 import services.bot.interactions.InteractableEvent;
 
@@ -32,7 +32,7 @@ public class ModeratorCmdManager {
 		 * directly from a json file and upsert them to the jda.
 		 */
 //		componentAdapters.add(new LoginCmd());
-		componentAdapters.add(new BotServiceCmd(bot));
+		componentAdapters.add(new AssistantCmd(bot));
 		
 		// Do a registration server command
 	}

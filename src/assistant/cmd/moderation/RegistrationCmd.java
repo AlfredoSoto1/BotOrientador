@@ -12,42 +12,28 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import services.bot.core.BotApplication;
 import services.bot.interactions.CommandI;
 
 /**
  * @author Alfredo
- *
  */
-public class BotServiceCmd implements CommandI {
+public class RegistrationCmd implements CommandI {
 
-	private static final String COMMAND_LABEL = "service";
-	
-	private static final String OPTION_DISCONNECT = "disconnect";
-	private static final String OPTION_REGISTER_ECE = "register-ece-department";
-	private static final String OPTION_REGISTER_CSE = "register-cse-department";
-	
 	private boolean isGlobal;
 	private List<OptionData> options;
 	
-	private BotApplication bot;
-	
-	public BotServiceCmd(BotApplication bot) {
-		this.bot = bot;
+	public RegistrationCmd() {
 		this.options = new ArrayList<>();
 		
-		this.options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "Choose a command", true)
-			.addChoice("disconnect", OPTION_DISCONNECT)
-			.addChoice("register-ece-department", OPTION_REGISTER_ECE)
-			.addChoice("register-cse-department", OPTION_REGISTER_CSE)
+		this.options.add(new OptionData(OptionType.STRING, "register", "register server", true)
+			.addChoice("INEL/ICOM", "INEL/ICOM")
+			.addChoice("INSO/CIIC", "INSO/CIIC")
 		);
 	}
 	
 	@Override
-	@Deprecated
 	public void init(ReadyEvent event) {
 
 	}
@@ -69,12 +55,12 @@ public class BotServiceCmd implements CommandI {
 
 	@Override
 	public String getCommandName() {
-		return "server-management-service";
+		return "assistant-registration";
 	}
 
 	@Override
 	public String getDescription() {
-		return "Manage the bot service on server";
+		return "Register the server";
 	}
 
 	@Override
@@ -85,20 +71,22 @@ public class BotServiceCmd implements CommandI {
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
 		
-		if (!validateUser(event.getGuild(), event.getMember())) {
-			event.reply("You dont have the permissions to run this command").setEphemeral(true).queue();
-			return;
-		}
+		event.reply("Verfication").setEphemeral(true).queue();
 		
-		OptionMapping programOption = event.getOption(COMMAND_LABEL);
-		
-		if (programOption.getAsString().equals(OPTION_DISCONNECT)) {
-			event.reply("Shutting down...").setEphemeral(true).queue();
-			bot.shutdown();
-		} else {
-			// skip this action if no reply was provided
-			event.reply("Mmhh this command does nothing, try again with another one").setEphemeral(true).queue();
-		}
+//		if (!validateUser(event.getGuild(), event.getMember())) {
+//			event.reply("You dont have the permissions to run this command").setEphemeral(true).queue();
+//			return;
+//		}
+//		
+//		OptionMapping programOption = event.getOption(COMMAND_LABEL);
+//		
+//		if (programOption.getAsString().equals(OPTION_DISCONNECT)) {
+//			event.reply("Shutting down...").setEphemeral(true).queue();
+//			bot.shutdown();
+//		} else {
+//			// skip this action if no reply was provided
+//			event.reply("Mmhh this command does nothing, try again with another one").setEphemeral(true).queue();
+//		}
 	}
 	
 	private boolean validateUser(Guild server, Member member) {
