@@ -78,7 +78,7 @@ public class ECEAssistant extends BotApplication {
 		 * - DAO and model implementation for command
 		 * - Command with DAOs implementation
 		 */
-//		String test = STR."test";
+
 		/*
 		 * Require manual update to work with database
 		 */

@@ -157,32 +157,32 @@ public class HelpCmd implements CommandI {
 		embedBuilder.addField(help_1_title, help_1_description, true);
 		embedBuilder.addField(help_2_title, help_2_description, true);
 		
-		embedBuilder.addField("", "", false);
+		embedBuilder.addBlankField(false);
 		
 		embedBuilder.addField(help_3_title, help_3_description, true);
 		embedBuilder.addField(help_4_title, help_4_description, true);
 		
-		embedBuilder.addField("", "", false);
+		embedBuilder.addBlankField(false);
 		
 		embedBuilder.addField(help_5_title, help_5_description, true);
 		embedBuilder.addField(help_6_title, help_6_description, true);
 		
-		embedBuilder.addField("", "", false);
+		embedBuilder.addBlankField(false);
 		
 		embedBuilder.addField(help_6_title, help_6_description, true);
 		embedBuilder.addField(help_7_title, help_7_description, true);
 		
-		embedBuilder.addField("", "", false);
+		embedBuilder.addBlankField(false);
 		
 		embedBuilder.addField(help_8_title, help_8_description, true);
 		embedBuilder.addField(help_9_title, help_9_description, true);
 		
-		embedBuilder.addField("", "", false);
+		embedBuilder.addBlankField(false);
 		
 		embedBuilder.addField(help_10_title, help_10_description, true);
 		embedBuilder.addField(help_11_title, help_11_description, true);
 		
-		embedBuilder.addField("", "", false);
+		embedBuilder.addBlankField(false);
 		
 		embedBuilder.addField(help_12_title, help_12_description, true);
 		embedBuilder.addField(help_13_title, help_13_description, true);

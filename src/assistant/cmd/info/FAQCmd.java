@@ -153,43 +153,43 @@ public class FAQCmd implements CommandI {
 		dq_5_description = String.format(dq_5_description, bdeRole.getAsMention());
 		
 		
-		EmbedBuilder embedBuider = new EmbedBuilder();
+		EmbedBuilder embedBuilder = new EmbedBuilder();
 
-		embedBuider.setColor(new Color(40, 130, 138));
-		embedBuider.setTitle(faq_title);
+		embedBuilder.setColor(new Color(40, 130, 138));
+		embedBuilder.setTitle(faq_title);
 
-		embedBuider.addField(dq_1_title, dq_1_description, true);
-		embedBuider.addField(dq_2_title, dq_2_description, true);
+		embedBuilder.addField(dq_1_title, dq_1_description, true);
+		embedBuilder.addField(dq_2_title, dq_2_description, true);
 		
-		embedBuider.addField("", "", false);
+		embedBuilder.addBlankField(false);
 
-		embedBuider.addField(dq_3_title, dq_3_description, true);
-		embedBuider.addField(dq_4_title, dq_4_description, true);
+		embedBuilder.addField(dq_3_title, dq_3_description, true);
+		embedBuilder.addField(dq_4_title, dq_4_description, true);
 		
-		embedBuider.addField("", "", false);
+		embedBuilder.addBlankField(false);
 
-		embedBuider.addField(dq_5_title, dq_5_description, true);
-		embedBuider.addField(dq_6_title, dq_6_description, true);
+		embedBuilder.addField(dq_5_title, dq_5_description, true);
+		embedBuilder.addField(dq_6_title, dq_6_description, true);
 		
-		embedBuider.addField("", "", false);
+		embedBuilder.addBlankField(false);
 		
-		embedBuider.addField(dq_7_title, dq_7_description, true);
-		embedBuider.addField(dq_8_title, dq_8_description, true);
+		embedBuilder.addField(dq_7_title, dq_7_description, true);
+		embedBuilder.addField(dq_8_title, dq_8_description, true);
 		
-		embedBuider.addField("", "", false);
+		embedBuilder.addBlankField(false);
 		
-		embedBuider.addField(dq_9_title, dq_9_description, true);
-		embedBuider.addField(dq_10_title, dq_10_description, true);
+		embedBuilder.addField(dq_9_title, dq_9_description, true);
+		embedBuilder.addField(dq_10_title, dq_10_description, true);
 		
-		embedBuider.addField("", "", false);
+		embedBuilder.addBlankField(false);
 		
-		embedBuider.addField(dq_11_title, dq_11_description, true);
-		embedBuider.addField(dq_12_title, dq_12_description, true);
+		embedBuilder.addField(dq_11_title, dq_11_description, true);
+		embedBuilder.addField(dq_12_title, dq_12_description, true);
 		
-		embedBuider.addField("", "", false);
+		embedBuilder.addBlankField(false);
 
-		embedBuider.addField(dq_13_title, dq_13_description, true);
+		embedBuilder.addField(dq_13_title, dq_13_description, true);
 
-		event.replyEmbeds(embedBuider.build()).setEphemeral(event.isFromGuild()).queue();
+		event.replyEmbeds(embedBuilder.build()).setEphemeral(event.isFromGuild()).queue();
 	}
 }

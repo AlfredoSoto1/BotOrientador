@@ -20,6 +20,7 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import services.bot.interactions.ButtonI;
 import services.bot.interactions.CommandI;
 
@@ -29,14 +30,19 @@ import services.bot.interactions.CommandI;
 public class VerificationCmd implements CommandI, ButtonI {
 	
 	private static final String COMMAND_LABEL = "channel";
+	private static final String VERIFY_BUTTON = "Verify";
 	
 	private boolean isGlobal;
 	private List<OptionData> options;
+
+	private Button verifyButton;
 	
 	public VerificationCmd() {
 		this.options = new ArrayList<>();
 		
 		this.options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "select channel", true));
+		
+		this.verifyButton = Button.success(VERIFY_BUTTON + VERIFY_BUTTON.hashCode(), VERIFY_BUTTON);
 	}
 	
 	@Override
@@ -127,14 +133,64 @@ public class VerificationCmd implements CommandI, ButtonI {
 	}
 	
 	private void sendVerificationEmbed(TextChannel textChannel) {
+		
+		// Mentioned Roles in embedded message
+		Role modRole = textChannel.getGuild().getRolesByName("Moderator", true).get(0);
+		Role bdeRole = textChannel.getGuild().getRolesByName("BotDeveloper", true).get(0);
+		
+		/*
+		 * Embedded messages
+		 */
+		String verification_title = 
+			"""
+		    **¡Bienvenido al servidor!** :wave:
+		    """;
+		String verification_description = 
+			"""
+		    Para poder acceder a todas las áreas del servidor y participar en las conversaciones, necesitamos verificar que eres un estudiante de nuevo ingreso. 
+		    Este proceso nos ayuda a mantener un ambiente seguro y exclusivo para los estudiantes.
+		    """;
+		String verification_step_title =
+			"""
+			 **Pasos para la verificación:**
+			""";
+		String verification_step_description_1 =
+			"""
+			1. **Presiona el botón "Verify"**:
+			Al presionar el botón de verificación que se encuentra abajo, iniciarás el proceso de verificación.
+			
+			2. **Provee tu correo institucional**:
+			Se te pedirá que ingreses tu correo electrónico institucional (el que termina en __@upr.edu__). 
+			Este correo es utilizado únicamente para confirmar tu identidad como estudiante.
+			""";
+		
+		String verification_problem_title =
+			"""
+			**¿Problemas con la verificación?**
+			""";
+		String verification_problem_description =
+			"""
+			- Asegúrate de haber ingresado correctamente tu correo institucional.
+			- Si aún tienes problemas, comunícate con un %s o %s para obtener ayuda.
+			
+			¡Gracias por unirte y esperamos que disfrutes tu tiempo en el servidor! :blush:
+			""";
+
+		verification_problem_description = String.format(verification_problem_description, bdeRole.getAsMention(), modRole.getAsMention());
+		
 		EmbedBuilder embedBuider = new EmbedBuilder();
 
 		embedBuider.setColor(new Color(40, 130, 138));
-		embedBuider.setTitle("Server Verification");
-
-		embedBuider.addField("Click on the button to verify", "", false);
-
-		textChannel.sendMessageEmbeds(embedBuider.build()).queue();
+		embedBuider.setTitle(verification_title);
+		embedBuider.setDescription(verification_description);
+		
+		embedBuider.addField(verification_step_title, verification_step_description_1, false);
+		embedBuider.addBlankField(false);
+		embedBuider.addField(verification_problem_title, verification_problem_description, false);
+		
+		textChannel.sendMessageEmbeds(embedBuider.build())
+			.setActionRow(verifyButton)
+			.queue();
 	}
 
 }
