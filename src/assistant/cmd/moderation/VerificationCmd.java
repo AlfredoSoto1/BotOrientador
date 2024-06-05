@@ -4,12 +4,7 @@
 package assistant.cmd.moderation;
 
 import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import application.core.Configs;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -21,30 +16,24 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import services.bot.interactions.ButtonI;
 import services.bot.interactions.CommandI;
+import services.bot.interactions.InteractionModel;
 
 /**
  * @author Alfredo
  */
-public class VerificationCmd implements CommandI, ButtonI {
+public class VerificationCmd extends InteractionModel implements CommandI {
 	
 	private static final String COMMAND_LABEL = "channel";
-	private static final String VERIFY_BUTTON = "Verify";
 	
 	private boolean isGlobal;
-	private List<OptionData> options;
-	
 	private Button verifyButton;
 	
 	public VerificationCmd() {
-		this.options = new ArrayList<>();
-		
-		this.options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "select channel", true));
-		
-		this.verifyButton = Button.success(VERIFY_BUTTON + VERIFY_BUTTON.hashCode(), VERIFY_BUTTON);
+		super.addCommandOption(OptionType.STRING, COMMAND_LABEL, "select channel", true);
+
+		super.registerButton(this::onVerificationEvent, verifyButton = Button.success("verification-button", "verify"));
 	}
 	
 	@Override
@@ -54,7 +43,7 @@ public class VerificationCmd implements CommandI, ButtonI {
 	
 	@Override
 	public void dispose() {
-		options.clear();
+		
 	}
 	
 	@Override
@@ -77,16 +66,6 @@ public class VerificationCmd implements CommandI, ButtonI {
 		return "Sends an embed to verify user to a channel of choice";
 	}
 
-	@Override
-	public List<OptionData> getOptions() {
-		return options;
-	}
-
-	@Override
-	public Set<String> getButtonIDs() {
-		return null;
-	}
-	
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
 		
@@ -124,8 +103,7 @@ public class VerificationCmd implements CommandI, ButtonI {
 //		}
 	}
 	
-	@Override
-	public void onButtonEvent(String buttonID, ButtonInteractionEvent event) {
+	private void onVerificationEvent(ButtonInteractionEvent event) {
 		System.out.println("Interacted with button");
 	}
 	
@@ -194,5 +172,4 @@ public class VerificationCmd implements CommandI, ButtonI {
 			.setActionRow(verifyButton)
 			.queue();
 	}
-
 }

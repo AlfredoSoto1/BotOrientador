@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.events.session.ReadyEvent;
  * @author Alfredo
  *
  */
+@Deprecated
 public interface InteractableEvent {
 	
 	/**

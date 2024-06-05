@@ -3,12 +3,12 @@
  */
 package services.bot.core;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
 import net.dv8tion.jda.api.entities.Guild;
@@ -20,6 +20,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.events.session.ShutdownEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import services.bot.interactions.ButtonI;
 import services.bot.interactions.CommandI;
 import services.bot.interactions.InteractableEvent;
@@ -79,11 +80,10 @@ public class ListenerAdapterManager extends ListenerAdapter {
 		// InteractableEvent to use as the general case for
 		// the event whenever used.
 		for(InteractableEvent interaction : interactions) {
-			if (interaction instanceof ModalI modal)
-				this.modals.add(modal);
-			if (interaction instanceof ButtonI button)
-				button.getClass().getFields()[0].isAnnotationPresent(null)
-				this.buttons.add(button.get);
+//			if (interaction instanceof ModalI modal)
+//				this.modals.add(modal);
+//			if (interaction instanceof ButtonI button)
+//				this.buttons.add(button.get);
 			if (interaction instanceof CommandI command)
 				this.commands.put(command.getCommandName(), command);
 			if (interaction instanceof MessengerI messenger)
@@ -139,26 +139,33 @@ public class ListenerAdapterManager extends ListenerAdapter {
 	
 	@Override
 	public void onModalInteraction(ModalInteractionEvent event) {
-		for(ModalI modal : modals) {
-			// Check if the modal that currently is having an action to
-			// be executed to run the modal results
-			if(modal.getModalIDs().contains(event.getModalId())) {
-				modal.modalResults(event);
-				// Once the modal results have been produced, we can
-				// exit the loop since we don't need to keep looking
-				// for more events. Since the JDA execute this onModalInteraction() method
-				// in queue after each command triggered the modal
-				return;
-			}
-		}
+//		for(ModalI modal : modals) {
+//			// Check if the modal that currently is having an action to
+//			// be executed to run the modal results
+//			if(modal.getModalIDs().contains(event.getModalId())) {
+//				modal.modalResults(event);
+//				// Once the modal results have been produced, we can
+//				// exit the loop since we don't need to keep looking
+//				// for more events. Since the JDA execute this onModalInteraction() method
+//				// in queue after each command triggered the modal
+//				return;
+//			}
+//		}
 	}
 	
 	@Override
 	public void onButtonInteraction(ButtonInteractionEvent event) {
-		for(ButtonI button : buttons) {
-			if(button.getButtonIDs().contains(event.getButton().getId()))
-				button.onButtonEvent(event.getButton().getId(), event);
-		}
+//		for(ButtonI button : buttons) {
+//			if(button.getButtonIDs().contains(event.getButton().getId()))
+//				button.onButtonEvent(event.getButton().getId(), event);
+//		}
+		
+		ButtonI button = buttons.get(event.getId());
+		
+		if(button != null)
+			button.onButtonEvent(event.getId(), event);
+		else
+			event.reply("The button that you are interacting with is not registered!").queue();
 	}
 	
 	@Override
@@ -217,4 +224,5 @@ public class ListenerAdapterManager extends ListenerAdapter {
 			}
 		}
 	}
+	
 }

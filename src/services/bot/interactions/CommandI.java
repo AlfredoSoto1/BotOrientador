@@ -3,16 +3,13 @@
  */
 package services.bot.interactions;
 
-import java.util.List;
-
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 /**
  * @author Alfredo
  *
  */
-public interface CommandI extends InteractableEvent {
+public interface CommandI  {
 	
 	/**
 	 * @return true if the command is global
@@ -37,11 +34,6 @@ public interface CommandI extends InteractableEvent {
 	 * @return description of the command
 	 */
 	public String getDescription();
-	
-	/**
-	 * @return List of options that the command has
-	 */
-	public List<OptionData> getOptions();
 	
 	/**
 	 * Executes the command
