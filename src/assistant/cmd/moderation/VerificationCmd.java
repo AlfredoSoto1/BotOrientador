@@ -5,6 +5,8 @@ package assistant.cmd.moderation;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -34,7 +36,7 @@ public class VerificationCmd implements CommandI, ButtonI {
 	
 	private boolean isGlobal;
 	private List<OptionData> options;
-
+	
 	private Button verifyButton;
 	
 	public VerificationCmd() {
@@ -124,7 +126,7 @@ public class VerificationCmd implements CommandI, ButtonI {
 	
 	@Override
 	public void onButtonEvent(String buttonID, ButtonInteractionEvent event) {
-		// TODO Auto-generated method stub
+		System.out.println("Interacted with button");
 	}
 	
 	private boolean validateUser(Guild server, Member member) {

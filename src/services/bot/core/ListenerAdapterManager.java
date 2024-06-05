@@ -5,7 +5,10 @@ package services.bot.core;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
 import net.dv8tion.jda.api.entities.Guild;
@@ -31,10 +34,11 @@ public class ListenerAdapterManager extends ListenerAdapter {
 	
 	private CountDownLatch latch;
 	
-	private List<ModalI> modals;
-	private List<ButtonI> buttons;
-	private List<CommandI> commands;
+	private Map<String, ModalI> modals;
+	private Map<String, ButtonI> buttons;
+	private Map<String, CommandI> commands;
 	private List<MessengerI> messages;
+	private List<InteractableEvent> interactableEvents;
 	
 	/**
 	 * Create and prepare a list of listener adapters
@@ -44,10 +48,11 @@ public class ListenerAdapterManager extends ListenerAdapter {
 	 */
 	public ListenerAdapterManager(CountDownLatch latch) {
 		this.latch = latch;
-		this.modals = new ArrayList<>();
-		this.buttons = new ArrayList<>();
-		this.commands = new ArrayList<>();
+		this.modals = new HashMap<>();
+		this.buttons = new HashMap<>();
+		this.commands = new HashMap<>();
 		this.messages = new ArrayList<>();
+		this.interactableEvents = new ArrayList<>();
 		
 		/*
 		 * Initialize the managers
@@ -69,15 +74,23 @@ public class ListenerAdapterManager extends ListenerAdapter {
 	 * @param components
 	 */
 	public void upsertInteractions(Collection<InteractableEvent> interactions) {
+		// Each interaction will work independently from one
+		// another. The key here is to also store the parent
+		// InteractableEvent to use as the general case for
+		// the event whenever used.
 		for(InteractableEvent interaction : interactions) {
 			if (interaction instanceof ModalI modal)
 				this.modals.add(modal);
 			if (interaction instanceof ButtonI button)
-				this.buttons.add(button);
+				button.getClass().getFields()[0].isAnnotationPresent(null)
+				this.buttons.add(button.get);
 			if (interaction instanceof CommandI command)
-				this.commands.add(command);
+				this.commands.put(command.getCommandName(), command);
 			if (interaction instanceof MessengerI messenger)
 				this.messages.add(messenger);
+			
+			// Add the interaction interface itself
+			interactableEvents.add(interaction);
 		}
 	}
 	
@@ -85,35 +98,23 @@ public class ListenerAdapterManager extends ListenerAdapter {
 	 * Free all memory after bot shuts down
 	 */
 	public void dispose() {
-		for(ModalI modal : modals)
-			modal.dispose();
-		for(ButtonI button : buttons)
-			button.dispose();
-		for(CommandI command : commands)
-			command.dispose();
-		for(MessengerI messenger : messages)
-			messenger.dispose();
+		for(InteractableEvent interaction : interactableEvents)
+			interaction.dispose();
 		
 		modals.clear();
 		buttons.clear();
 		commands.clear();
 		messages.clear();
+		interactableEvents.clear();
 	}
 	
 	@Override
 	public void onReady(ReadyEvent event) {
-		for(ModalI modal : modals) {
-			modal.init(event);
-		}
-		for(ButtonI button : buttons) {
-			button.init(event);
-		}
-		for(CommandI command : commands) {
-			upsertCommand(event);
-			command.init(event);
-		}
-		for(MessengerI messenger : messages) {
-			messenger.init(event);
+		for(InteractableEvent interaction : interactableEvents) {
+			if (interaction instanceof CommandI)
+				upsertCommand(event);
+			
+			interaction.init(event);
 		}
 	}
 	
@@ -162,12 +163,15 @@ public class ListenerAdapterManager extends ListenerAdapter {
 	
 	@Override
 	public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
-		for(CommandI command : commands) {
-			if(!command.getCommandName().equals(event.getName()))
-				continue;
+		// Look for the command in table by name
+		// if the command is not registered it will
+		// throw an error message.
+		CommandI command = commands.get(event.getName());
+		
+		if(command != null)
 			command.execute(event);
-			return;
-		}
+		else
+			event.reply("The command you entered is not registered!").queue();
 	}
 	
 	@Override
@@ -181,7 +185,7 @@ public class ListenerAdapterManager extends ListenerAdapter {
 	
 	private void upsertCommand(ReadyEvent event) {
 		for(Guild server : event.getJDA().getGuilds()) {
-			for(CommandI command : commands) {
+			for(CommandI command : commands.values()) {
 				/*
 				 * Commands that are global, are commands
 				 * that are accessible throughout all servers
