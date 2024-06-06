@@ -4,19 +4,22 @@
 package assistant.cmd.moderation;
 
 import java.awt.Color;
+import java.util.List;
 import java.util.Optional;
 
-import application.core.Configs;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.interactions.components.text.TextInput;
+import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
+import net.dv8tion.jda.api.interactions.modals.Modal;
 import services.bot.interactions.CommandI;
 import services.bot.interactions.InteractionModel;
 
@@ -28,22 +31,36 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	private static final String COMMAND_LABEL = "channel";
 	
 	private boolean isGlobal;
+	private Modal verifyPrompt;
 	private Button verifyButton;
 	
 	public VerificationCmd() {
-		super.addCommandOption(OptionType.STRING, COMMAND_LABEL, "select channel", true);
+		// Create an Email field to be displayed inside the modal
+		TextInput email = TextInput.create("email-id", "Email", TextInputStyle.SHORT)
+				.setMinLength(9)
+				.setMaxLength(100)
+				.setRequired(true)
+				.setPlaceholder("your.email@upr.edu")
+				.build();
+		
+		// Create a FunFacts field to be displayed inside the modal
+		TextInput funfacts = TextInput.create("funfact-id", "Fun facts about you :)", TextInputStyle.PARAGRAPH)
+				.setMinLength(1)
+				.setMaxLength(255)
+				.setRequired(false)
+				.setPlaceholder("Tell us more about you!")
+				.build();
+		
+		// Create a simple modal containing two text fields
+		// in which the user will enter his email to log-in and
+		// a fun fact about them
+		super.registerModal(this::onModalVerificationRespond, 
+			verifyPrompt = Modal.create("mem-verification", "Member verification")
+				.addComponents(ActionRow.of(email), ActionRow.of(funfacts))
+				.build()
+			);
 
 		super.registerButton(this::onVerificationEvent, verifyButton = Button.success("verification-button", "verify"));
-	}
-	
-	@Override
-	public void init(ReadyEvent event) {
-
-	}
-	
-	@Override
-	public void dispose() {
-		
 	}
 	
 	@Override
@@ -65,51 +82,37 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	public String getDescription() {
 		return "Sends an embed to verify user to a channel of choice";
 	}
-
+	
+	@Override
+	public List<OptionData> getOptions() {
+		return List.of(new OptionData(OptionType.STRING, COMMAND_LABEL, "select channel to send verification message", true));
+	}
+	
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
 		
-		Optional<String> enteredChannel = Optional.ofNullable(event.getOption(COMMAND_LABEL).getAsString());
+		if(!super.validateCommandUse(event))
+			return;
 		
-		// Check if input was given successfully
-		if (enteredChannel.isPresent()) {
-			Optional<TextChannel> textChannel = Optional.ofNullable(event.getGuild().getTextChannelById(enteredChannel.get()));
-			
-			// Check if the channel is in server
-			if (textChannel.isPresent()) {
-				event.reply("Verification embed sent to " + textChannel.get().getName()).setEphemeral(true).queue();
-				sendVerificationEmbed(textChannel.get());
-			}
-			else
-				event.reply("Channel not found").setEphemeral(true).queue();
-		} else {
-			event.reply("Invalid entry").setEphemeral(true).queue();
+		String logChannel = event.getOption(COMMAND_LABEL).getAsString();
+		
+		try {
+			Long.parseLong(logChannel);
+		} catch (NumberFormatException nfe) {
+			event.reply("The id provided for the verification-channel is not a valid number").setEphemeral(true).queue();
+			return;
 		}
 		
+		// Check if input was given successfully
+		Optional<TextChannel> textChannel = Optional.ofNullable(event.getGuild().getTextChannelById(logChannel));
 		
-//		if (!validateUser(event.getGuild(), event.getMember())) {
-//			event.reply("You dont have the permissions to run this command").setEphemeral(true).queue();
-//			return;
-//		}
-//		
-//		OptionMapping programOption = event.getOption(COMMAND_LABEL);
-//		
-//		if (programOption.getAsString().equals(OPTION_DISCONNECT)) {
-//			event.reply("Shutting down...").setEphemeral(true).queue();
-//			bot.shutdown();
-//		} else {
-//			// skip this action if no reply was provided
-//			event.reply("Mmhh this command does nothing, try again with another one").setEphemeral(true).queue();
-//		}
-	}
-	
-	private void onVerificationEvent(ButtonInteractionEvent event) {
-		System.out.println("Interacted with button");
-	}
-	
-	private boolean validateUser(Guild server, Member member) {
-		Role requiredRole = server.getRolesByName(Configs.get().assistantConfigs().developer_role, true).get(0);
-		return member.getRoles().contains(requiredRole);
+		// Check if the channel is in server
+		if (textChannel.isPresent()) {
+			event.reply("Verification embed sent to " + textChannel.get().getName()).setEphemeral(true).queue();
+			sendVerificationEmbed(textChannel.get());
+		}
+		else
+			event.reply("Channel not found").setEphemeral(true).queue();
 	}
 	
 	private void sendVerificationEmbed(TextChannel textChannel) {
@@ -172,4 +175,20 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 			.setActionRow(verifyButton)
 			.queue();
 	}
+	
+	private void onVerificationEvent(ButtonInteractionEvent event) {
+		// Show the verification modal to the user
+		event.replyModal(verifyPrompt).queue();
+	}
+	
+	private void onModalVerificationRespond(ModalInteractionEvent event) {
+		 // Retrieve the values entered by the user
+        String email = event.getValue("email-id").getAsString();
+        String funfacts = event.getValue("funfact-id").getAsString();
+
+        // Respond to the user (ephemeral response)
+        event.reply("Thank you for verifying, any time soon you'll be able to have all the coresponding roles").setEphemeral(true).queue();
+
+        //
+    }
 }

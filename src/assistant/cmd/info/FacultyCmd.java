@@ -4,22 +4,21 @@
 package assistant.cmd.info;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.List;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import services.bot.interactions.CommandI;
+import services.bot.interactions.InteractionModel;
 
 /**
  * @author Alfredo
  *
  */
-public class FacultyCmd implements CommandI {
+public class FacultyCmd extends InteractionModel implements CommandI {
 
 	private static final String COMMAND_LABEL = "department";
 	
@@ -27,27 +26,11 @@ public class FacultyCmd implements CommandI {
 	private static final String OPTION_SELECTED_INSO_CIIC = "INSO/CIIC";
 	
 	private boolean isGlobal;
-	private List<OptionData> options;
 	
 	public FacultyCmd() {
-		this.options = new ArrayList<>();
-		
-		options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje un departamento", true)
-				.addChoice("INEL/ICOM - Department", OPTION_SELECTED_INEL_ICOM)
-				.addChoice("INSO/CIIC - Department", OPTION_SELECTED_INSO_CIIC)
-		);
-	}
-	
-	@Override
-	public void init(ReadyEvent event) {
 		
 	}
 	
-	@Override
-	public void dispose() {
-		options.clear();
-	}
-
 	@Override
 	public boolean isGlobal() {
 		return isGlobal;
@@ -70,7 +53,11 @@ public class FacultyCmd implements CommandI {
 
 	@Override
 	public List<OptionData> getOptions() {
-		return options;
+		return List.of(
+			new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje un departamento", true)
+				.addChoice("INEL/ICOM - Department", OPTION_SELECTED_INEL_ICOM)
+				.addChoice("INSO/CIIC - Department", OPTION_SELECTED_INSO_CIIC)
+			);
 	}
 
 	@Override

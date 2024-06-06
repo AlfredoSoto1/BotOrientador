@@ -4,22 +4,21 @@
 package assistant.cmd.files;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.utils.FileUpload;
 import services.bot.interactions.CommandI;
+import services.bot.interactions.InteractionModel;
 
 /**
  * @author Alfredo
  *
  */
-public class CurriculumCmd implements CommandI {
+public class CurriculumCmd extends InteractionModel implements CommandI {
 
 	private static final String COMMAND_LABEL = "program";
 	
@@ -51,35 +50,16 @@ public class CurriculumCmd implements CommandI {
 	private File CIICcurriculum;
 	
 	private boolean isGlobal;
-	private List<OptionData> options;
 	
 	public CurriculumCmd() {
-		this.options = new ArrayList<>();
-		
-		// Load the curriculums
+		// TODO This are not dynamically set. Find a way of
+		// load it every time the command gets called, but reduce the command output time
 		this.INELcurriculum = new File("assets/pdfs/curriculos/INEL.pdf");
 		this.ICOMcurriculum = new File("assets/pdfs/curriculos/ICOM.pdf");
 		this.INSOcurriculum = new File("assets/pdfs/curriculos/INSO.pdf");
 		this.CIICcurriculum = new File("assets/pdfs/curriculos/CIIC.pdf");
-		
-		options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje un programa de estudio", true)
-				.addChoice("INEL - Electrical Engineering", OPTION_CHOICE_INEL)
-				.addChoice("ICOM - Computer Engineering", OPTION_CHOICE_ICOM)
-				.addChoice("INSO - Software Engineering", OPTION_CHOICE_INSO)
-				.addChoice("CIIC - Computer Science & Engineering", OPTION_CHOICE_CIIC)
-		);
 	}
 	
-	@Override
-	public void init(ReadyEvent event) {
-		
-	}
-	
-	@Override
-	public void dispose() {
-		options.clear();
-	}
-
 	@Override
 	public boolean isGlobal() {
 		return isGlobal;
@@ -102,7 +82,13 @@ public class CurriculumCmd implements CommandI {
 
 	@Override
 	public List<OptionData> getOptions() {
-		return options;
+		return List.of(
+			new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje un programa de estudio", true)
+				.addChoice("INEL - Electrical Engineering", OPTION_CHOICE_INEL)
+				.addChoice("ICOM - Computer Engineering", OPTION_CHOICE_ICOM)
+				.addChoice("INSO - Software Engineering", OPTION_CHOICE_INSO)
+				.addChoice("CIIC - Computer Science & Engineering", OPTION_CHOICE_CIIC)
+			);
 	}
 
 	@Override
@@ -134,5 +120,4 @@ public class CurriculumCmd implements CommandI {
 				event.reply(NOT_FOUND_CURRICULUM).queue();
 		}
 	}
-
 }

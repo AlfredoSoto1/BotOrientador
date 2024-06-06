@@ -3,8 +3,8 @@
  */
 package assistant.app;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import assistant.cmd.contacts.AcademicAdvisoryCmd;
 import assistant.cmd.contacts.DCSPCmd;
@@ -28,17 +28,18 @@ import assistant.cmd.links.LinksCmd;
 import assistant.cmd.links.MadeWebCmd;
 import assistant.cmd.moderation.AssistantCmd;
 import assistant.cmd.moderation.RegistrationCmd;
+import assistant.cmd.moderation.RoleSelectionCmd;
 import assistant.cmd.moderation.VerificationCmd;
 import services.bot.core.BotApplication;
 import services.bot.core.ListenerAdapterManager;
-import services.bot.interactions.InteractableEvent;
+import services.bot.interactions.InteractionModel;
 
 /**
  * 
  */
 public class ECEAssistant extends BotApplication {
 
-	private List<InteractableEvent> interactions;
+	private Set<InteractionModel> interactions;
 	
 	/**
 	 * 
@@ -46,7 +47,7 @@ public class ECEAssistant extends BotApplication {
 	 */
 	public ECEAssistant(String token) {
 		super(token);
-		this.interactions = new ArrayList<>();
+		this.interactions = new HashSet<>();
 	}
 
 	@Override
@@ -181,6 +182,7 @@ public class ECEAssistant extends BotApplication {
 		interactions.add(new AssistantCmd(this));
 		interactions.add(new VerificationCmd());
 		interactions.add(new RegistrationCmd());
+		interactions.add(new RoleSelectionCmd());
 		
 		// Do a registration server command
 	}

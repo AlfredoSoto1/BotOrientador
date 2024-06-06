@@ -3,21 +3,20 @@
  */
 package assistant.cmd.info;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import services.bot.interactions.CommandI;
+import services.bot.interactions.InteractionModel;
 
 /**
  * @author Alfredo
  *
  */
-public class EOInfoCmd implements CommandI {
+public class EOInfoCmd extends InteractionModel implements CommandI {
 
 	/*
 	 * 
@@ -34,25 +33,11 @@ public class EOInfoCmd implements CommandI {
 	private static final String GERH_ID = "GERH-ID";
 	
 	private boolean isGlobal;
-	private List<OptionData> options;
 	
 	public EOInfoCmd() {
-		this.options = new ArrayList<>();
 		
-		options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje un departamento", true)
-			.addChoice("INEL - Electrical Engineering", INEL_ID)
-			.addChoice("ICOM - Computer Engineering",   ICOM_ID)
-			.addChoice("INSO - Software Engineering",   INSO_ID)
-			.addChoice("CIIC - Computer Science & Engineering", CIIC_ID)
-			.addChoice("ININ - Ingeniería Industrial", ININ_ID)
-			.addChoice("GERH - Gerencia", GERH_ID)
-		);
 	}
 	
-	@Override
-	public void init(ReadyEvent event) {
-	}
-
 	@Override
 	public boolean isGlobal() {
 		return isGlobal;
@@ -61,11 +46,6 @@ public class EOInfoCmd implements CommandI {
 	@Override
 	public void setGlobal(boolean isGlobal) {
 		this.isGlobal = isGlobal;
-	}
-	
-	@Override
-	public void dispose() {
-		options.clear();
 	}
 	
 	@Override
@@ -80,7 +60,15 @@ public class EOInfoCmd implements CommandI {
 
 	@Override
 	public List<OptionData> getOptions() {
-		return options;
+		return List.of(
+			new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje un departamento", true)
+				.addChoice("INEL - Electrical Engineering", INEL_ID)
+				.addChoice("ICOM - Computer Engineering",   ICOM_ID)
+				.addChoice("INSO - Software Engineering",   INSO_ID)
+				.addChoice("CIIC - Computer Science & Engineering", CIIC_ID)
+				.addChoice("ININ - Ingeniería Industrial", ININ_ID)
+				.addChoice("GERH - Gerencia", GERH_ID)
+			);
 	}
 
 	@Override

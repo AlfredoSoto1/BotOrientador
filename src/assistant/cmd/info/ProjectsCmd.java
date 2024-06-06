@@ -4,22 +4,21 @@
 package assistant.cmd.info;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.List;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import services.bot.interactions.CommandI;
+import services.bot.interactions.InteractionModel;
 
 /**
  * @author Alfredo
  *
  */
-public class ProjectsCmd implements CommandI {
+public class ProjectsCmd extends InteractionModel implements CommandI {
 
 	private static final String COMMAND_LABEL = "select-projects";
 	
@@ -34,32 +33,9 @@ public class ProjectsCmd implements CommandI {
 	private static final String OPTION_SELECTED_RUMARINO = "rumarino";
 	
 	private boolean isGlobal;
-	private List<OptionData> options;
 	
 	public ProjectsCmd() {
-		this.options = new ArrayList<>();
-		
-		this.options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje un departamento", true)
-			.addChoice("RUM-Air", OPTION_SELECTED_AIR)
-			.addChoice("NASA RASC-AL", OPTION_SELECTED_NASA)
-			.addChoice("RUMarino", OPTION_SELECTED_RUMARINO)
-			.addChoice("Alpha Astrum", OPTION_SELECTED_ALPHA)
-			.addChoice("Project Vanguard", OPTION_SELECTED_VANGUARD)
-			.addChoice("UPRM Roboboat Team", OPTION_SELECTED_ROBOBOAT)
-			.addChoice("Colegio Racing Engineering", OPTION_SELECTED_RACING)
-			.addChoice("The Solar Engineering Research and Racing Team", OPTION_SELECTED_SOLAR)
-			.addChoice("Student for the Exploration and Development of Space", OPTION_SELECTED_SEDS)
-		);
-	}
-	
-	@Override
-	public void init(ReadyEvent event) {
-		
-	}
-	
-	@Override
-	public void dispose() {
-		options.clear();
+
 	}
 
 	@Override
@@ -84,7 +60,18 @@ public class ProjectsCmd implements CommandI {
 
 	@Override
 	public List<OptionData> getOptions() {
-		return options;
+		return List.of(
+			new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje un departamento", true)
+				.addChoice("RUM-Air", OPTION_SELECTED_AIR)
+				.addChoice("NASA RASC-AL", OPTION_SELECTED_NASA)
+				.addChoice("RUMarino", OPTION_SELECTED_RUMARINO)
+				.addChoice("Alpha Astrum", OPTION_SELECTED_ALPHA)
+				.addChoice("Project Vanguard", OPTION_SELECTED_VANGUARD)
+				.addChoice("UPRM Roboboat Team", OPTION_SELECTED_ROBOBOAT)
+				.addChoice("Colegio Racing Engineering", OPTION_SELECTED_RACING)
+				.addChoice("The Solar Engineering Research and Racing Team", OPTION_SELECTED_SOLAR)
+				.addChoice("Student for the Exploration and Development of Space", OPTION_SELECTED_SEDS)
+			);
 	}
 
 	@Override

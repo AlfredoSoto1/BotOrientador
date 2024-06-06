@@ -4,36 +4,26 @@
 package assistant.cmd.links;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.List;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import services.bot.interactions.CommandI;
-import services.bot.interactions.InteractableEvent;
+import services.bot.interactions.InteractionModel;
 
 /**
  * @author Alfredo
  *
  */
-public class LinksCmd implements CommandI {
+public class LinksCmd extends InteractionModel implements CommandI {
 
 	private boolean isGlobal;
-	private List<OptionData> options;
 	
 	public LinksCmd() {
-		this.options = new ArrayList<>();
 		
 	}
 	
-	@Override
-	@Deprecated
-	public void init(ReadyEvent event) {
-
-	}
-
 	@Override
 	public boolean isGlobal() {
 		return isGlobal;
@@ -42,11 +32,6 @@ public class LinksCmd implements CommandI {
 	@Override
 	public void setGlobal(boolean isGlobal) {
 		this.isGlobal = isGlobal;
-	}
-	
-	@Override
-	public void dispose() {
-		options.clear();
 	}
 	
 	@Override
@@ -61,7 +46,7 @@ public class LinksCmd implements CommandI {
 
 	@Override
 	public List<OptionData> getOptions() {
-		return options;
+		return List.of();
 	}
 
 	@Override

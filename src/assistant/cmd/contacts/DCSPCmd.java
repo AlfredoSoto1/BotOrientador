@@ -4,37 +4,24 @@
 package assistant.cmd.contacts;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.List;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import services.bot.interactions.CommandI;
+import services.bot.interactions.InteractionModel;
 
 /**
  * @author Alfredo
  *
  */
-public class DCSPCmd implements CommandI {
+public class DCSPCmd extends InteractionModel implements CommandI {
 	
 	private boolean isGlobal;
-	private List<OptionData> options;
 	
 	public DCSPCmd() {
-		this.options = new ArrayList<>();
 		
-	}
-	
-	@Override
-	public void init(ReadyEvent event) {
-		
-	}
-	
-	@Override
-	public void dispose() {
-		options.clear();
 	}
 
 	@Override
@@ -59,7 +46,7 @@ public class DCSPCmd implements CommandI {
 
 	@Override
 	public List<OptionData> getOptions() {
-		return options;
+		return List.of();
 	}
 
 	@Override

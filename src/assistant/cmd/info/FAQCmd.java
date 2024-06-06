@@ -4,21 +4,20 @@
 package assistant.cmd.info;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.List;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import services.bot.interactions.CommandI;
+import services.bot.interactions.InteractionModel;
 
 /**
  * @author Alfredo
  *
  */
-public class FAQCmd implements CommandI {
+public class FAQCmd extends InteractionModel implements CommandI {
 
 	private boolean isGlobal;
 	
@@ -26,16 +25,6 @@ public class FAQCmd implements CommandI {
 
 	}
 	
-	@Override
-	public void init(ReadyEvent event) {
-	
-	}
-	
-	@Override
-	public void dispose() {
-		
-	}
-
 	@Override
 	public boolean isGlobal() {
 		return isGlobal;
@@ -58,7 +47,7 @@ public class FAQCmd implements CommandI {
 
 	@Override
 	public List<OptionData> getOptions() {
-		return new ArrayList<>();
+		return List.of(); // Nothing
 	}
 	
 	@Override

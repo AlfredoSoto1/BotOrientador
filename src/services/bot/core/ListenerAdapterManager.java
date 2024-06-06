@@ -3,7 +3,6 @@
  */
 package services.bot.core;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -11,21 +10,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.events.session.ShutdownEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import services.bot.interactions.ButtonI;
+import services.bot.interactions.ButtonActionEvent;
 import services.bot.interactions.CommandI;
-import services.bot.interactions.InteractableEvent;
+import services.bot.interactions.InteractionModel;
 import services.bot.interactions.MessengerI;
-import services.bot.interactions.ModalI;
+import services.bot.interactions.ModalActionEvent;
+import services.bot.interactions.SelectMenuActionEvent;
 
 /**
  * @author Alfredo
@@ -35,25 +34,33 @@ public class ListenerAdapterManager extends ListenerAdapter {
 	
 	private CountDownLatch latch;
 	
-	private Map<String, ModalI> modals;
-	private Map<String, ButtonI> buttons;
-	private Map<String, CommandI> commands;
 	private List<MessengerI> messages;
-	private List<InteractableEvent> interactableEvents;
+	private Map<String, CommandI> commands;
+
+	private Map<String, ModalActionEvent> modals;
+	private Map<String, ButtonActionEvent> buttons;
+	private Map<String, SelectMenuActionEvent> selectMenus;
 	
+	private List<InteractionModel> interactions;
+
 	/**
 	 * Create and prepare a list of listener adapters
 	 * to be directly inserted into the JDA's listener
 	 * adapter collection and executed after listening 
 	 * for any callback inside the Discord server
+	 * 
+	 * @param latch
 	 */
 	public ListenerAdapterManager(CountDownLatch latch) {
 		this.latch = latch;
 		this.modals = new HashMap<>();
 		this.buttons = new HashMap<>();
+		this.selectMenus = new HashMap<>();
+		
 		this.commands = new HashMap<>();
 		this.messages = new ArrayList<>();
-		this.interactableEvents = new ArrayList<>();
+		
+		this.interactions = new ArrayList<>();
 		
 		/*
 		 * Initialize the managers
@@ -72,25 +79,23 @@ public class ListenerAdapterManager extends ListenerAdapter {
 	}
 	
 	/**
-	 * @param components
+	 * 
+	 * @param interactions
 	 */
-	public void upsertInteractions(Collection<InteractableEvent> interactions) {
-		// Each interaction will work independently from one
-		// another. The key here is to also store the parent
-		// InteractableEvent to use as the general case for
-		// the event whenever used.
-		for(InteractableEvent interaction : interactions) {
-//			if (interaction instanceof ModalI modal)
-//				this.modals.add(modal);
-//			if (interaction instanceof ButtonI button)
-//				this.buttons.add(button.get);
+	public void upsertInteractions(Collection<InteractionModel> interactions) {
+		// We want to add to store each interaction individually.
+		// This is so that each interaction gets its proper work flow and handle.
+		for(InteractionModel interaction : interactions) {
 			if (interaction instanceof CommandI command)
 				this.commands.put(command.getCommandName(), command);
 			if (interaction instanceof MessengerI messenger)
 				this.messages.add(messenger);
 			
-			// Add the interaction interface itself
-			interactableEvents.add(interaction);
+			this.interactions.add(interaction);
+			
+			modals.putAll(interaction.getRegisteredModals());
+			buttons.putAll(interaction.getRegisteredButtons());
+			selectMenus.putAll(interaction.getRegisteredSelectMenu());
 		}
 	}
 	
@@ -98,28 +103,32 @@ public class ListenerAdapterManager extends ListenerAdapter {
 	 * Free all memory after bot shuts down
 	 */
 	public void dispose() {
-		for(InteractableEvent interaction : interactableEvents)
-			interaction.dispose();
-		
 		modals.clear();
 		buttons.clear();
+		selectMenus.clear();
 		commands.clear();
 		messages.clear();
-		interactableEvents.clear();
+		interactions.clear();
 	}
 	
 	@Override
 	public void onReady(ReadyEvent event) {
-		for(InteractableEvent interaction : interactableEvents) {
-			if (interaction instanceof CommandI)
-				upsertCommand(event);
-			
-			interaction.init(event);
+		// Delete all commands before re-upserting them
+		// This ensures there is no residual command from testing
+		event.getJDA().updateCommands().queue();
+		event.getJDA().getGuilds().forEach(server -> server.updateCommands().queue());
+		
+		for(InteractionModel interaction : interactions) {
+			interaction.upsertCommand(event);
+			interaction.onInit(event);
 		}
 	}
 	
 	@Override
 	public void onShutdown(ShutdownEvent event) {
+		for(InteractionModel interaction : interactions)
+			interaction.onDispose();
+		
 		// Start the count down to let know the main
 		// thread when to dispose all content generated
 		// asynchronously from the bot application
@@ -139,34 +148,33 @@ public class ListenerAdapterManager extends ListenerAdapter {
 	
 	@Override
 	public void onModalInteraction(ModalInteractionEvent event) {
-//		for(ModalI modal : modals) {
-//			// Check if the modal that currently is having an action to
-//			// be executed to run the modal results
-//			if(modal.getModalIDs().contains(event.getModalId())) {
-//				modal.modalResults(event);
-//				// Once the modal results have been produced, we can
-//				// exit the loop since we don't need to keep looking
-//				// for more events. Since the JDA execute this onModalInteraction() method
-//				// in queue after each command triggered the modal
-//				return;
-//			}
-//		}
+		ModalActionEvent action = modals.get(event.getModalId());
+		
+		if(action != null)
+			action.modalResults(event);
+		else
+			event.reply("The modal that you are interacting with is not registered!").queue();
 	}
 	
 	@Override
 	public void onButtonInteraction(ButtonInteractionEvent event) {
-//		for(ButtonI button : buttons) {
-//			if(button.getButtonIDs().contains(event.getButton().getId()))
-//				button.onButtonEvent(event.getButton().getId(), event);
-//		}
+		ButtonActionEvent action = buttons.get(event.getComponentId());
 		
-		ButtonI button = buttons.get(event.getId());
-		
-		if(button != null)
-			button.onButtonEvent(event.getId(), event);
+		if(action != null)
+			action.onAction(event);
 		else
 			event.reply("The button that you are interacting with is not registered!").queue();
 	}
+	
+	@Override
+    public void onStringSelectInteraction(StringSelectInteractionEvent event) {
+		SelectMenuActionEvent action = selectMenus.get(event.getComponentId());
+		
+		if(action != null)
+			action.onMenuSelection(event);
+		else
+			event.reply("The Select Menu that you are interacting with is not registered!").queue();
+    }
 	
 	@Override
 	public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
@@ -189,40 +197,4 @@ public class ListenerAdapterManager extends ListenerAdapter {
 		for(MessengerI messenger : messages)
 			messenger.messageReceived(event);
 	}
-	
-	private void upsertCommand(ReadyEvent event) {
-		for(Guild server : event.getJDA().getGuilds()) {
-			for(CommandI command : commands.values()) {
-				/*
-				 * Commands that are global, are commands
-				 * that are accessible throughout all servers
-				 * and private channels that the bot can interact with the user.
-				 */
-				if(command.isGlobal()) {
-					// For global commands, they get inserted
-					// directly into the JDA when it loads.
-					// This action can take a long time to see
-					// the command fully activated in the server.
-					event.getJDA().upsertCommand(
-						command.getCommandName(), 
-						command.getDescription()
-					)
-					.addOptions(command.getOptions())
-					.queue();
-				} else {
-					// For non global commands, they get
-					// inserted directly into the server.
-					// This has no delay when looking for the
-					// command in the server where the bot is.
-					server.upsertCommand(
-						command.getCommandName(),
-						command.getDescription()
-					)
-					.addOptions(command.getOptions())
-					.queue();
-				}
-			}
-		}
-	}
-	
 }

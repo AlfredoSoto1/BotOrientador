@@ -10,7 +10,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
  * @author Alfredo
  *
  */
-public interface MessengerI extends InteractableEvent {
+public interface MessengerI {
 
 	/**
 	 * 

@@ -4,22 +4,21 @@
 package assistant.cmd.info;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.List;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import services.bot.interactions.CommandI;
+import services.bot.interactions.InteractionModel;
 
 /**
  * @author Alfredo
  *
  */
-public class OrgsCmd implements CommandI {
+public class OrgsCmd extends InteractionModel implements CommandI {
 
 	private static final String COMMAND_LABEL = "select-orgs";
 	
@@ -39,39 +38,11 @@ public class OrgsCmd implements CommandI {
 	private static final String OPTION_SELECTED_PHOTONICS = "photonics";
 	
 	private boolean isGlobal;
-	private List<OptionData> options;
 
 	public OrgsCmd() {
-		this.options = new ArrayList<>();
-		
-		this.options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje una organización", true)
-			.addChoice("IEEE", OPTION_SELECTED_IEEE)
-			.addChoice("HKN-Eta Kappa Nu", OPTION_SELECTED_HKN)
-			.addChoice("WIE-Women in Engineering", OPTION_SELECTED_WIE)
-			.addChoice("PES-Power & Energy Society", OPTION_SELECTED_PES)
-			.addChoice("ALPHA_AST-Alpha Astrum", OPTION_SELECTED_ALPHA_AST)
-			.addChoice("EMC-Electromagnetics Council", OPTION_SELECTED_EMC)
-			.addChoice("COMP_SOC-Computer Society", OPTION_SELECTED_COMP_SOC)
-			.addChoice("CAS-Circuits And Systems Society", OPTION_SELECTED_CAS)
-			.addChoice("PHOTONICS-Photonics Society", OPTION_SELECTED_PHOTONICS)
-			.addChoice("ACM_CSE-Association for Computing Machinery", OPTION_SELECTED_ACM_CSE)
-			.addChoice("SHPE-Society of Hispanic Professional Engineers", OPTION_SELECTED_SHPE)
-			.addChoice("CASHI-Computing Alliance of Hispanic-Serving Institution", OPTION_SELECTED_CASHI)
-			.addChoice("RAS_CSS-Robotics and Automation Society & Control Systems Society", OPTION_SELECTED_RAS_CSS)
-			.addChoice("EBM-Engineering in Medicine and Biology Society UPRM Student Chapter (EMB)", OPTION_SELECTED_EBM)
-		);
-	}
-	
-	@Override
-	public void init(ReadyEvent event) {
 		
 	}
 	
-	@Override
-	public void dispose() {
-		options.clear();
-	}
-
 	@Override
 	public boolean isGlobal() {
 		return isGlobal;
@@ -94,7 +65,23 @@ public class OrgsCmd implements CommandI {
 
 	@Override
 	public List<OptionData> getOptions() {
-		return options;
+		return List.of(
+			new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje una organización", true)
+				.addChoice("IEEE", OPTION_SELECTED_IEEE)
+				.addChoice("HKN-Eta Kappa Nu", OPTION_SELECTED_HKN)
+				.addChoice("WIE-Women in Engineering", OPTION_SELECTED_WIE)
+				.addChoice("PES-Power & Energy Society", OPTION_SELECTED_PES)
+				.addChoice("ALPHA_AST-Alpha Astrum", OPTION_SELECTED_ALPHA_AST)
+				.addChoice("EMC-Electromagnetics Council", OPTION_SELECTED_EMC)
+				.addChoice("COMP_SOC-Computer Society", OPTION_SELECTED_COMP_SOC)
+				.addChoice("CAS-Circuits And Systems Society", OPTION_SELECTED_CAS)
+				.addChoice("PHOTONICS-Photonics Society", OPTION_SELECTED_PHOTONICS)
+				.addChoice("ACM_CSE-Association for Computing Machinery", OPTION_SELECTED_ACM_CSE)
+				.addChoice("SHPE-Society of Hispanic Professional Engineers", OPTION_SELECTED_SHPE)
+				.addChoice("CASHI-Computing Alliance of Hispanic-Serving Institution", OPTION_SELECTED_CASHI)
+				.addChoice("RAS_CSS-Robotics and Automation Society & Control Systems Society", OPTION_SELECTED_RAS_CSS)
+				.addChoice("EBM-Engineering in Medicine and Biology Society UPRM Student Chapter (EMB)", OPTION_SELECTED_EBM)
+			);
 	}
 
 	@Override

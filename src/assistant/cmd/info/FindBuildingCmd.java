@@ -3,51 +3,30 @@
  */
 package assistant.cmd.info;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import services.bot.interactions.CommandI;
+import services.bot.interactions.InteractionModel;
 
 /**
  * @author Alfredo
  *
  */
-public class FindBuildingCmd implements CommandI {
+public class FindBuildingCmd extends InteractionModel implements CommandI {
 
 	private static final String COMMAND_LABEL = "location";
 	
 //	private DBBuildingManager dbBuildingManager;
 	
 	private boolean isGlobal;
-	private List<OptionData> options;
 	
 	public FindBuildingCmd() {
-		this.options = new ArrayList<>();
 //		this.dbBuildingManager = new DBBuildingManager();
-		this.options.add(new OptionData(OptionType.STRING, COMMAND_LABEL, "Dime que salón necesitas encontrar", true));
 	}
 	
-	@Override
-	public void init(ReadyEvent event) {
-		// When bot starts, pull from database all google
-		// pins of all buildings stored in database. This is
-		// to completely avoid the access, reading and writing to
-		// database every time the command is called. This speeds
-		// up the command execution for all members
-		
-//		dbBuildingManager.loadBuildingPins();
-	}
-	
-	@Override
-	public void dispose() {
-		options.clear();
-//		dbBuildingManager.dispose();
-	}
-
 	@Override
 	public boolean isGlobal() {
 		return isGlobal;
@@ -70,7 +49,7 @@ public class FindBuildingCmd implements CommandI {
 
 	@Override
 	public List<OptionData> getOptions() {
-		return options;
+		return List.of(new OptionData(OptionType.STRING, COMMAND_LABEL, "Dime que salón necesitas encontrar", true));
 	}
 
 	@Override
