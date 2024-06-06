@@ -16,6 +16,10 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
+import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveAllEvent;
+import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEmojiEvent;
+import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.events.session.ShutdownEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -139,11 +143,38 @@ public class ListenerAdapterManager extends ListenerAdapter {
 	public void onGuildMemberJoin(GuildMemberJoinEvent event) {
 		if(event.getUser().isBot())
 			return;
-		
 		// This results as a message output to a
 		// user when it joins the server
 		for(MessengerI messenger : messages)
 			messenger.memberJoin(event);
+	}
+	
+	@Override
+	public void onMessageReceived(MessageReceivedEvent event) {
+		if(event.getAuthor().isBot())
+			return;
+		for(MessengerI messenger : messages)
+			messenger.messageReceived(event);
+	}
+	
+	@Override
+    public void onMessageReactionAdd(MessageReactionAddEvent event) {
+		// TODO
+	}
+    
+	@Override
+    public void onMessageReactionRemove(MessageReactionRemoveEvent event) {
+		
+	}
+
+	@Override
+    public void onMessageReactionRemoveAll(MessageReactionRemoveAllEvent event) {
+		
+	}
+	
+	@Override
+    public void onMessageReactionRemoveEmoji(MessageReactionRemoveEmojiEvent event) {
+		
 	}
 	
 	@Override
@@ -187,14 +218,5 @@ public class ListenerAdapterManager extends ListenerAdapter {
 			command.execute(event);
 		else
 			event.reply("The command you entered is not registered!").queue();
-	}
-	
-	@Override
-	public void onMessageReceived(MessageReceivedEvent event) {
-		if(event.getAuthor().isBot())
-			return;
-		
-		for(MessengerI messenger : messages)
-			messenger.messageReceived(event);
 	}
 }

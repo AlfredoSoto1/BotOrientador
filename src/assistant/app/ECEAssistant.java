@@ -14,6 +14,7 @@ import assistant.cmd.contacts.EconomicAssistanceCmd;
 import assistant.cmd.contacts.UniversityGuardCmd;
 import assistant.cmd.files.CurriculumCmd;
 import assistant.cmd.files.FreshmanGuideCmd;
+import assistant.cmd.games.GamesCmd;
 import assistant.cmd.info.CalendarCmd;
 import assistant.cmd.info.EOInfoCmd;
 import assistant.cmd.info.FAQCmd;
@@ -183,6 +184,7 @@ public class ECEAssistant extends BotApplication {
 		interactions.add(new VerificationCmd());
 		interactions.add(new RegistrationCmd());
 		interactions.add(new RoleSelectionCmd());
+		interactions.add(new GamesCmd());
 		
 		// Do a registration server command
 	}
