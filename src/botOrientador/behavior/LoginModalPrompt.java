@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.interactions.modals.Modal;
  * @author Alfredo
  *
  */
+@Deprecated
 public class LoginModalPrompt {
 	
 	private String userID;

@@ -13,6 +13,7 @@ import services.bot.orientador.roles.TeamRole;
  * @author Alfredo
  *
  */
+@Deprecated
 public class PrepaRecord extends UserRecord {
 	
 	private int serverLevel;

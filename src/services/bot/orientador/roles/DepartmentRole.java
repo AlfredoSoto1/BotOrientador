@@ -9,6 +9,7 @@ import java.awt.Color;
  * @author Alfredo
  *
  */
+@Deprecated
 public class DepartmentRole {
 	
 	private String name;

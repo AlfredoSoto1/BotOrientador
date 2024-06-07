@@ -7,6 +7,7 @@ package services.bot.orientador.messages;
  * @author Alfredo
  *
  */
+@Deprecated
 public interface WelcomeMessages {
 	
 	public static final String WELCOME_MESSAGE = 

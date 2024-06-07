@@ -11,6 +11,7 @@ import services.bot.orientador.roles.TeamRole;
  * @author Alfredo
  *
  */
+@Deprecated
 public class MemberRecord {
 	
 	private String email;

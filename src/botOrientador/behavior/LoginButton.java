@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
  * @author Alfredo
  *
  */
+@Deprecated
 public class LoginButton {
 	
 	private String buttonID;

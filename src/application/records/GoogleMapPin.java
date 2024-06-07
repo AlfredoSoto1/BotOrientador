@@ -7,6 +7,7 @@ package application.records;
  * @author Alfredo
  *
  */
+@Deprecated
 public class GoogleMapPin {
 
 	private String code;

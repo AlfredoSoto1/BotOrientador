@@ -7,6 +7,7 @@ package services.bot.orientador.roles;
  * @author Alfredo
  *
  */
+@Deprecated
 public class ExtraRoles {
 
 	private boolean prepa;

@@ -164,17 +164,17 @@ public class ListenerAdapterManager extends ListenerAdapter {
     
 	@Override
     public void onMessageReactionRemove(MessageReactionRemoveEvent event) {
-		
+		// TODO
 	}
 
 	@Override
     public void onMessageReactionRemoveAll(MessageReactionRemoveAllEvent event) {
-		
+		// TODO
 	}
 	
 	@Override
     public void onMessageReactionRemoveEmoji(MessageReactionRemoveEmojiEvent event) {
-		
+		// TODO
 	}
 	
 	@Override

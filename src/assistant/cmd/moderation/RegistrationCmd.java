@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.util.List;
 import java.util.Optional;
 
+import assistant.daos.RegistrationDAO;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -20,10 +21,12 @@ import services.bot.interactions.InteractionModel;
  */
 public class RegistrationCmd extends InteractionModel implements CommandI {
 
+	private RegistrationDAO registrationDAO;
+	
 	private boolean isGlobal;
 	
 	public RegistrationCmd() {
-
+		this.registrationDAO = new RegistrationDAO();
 	}
 	
 	@Override
@@ -72,14 +75,14 @@ public class RegistrationCmd extends InteractionModel implements CommandI {
 			return;
 		}
 		
-		Optional<TextChannel> textChannel = Optional.ofNullable(event.getGuild().getTextChannelById(logChannel));
+		Optional<TextChannel> logTextChannel = Optional.ofNullable(event.getGuild().getTextChannelById(logChannel));
 		
 		// Register and validate the server here
 		
 		// Check if the channel is in server
-		if(textChannel.isPresent()) {
+		if(logTextChannel.isPresent()) {
 			event.reply("Assistant Registration Done").setEphemeral(true).queue();
-			sendRegistrationEmbed(departmentOption, textChannel.get());
+			sendRegistrationEmbed(departmentOption, logTextChannel.get());
 		} else {
 			event.reply("Channel not found").setEphemeral(true).queue();
 		}
