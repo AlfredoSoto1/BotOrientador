@@ -4,6 +4,7 @@
 package assistant.cmd.moderation;
 
 import java.awt.Color;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,6 +12,7 @@ import assistant.daos.RegistrationDAO;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.Command.Choice;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import services.bot.interactions.CommandI;
@@ -51,10 +53,15 @@ public class RegistrationCmd extends InteractionModel implements CommandI {
 
 	@Override
 	public List<OptionData> getOptions() {
+		List<Choice> choices = new LinkedList<>();
+		List<String> departments = registrationDAO.getAvailableDepartments();
+		
+		for(String department : departments)
+			choices.add(new Choice(department, department));
+		
 		return List.of(
 			new OptionData(OptionType.STRING, "department", "adapt bot to server", true)
-				.addChoice("ECE", "ECE")
-				.addChoice("CSE", "CSE"),
+				.addChoices(choices),
 				
 			new OptionData(OptionType.STRING, "log-channel", "send server logs", true));
 	}
@@ -77,18 +84,24 @@ public class RegistrationCmd extends InteractionModel implements CommandI {
 		
 		Optional<TextChannel> logTextChannel = Optional.ofNullable(event.getGuild().getTextChannelById(logChannel));
 		
-		// Register and validate the server here
-		
 		// Check if the channel is in server
-		if(logTextChannel.isPresent()) {
-			event.reply("Assistant Registration Done").setEphemeral(true).queue();
-			sendRegistrationEmbed(departmentOption, logTextChannel.get());
-		} else {
+		if(!logTextChannel.isPresent()) {
 			event.reply("Channel not found").setEphemeral(true).queue();
+			return;
 		}
+		// Register the server directly on the database
+		// This request returns a status flag to be used as output
+		// in the embed message.
+		String status = registrationDAO.registerServer(event.getGuild().getIdLong(), Long.parseLong(logChannel), departmentOption);
+		
+		// Prepare the embed message to display on log channel
+		sendRegistrationEmbed(departmentOption, logTextChannel.get(), status);
+		
+		// Reply to the client to close the response
+		event.reply("Assistant Registration Done").setEphemeral(true).queue();
 	}
 	
-	private void sendRegistrationEmbed(String department, TextChannel textChannel) {
+	private void sendRegistrationEmbed(String department, TextChannel textChannel, String status) {
 		
 		/*
 		 * Embedded messages
@@ -104,7 +117,6 @@ public class RegistrationCmd extends InteractionModel implements CommandI {
 		String department_registration_description =
 			"""
 			Department: **%s**
-			Status: <STATUS HERE>
 			""";
 		
 		String log_registration_title =
@@ -113,11 +125,19 @@ public class RegistrationCmd extends InteractionModel implements CommandI {
 			""";
 		String log_registration_description =
 			"""
-			Channel: <Channel HERE>
-			Status: <STATUS HERE>
+			Channel: **%s**
+			Status: **%s**
 			""";
 
-		department_registration_description = String.format(department_registration_description, department);
+		department_registration_description = String.format(
+				department_registration_description,
+				department
+				);
+		log_registration_description = String.format(
+				log_registration_description,
+				textChannel.getIdLong(),
+				status
+			);
 		
 		EmbedBuilder embedBuider = new EmbedBuilder();
 

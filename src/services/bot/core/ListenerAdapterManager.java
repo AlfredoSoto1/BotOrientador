@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+import net.dv8tion.jda.api.events.ExceptionEvent;
+import net.dv8tion.jda.api.events.StatusChangeEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -21,6 +23,8 @@ import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveAllEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEmojiEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
+import net.dv8tion.jda.api.events.session.SessionDisconnectEvent;
+import net.dv8tion.jda.api.events.session.SessionResumeEvent;
 import net.dv8tion.jda.api.events.session.ShutdownEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import services.bot.interactions.ButtonActionEvent;
@@ -138,6 +142,30 @@ public class ListenerAdapterManager extends ListenerAdapter {
 		// asynchronously from the bot application
 		latch.countDown();
 	}
+	
+	@Override
+    public void onSessionDisconnect(SessionDisconnectEvent event) {
+		// Put on hold all tasks when disconnected
+		// NOTE: only put on hold tasks that involve
+		// client request. NOT inner processes
+	}
+	
+	@Override
+    public void onSessionResume(SessionResumeEvent event) {
+		// Resume any tasks here that got interrupted
+	}
+	
+    @Override
+    public void onStatusChange(StatusChangeEvent event) {
+    	// Handle the status of the bot here.
+    	// A status is the current connection that it has
+    	// to the servers. i.e. CONNECTED, DISCONNECTED, CONNECTING
+    }
+    
+    @Override
+    public void onException(ExceptionEvent event) {
+    	// This gets called when an exception happens within JDA
+    }
 	
 	@Override
 	public void onGuildMemberJoin(GuildMemberJoinEvent event) {

@@ -145,6 +145,7 @@ public class ECEAssistant extends BotApplication {
 		AcademicAdvisoryCmd academicAdvisory = new AcademicAdvisoryCmd();
 		EconomicAssistanceCmd economicAssistance = new EconomicAssistanceCmd();
 		
+		
 		dcsp.setGlobal(false);
 		department.setGlobal(false);
 		deanOfStudents.setGlobal(false);

@@ -189,6 +189,6 @@ public class VerificationCmd extends InteractionModel implements CommandI {
         // Respond to the user (ephemeral response)
         event.reply("Thank you for verifying, any time soon you'll be able to have all the coresponding roles").setEphemeral(true).queue();
 
-        //
+        // 
     }
 }
