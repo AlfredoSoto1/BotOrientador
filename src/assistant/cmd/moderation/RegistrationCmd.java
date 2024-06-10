@@ -94,6 +94,8 @@ public class RegistrationCmd extends InteractionModel implements CommandI {
 		// in the embed message.
 		String status = registrationDAO.registerServer(event.getGuild().getIdLong(), Long.parseLong(logChannel), departmentOption);
 		
+		// Register server roles
+		
 		// Prepare the embed message to display on log channel
 		sendRegistrationEmbed(departmentOption, logTextChannel.get(), status);
 		

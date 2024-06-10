@@ -6,8 +6,12 @@ package assistant.cmd.moderation;
 import java.awt.Color;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
+import assistant.daos.VerificationDAO;
+import assistant.models.VerificationReport;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
@@ -30,11 +34,17 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	
 	private static final String COMMAND_LABEL = "channel";
 	
+	private VerificationDAO verificationDAO;
+	private ConcurrentLinkedQueue<VerificationReport> verificationQueue;
+	
 	private boolean isGlobal;
 	private Modal verifyPrompt;
 	private Button verifyButton;
 	
 	public VerificationCmd() {
+		this.verificationDAO = new VerificationDAO();
+		
+		
 		// Create an Email field to be displayed inside the modal
 		TextInput email = TextInput.create("email-id", "Email", TextInputStyle.SHORT)
 				.setMinLength(9)
@@ -55,8 +65,10 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 		// in which the user will enter his email to log-in and
 		// a fun fact about them
 		super.registerModal(this::onModalVerificationRespond, 
-			verifyPrompt = Modal.create("mem-verification", "Member verification")
-				.addComponents(ActionRow.of(email), ActionRow.of(funfacts))
+			verifyPrompt = Modal.create("mem-verification", "Member Verification")
+				.addComponents(
+					ActionRow.of(email), 
+					ActionRow.of(funfacts))
 				.build()
 			);
 
@@ -85,7 +97,8 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	
 	@Override
 	public List<OptionData> getOptions() {
-		return List.of(new OptionData(OptionType.STRING, COMMAND_LABEL, "select channel to send verification message", true));
+		return List.of(
+			new OptionData(OptionType.STRING, COMMAND_LABEL, "select channel to send verification message", true));
 	}
 	
 	@Override
@@ -108,7 +121,7 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 		
 		// Check if the channel is in server
 		if (textChannel.isPresent()) {
-			event.reply("Verification embed sent to " + textChannel.get().getName()).setEphemeral(true).queue();
+			event.reply("Verification embed sent to: " + textChannel.get().getName()).setEphemeral(true).queue();
 			sendVerificationEmbed(textChannel.get());
 		}
 		else
@@ -182,13 +195,39 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	}
 	
 	private void onModalVerificationRespond(ModalInteractionEvent event) {
-		 // Retrieve the values entered by the user
-        String email = event.getValue("email-id").getAsString();
-        String funfacts = event.getValue("funfact-id").getAsString();
-
+		
+		// Obtain the roles of the EOs in charge of Discord
+		Role modRole = event.getGuild().getRolesByName("Moderator", true).get(0);
+		Role bdeRole = event.getGuild().getRolesByName("BotDeveloper", true).get(0);
+		
         // Respond to the user (ephemeral response)
         event.reply("Thank you for verifying, any time soon you'll be able to have all the coresponding roles").setEphemeral(true).queue();
-
-        // 
+        
+        // Retrieve the values entered by the user
+        String email = event.getValue("email-id").getAsString();
+        String funfacts = event.getValue("funfact-id").getAsString();
+        
+        Member member = event.getMember();
+        
+        Optional<VerificationReport> report = verificationDAO.getUserReport(email);
+        
+        if (!report.isPresent()) {
+        	// Send message to member replying that he is not in the database
+        	event.getHook()
+	        	.sendMessageFormat(
+        			"""
+        			Hmm parece que el email que entraste *__%s__* no está en nuestra base de datos :confused:
+        			Por favor trata de nuevo. Si no puedo encontrar tu información, contacta a %s or %s.
+        			
+        			Asegurate que estas usando **__@upr.edu__** ya que se necesita el email institucional para poder ser verificado.
+        			""", email, bdeRole.getAsMention(), modRole.getAsMention())
+	        	.setEphemeral(true)
+	        	.queue();
+        	return;
+        }
+        // set role to member and change nickname
+        
+        
+        // if the role was not assigned or changed nickname, try again with the member after 2 seconds
     }
 }

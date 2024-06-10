@@ -62,6 +62,36 @@ public class RegistrationDAO {
 		return status.toString();
 	}
 	
+	public String registerServerRoles() {
+		
+		DatabaseConnectionManager.instance()
+			.getConnection(Configs.DB_CONNECTION).get().establishConnection(connection -> {
+				
+				PreparedStatement stmt = connection.prepareStatement(prepareSQLRegistration());
+				
+				// Set the pre-set values to the query
+				stmt.setString(1, department);
+				stmt.setLong(2, discordServerID);
+				stmt.setLong(3, logChannelID);
+				
+				// Execute the query and obtain the results
+				try {
+					stmt.executeQuery();
+				} catch (SQLException sqle) {
+					if (!"23505".equals(sqle.getSQLState())) {
+						status.append("ERROR");
+						throw sqle;
+					}
+					status.append("FAILED: Already exists");
+					return;
+				}
+				status.append("SUCCESS");
+				stmt.close();
+			});
+		
+		return null;
+	}
+	
 	/**
 	 * 
 	 * @return department list
@@ -101,6 +131,21 @@ public class RegistrationDAO {
 	}
 	
 	private String prepareSQLRegistration() {
+		return 
+		"""
+		with department_selected as (
+		    select depid
+		            from department
+		        where 
+		            abreviation = ?
+		)
+		insert into serverownership (discserid, fdepid, log_channel)
+		    select ?, depid, ?
+		            from department_selected;
+		""";
+	}
+	
+	private String prepareSQLRoleRegistration() {
 		return 
 		"""
 		with department_selected as (
