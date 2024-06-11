@@ -16,18 +16,53 @@ public class VerificationReport {
 	private String team;
 	private String teamOrganization;
 
+	private long teamrole;
+	
 	private boolean verified;
 	
-	private VerificationReport(String email, String fullname, String funfact, String program, String team, String teamOrganization, boolean verified) {
+	private VerificationReport(String email, String fullname, String funfact, String program, String team, String teamOrganization, long teamrole, boolean verified) {
 		this.email = email;
 		this.fullname = fullname;
 		this.funfact = funfact;
 		this.program = program;
 		this.team = team;
 		this.teamOrganization = teamOrganization;
+		this.teamrole = teamrole;
 		this.verified = verified;
 	}
 	
+	public String getEmail() {
+		return email;
+	}
+
+	public String getFullname() {
+		return fullname;
+	}
+
+	public String getFunfact() {
+		return funfact;
+	}
+
+	public String getProgram() {
+		return program;
+	}
+
+	public String getTeam() {
+		return team;
+	}
+
+	public String getTeamOrganization() {
+		return teamOrganization;
+	}
+
+	public long getTeamrole() {
+		return teamrole;
+	}
+
+	public boolean isVerified() {
+		return verified;
+	}
+
 	public static class AtomicVerificationReport {
 		
 		private VerificationReport report;
@@ -55,6 +90,7 @@ public class VerificationReport {
 		private String team;
 		private String teamOrganization;
 
+		private long teamrole;
 		private boolean verified;
 		
 		public VerificationReport build() {
@@ -65,6 +101,7 @@ public class VerificationReport {
 				program,
 				team,
 				teamOrganization,
+				teamrole,
 				verified
 			);
 		}
@@ -99,6 +136,11 @@ public class VerificationReport {
 			return this;
 		}
 		
+		public VerificationReportBuilder teamrole(long teamrole) {
+			this.teamrole = teamrole;
+			return this;
+		}
+
 		public VerificationReportBuilder verified(boolean verified) {
 			this.verified = verified;
 			return this;

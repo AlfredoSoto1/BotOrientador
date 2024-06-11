@@ -9,8 +9,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import application.core.Configs;
+import net.dv8tion.jda.api.entities.Role;
 import services.database.connections.DatabaseConnectionManager;
 
 /**
@@ -34,19 +36,21 @@ public class RegistrationDAO {
 		// operation as output, return the id of the server ownership record inserted
 		StringBuilder status = new StringBuilder();
 		
+		final String SQL = prepareSQLRegistration();
+		
 		DatabaseConnectionManager.instance()
 			.getConnection(Configs.DB_CONNECTION).get().establishConnection(connection -> {
 				
-				PreparedStatement stmt = connection.prepareStatement(prepareSQLRegistration());
+				PreparedStatement stmt = connection.prepareStatement(SQL);
 				
 				// Set the pre-set values to the query
 				stmt.setString(1, department);
-				stmt.setLong(2, discordServerID);
-				stmt.setLong(3, logChannelID);
+				stmt.setLong(2,   discordServerID);
+				stmt.setLong(3,   logChannelID);
 				
 				// Execute the query and obtain the results
 				try {
-					stmt.executeQuery();
+					stmt.executeUpdate();
 				} catch (SQLException sqle) {
 					if (!"23505".equals(sqle.getSQLState())) {
 						status.append("ERROR");
@@ -62,34 +66,43 @@ public class RegistrationDAO {
 		return status.toString();
 	}
 	
-	public String registerServerRoles() {
+	/**
+	 * 
+	 * @param serverRegistrationStatus
+	 * @param discordServerID
+	 * @param serverRoles
+	 * @return status message
+	 */
+	public String registerServerRoles(String serverRegistrationStatus, long discordServerID, List<Role> serverRoles) {
+		if (!serverRegistrationStatus.contains("SUCCESS"))
+			return "CANCELED";
+		
+		StringBuilder status = new StringBuilder();
+		
+		final String SQL = prepareSQLRoleRegistration(serverRoles.size());
 		
 		DatabaseConnectionManager.instance()
 			.getConnection(Configs.DB_CONNECTION).get().establishConnection(connection -> {
 				
-				PreparedStatement stmt = connection.prepareStatement(prepareSQLRegistration());
+				PreparedStatement stmt = connection.prepareStatement(SQL);
 				
-				// Set the pre-set values to the query
-				stmt.setString(1, department);
-				stmt.setLong(2, discordServerID);
-				stmt.setLong(3, logChannelID);
+				AtomicInteger valuePosition = new AtomicInteger();
+				setRoleValue(stmt, 1, valuePosition, serverRoles);
+				stmt.setLong(valuePosition.get(), discordServerID);
 				
-				// Execute the query and obtain the results
 				try {
-					stmt.executeQuery();
-				} catch (SQLException sqle) {
-					if (!"23505".equals(sqle.getSQLState())) {
-						status.append("ERROR");
-						throw sqle;
-					}
-					status.append("FAILED: Already exists");
+					stmt.executeUpdate();
+				} catch(SQLException sqle) {
+					stmt.close();
+					status.append("FAILED");
 					return;
 				}
-				status.append("SUCCESS");
+				
 				stmt.close();
+				status.append("SUCCESS");
 			});
 		
-		return null;
+		return status.toString();
 	}
 	
 	/**
@@ -145,18 +158,40 @@ public class RegistrationDAO {
 		""";
 	}
 	
-	private String prepareSQLRoleRegistration() {
-		return 
+	private String prepareSQLRoleRegistration(int rowCount) {
+		String SQL = 
 		"""
-		with department_selected as (
-		    select depid
-		            from department
-		        where 
-		            abreviation = ?
+		with role_ids (name, id) as (
+		    values %s
 		)
-		insert into serverownership (discserid, fdepid, log_channel)
-		    select ?, depid, ?
-		            from department_selected;
+		insert into discordrole (name, longid, fseoid)
+		    select  role_ids.name, 
+				    role_ids.id, 
+				    seoid 
+				from role_ids, serverownership
+	            where
+	                discserid = ?
 		""";
+		return String.format(SQL, getRolePlaceHolder(rowCount));
+	}
+	
+	private String getRolePlaceHolder(int rowCount) {
+	    StringBuilder placeHolder = new StringBuilder();
+
+	    for (int i = 0; i < rowCount; i++) {
+	        placeHolder.append("(?, ?)");
+	        if (i < rowCount - 1) 
+	            placeHolder.append(", ");
+	    }
+
+	    return placeHolder.toString();
+	}
+	
+	private void setRoleValue(PreparedStatement pstmt, int start, AtomicInteger end, List<Role> roles) throws SQLException {
+		for(Role role : roles) {
+			pstmt.setString(start++, role.getName());
+			pstmt.setLong(start++, role.getIdLong());
+		}
+		end.set(start);
 	}
 }

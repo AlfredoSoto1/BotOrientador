@@ -133,7 +133,7 @@ public abstract class InteractionModel {
 		return nativeSelectMenu;
 	}
 	
-	protected void feedbackDev() {
+	protected void feedbackDev(String feedback) {
 		
 	}
 }

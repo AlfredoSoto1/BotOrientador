@@ -6,17 +6,18 @@ package assistant.cmd.moderation;
 import java.awt.Color;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import assistant.daos.VerificationDAO;
 import assistant.models.VerificationReport;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
@@ -35,7 +36,6 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	private static final String COMMAND_LABEL = "channel";
 	
 	private VerificationDAO verificationDAO;
-	private ConcurrentLinkedQueue<VerificationReport> verificationQueue;
 	
 	private boolean isGlobal;
 	private Modal verifyPrompt;
@@ -43,7 +43,6 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	
 	public VerificationCmd() {
 		this.verificationDAO = new VerificationDAO();
-		
 		
 		// Create an Email field to be displayed inside the modal
 		TextInput email = TextInput.create("email-id", "Email", TextInputStyle.SHORT)
@@ -207,8 +206,6 @@ public class VerificationCmd extends InteractionModel implements CommandI {
         String email = event.getValue("email-id").getAsString();
         String funfacts = event.getValue("funfact-id").getAsString();
         
-        Member member = event.getMember();
-        
         Optional<VerificationReport> report = verificationDAO.getUserReport(email);
         
         if (!report.isPresent()) {
@@ -225,9 +222,46 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	        	.queue();
         	return;
         }
+
+        Member member = event.getMember();
         // set role to member and change nickname
-        
-        
         // if the role was not assigned or changed nickname, try again with the member after 2 seconds
+    	assignRoleAndChangeNickname(event.getGuild(), member, report.get());
+    	
+    	// Confirm and commit verification
+    	verificationDAO.confirmVerification(email, funfacts);
     }
+	
+	private void assignRoleAndChangeNickname(Guild server, Member member, VerificationReport report) {
+		
+		boolean isPrepa = false;
+		
+		List<Long> classificationRoles = verificationDAO.getUserClassificationRoles(report.getEmail());
+		
+	    try {
+	    	for (Long role_id : classificationRoles) {
+	    		Role role = server.getRoleById(role_id);
+	    		
+	    		isPrepa = role.getName().equalsIgnoreCase("prepa");
+	    		
+	    		server.addRoleToMember(member, role).queue(
+    				success -> super.feedbackDev(
+    						String.format("Given Role [%s] to [%s]", role.getName(), member.getEffectiveName())),
+    				error -> super.feedbackDev("Failed to add role: " + error.getMessage())
+   				);
+	    	}
+	    	
+	    	String nickname = isPrepa ? report.getFullname().toUpperCase() : report.getFullname();
+	    	
+	    	// Role successfully added, now changing the nickname
+        	server.modifyNickname(member, nickname).queue(
+                nicknameSuccess -> super.feedbackDev(
+						String.format("Successfully changed nickname from [%s] to [%s]", member.getEffectiveName(), nickname)),
+                nicknameError -> super.feedbackDev("Failed to change nickname: " + nicknameError.getMessage())
+            );
+	    } catch (InsufficientPermissionException ipe) {
+	    	String error = "Insufficient permissions to assign role or change nickname: " + ipe.getMessage();
+	    	super.feedbackDev(error);
+	    }
+	}
 }

@@ -92,18 +92,19 @@ public class RegistrationCmd extends InteractionModel implements CommandI {
 		// Register the server directly on the database
 		// This request returns a status flag to be used as output
 		// in the embed message.
-		String status = registrationDAO.registerServer(event.getGuild().getIdLong(), Long.parseLong(logChannel), departmentOption);
+		String registrationStatus = registrationDAO.registerServer(event.getGuild().getIdLong(), Long.parseLong(logChannel), departmentOption);
 		
 		// Register server roles
+		String roleStatus = registrationDAO.registerServerRoles(registrationStatus, event.getGuild().getIdLong(), event.getGuild().getRoles());
 		
 		// Prepare the embed message to display on log channel
-		sendRegistrationEmbed(departmentOption, logTextChannel.get(), status);
+		sendRegistrationEmbed(departmentOption, logTextChannel.get(), registrationStatus, roleStatus);
 		
 		// Reply to the client to close the response
 		event.reply("Assistant Registration Done").setEphemeral(true).queue();
 	}
 	
-	private void sendRegistrationEmbed(String department, TextChannel textChannel, String status) {
+	private void sendRegistrationEmbed(String department, TextChannel textChannel, String registrationStatus, String roleStatus) {
 		
 		/*
 		 * Embedded messages
@@ -130,15 +131,27 @@ public class RegistrationCmd extends InteractionModel implements CommandI {
 			Channel: **%s**
 			Status: **%s**
 			""";
+		String roles_registration_title =
+			"""
+			**Roles Registration**
+			""";
+		String roles_registration_description =
+			"""
+			Status: **%s**
+			""";
 
 		department_registration_description = String.format(
 				department_registration_description,
 				department
-				);
+			);
 		log_registration_description = String.format(
 				log_registration_description,
 				textChannel.getIdLong(),
-				status
+				registrationStatus
+			);
+		roles_registration_description = String.format(
+				roles_registration_description,
+				roleStatus
 			);
 		
 		EmbedBuilder embedBuider = new EmbedBuilder();
@@ -148,6 +161,7 @@ public class RegistrationCmd extends InteractionModel implements CommandI {
 		
 		embedBuider.addField(department_registration_title, department_registration_description, false);
 		embedBuider.addField(log_registration_title, log_registration_description, false);
+		embedBuider.addField(roles_registration_title, roles_registration_description, false);
 		
 		textChannel.sendMessageEmbeds(embedBuider.build()).queue();
 	}
