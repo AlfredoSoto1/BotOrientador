@@ -224,12 +224,14 @@ public class VerificationCmd extends InteractionModel implements CommandI {
         }
 
         Member member = event.getMember();
-        // set role to member and change nickname
+        // TODO set role to member and change nickname
         // if the role was not assigned or changed nickname, try again with the member after 2 seconds
     	assignRoleAndChangeNickname(event.getGuild(), member, report.get());
     	
     	// Confirm and commit verification
     	verificationDAO.confirmVerification(email, funfacts);
+    	
+    	// TODO Send welcome message through DMs
     }
 	
 	private void assignRoleAndChangeNickname(Guild server, Member member, VerificationReport report) {
