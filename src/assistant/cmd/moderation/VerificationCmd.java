@@ -18,6 +18,7 @@ import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
@@ -25,6 +26,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
+import services.bot.core.AsyncTaskQueue;
 import services.bot.interactions.CommandI;
 import services.bot.interactions.InteractionModel;
 
@@ -34,8 +36,8 @@ import services.bot.interactions.InteractionModel;
 public class VerificationCmd extends InteractionModel implements CommandI {
 	
 	private static final String COMMAND_LABEL = "channel";
-	
 	private VerificationDAO verificationDAO;
+	private AsyncTaskQueue verificationQueue;
 	
 	private boolean isGlobal;
 	private Modal verifyPrompt;
@@ -43,6 +45,7 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	
 	public VerificationCmd() {
 		this.verificationDAO = new VerificationDAO();
+		this.verificationQueue = new AsyncTaskQueue();
 		
 		// Create an Email field to be displayed inside the modal
 		TextInput email = TextInput.create("email-id", "Email", TextInputStyle.SHORT)
@@ -206,27 +209,37 @@ public class VerificationCmd extends InteractionModel implements CommandI {
         String email = event.getValue("email-id").getAsString();
         String funfacts = event.getValue("funfact-id").getAsString();
         
+        // Obtain verification report from database
         Optional<VerificationReport> report = verificationDAO.getUserReport(email);
         
         if (!report.isPresent()) {
-        	// Send message to member replying that he is not in the database
+        	String hookMessage = 
+    			"""
+    			Hmm parece que el email que entraste *__%s__* no está en nuestra base de datos :confused:
+    			Por favor trata de nuevo. Si no puedo encontrar tu información, contacta a %s or %s.
+    			
+    			Asegurate que estas usando **__@upr.edu__** ya que se necesita el email institucional para poder ser verificado.
+    			""";
+        	
+        	// Reply user with a hook message
         	event.getHook()
-	        	.sendMessageFormat(
-        			"""
-        			Hmm parece que el email que entraste *__%s__* no está en nuestra base de datos :confused:
-        			Por favor trata de nuevo. Si no puedo encontrar tu información, contacta a %s or %s.
-        			
-        			Asegurate que estas usando **__@upr.edu__** ya que se necesita el email institucional para poder ser verificado.
-        			""", email, bdeRole.getAsMention(), modRole.getAsMention())
-	        	.setEphemeral(true)
-	        	.queue();
+	        	.sendMessageFormat(hookMessage, email, bdeRole.getAsMention(), modRole.getAsMention())
+	        	.setEphemeral(true).queue();
         	return;
         }
-
-        Member member = event.getMember();
-        // TODO set role to member and change nickname
-        // if the role was not assigned or changed nickname, try again with the member after 2 seconds
-    	assignRoleAndChangeNickname(event.getGuild(), member, report.get());
+        
+        // Do this asynchronously
+        verificationQueue.addTask(() -> {
+        	try {
+        		// Try assigning the roles and appropriate nickname
+        		// to the member. Catch any exceptions that might happen during run-time.
+        		assignRoleAndChangeNickname(event.getHook(), event.getGuild(), event.getMember(), report.get());
+        	} catch (InterruptedException ie) {
+        		ie.printStackTrace();
+        	} catch (InsufficientPermissionException ipe) {
+        		super.feedbackDev("Insufficient permissions to assign role or change nickname: " + ipe.getMessage());
+        	}
+        });
     	
     	// Confirm and commit verification
     	verificationDAO.confirmVerification(email, funfacts);
@@ -234,36 +247,66 @@ public class VerificationCmd extends InteractionModel implements CommandI {
     	// TODO Send welcome message through DMs
     }
 	
-	private void assignRoleAndChangeNickname(Guild server, Member member, VerificationReport report) {
+	private void assignRoleAndChangeNickname(InteractionHook hook, Guild server, Member member, VerificationReport report) throws InterruptedException, InsufficientPermissionException {
+		int tryCount = 0;
+		boolean failedRoleAssignment = true;
+		boolean failedNicknameAssignment = true;
 		
-		boolean isPrepa = false;
-		
-		List<Long> classificationRoles = verificationDAO.getUserClassificationRoles(report.getEmail());
-		
-	    try {
-	    	for (Long role_id : classificationRoles) {
-	    		Role role = server.getRoleById(role_id);
-	    		
-	    		isPrepa = role.getName().equalsIgnoreCase("prepa");
-	    		
-	    		server.addRoleToMember(member, role).queue(
-    				success -> super.feedbackDev(
-    						String.format("Given Role [%s] to [%s]", role.getName(), member.getEffectiveName())),
-    				error -> super.feedbackDev("Failed to add role: " + error.getMessage())
-   				);
-	    	}
-	    	
-	    	String nickname = isPrepa ? report.getFullname().toUpperCase() : report.getFullname();
-	    	
-	    	// Role successfully added, now changing the nickname
-        	server.modifyNickname(member, nickname).queue(
-                nicknameSuccess -> super.feedbackDev(
-						String.format("Successfully changed nickname from [%s] to [%s]", member.getEffectiveName(), nickname)),
-                nicknameError -> super.feedbackDev("Failed to change nickname: " + nicknameError.getMessage())
-            );
-	    } catch (InsufficientPermissionException ipe) {
-	    	String error = "Insufficient permissions to assign role or change nickname: " + ipe.getMessage();
-	    	super.feedbackDev(error);
+		// Set the roles of the member.
+	    // This will get called every second if
+	    // the roles to be assigned to the member 
+	    // are not fully applied.
+	    while (failedRoleAssignment && tryCount < 5) {
+	    	failedRoleAssignment = setRoles(server, member, report.getEmail());
+	    	tryCount++;
+	    	Thread.sleep(1000);
 	    }
+	    
+	    // reset the try count
+	    tryCount = 0;
+	    
+	    // Set the nickname of the member.
+	    // This will get called every second if
+	    // the nickname fails to be assigned to the member.
+	    while (failedNicknameAssignment && tryCount < 5) {
+	    	failedNicknameAssignment = setNickname(server, member, report);
+	    	tryCount++;
+	    	Thread.sleep(1000);
+	    }
+	    
+	    if (failedRoleAssignment)
+	    	hook.sendMessage("No se pudo otorgar los roles, por favor notifique a un Bot developer").setEphemeral(true).queue();
+
+	    if (failedNicknameAssignment)
+	    	hook.sendMessage("No se pudo otorgar el nickname, por favor notifique a un Bot developer").setEphemeral(true).queue();
+	}
+	
+	private boolean setRoles(Guild server, Member member, String email) {
+		// Obtain the roles that the user has associated to the email
+		List<Long> classificationRoles = verificationDAO.getUserClassificationRoles(email);
+		
+		// Set the roles to the member
+		for (Long role_id : classificationRoles) {
+			Role role = server.getRoleById(role_id);
+			
+			server.addRoleToMember(member, role).queue(
+				roleSuccess -> super.feedbackDev(String.format("Given Role [%s] to [%s]", role.getName(), member.getEffectiveName())),
+				roleError   -> super.feedbackDev("Failed to add role: " + roleError.getMessage()));
+		}
+		
+		// Returns true if the roles assigned to the member is not the same as the ones to be assigned
+		return member.getRoles().size() != classificationRoles.size();
+	}
+	
+	private boolean setNickname(Guild server, Member member, VerificationReport report) {
+		// Set the nickname of the prepa to be always uppercase
+		String nickname = verificationDAO.isPrepa(server, report.getEmail()) ? report.getFullname().toUpperCase() : report.getFullname();
+    	
+		server.modifyNickname(member, nickname).queue(
+			nicknameSuccess -> super.feedbackDev(String.format("Successfully changed nickname from [%s] to [%s]", member.getEffectiveName(), nickname)),
+			nicknameError   -> super.feedbackDev("Failed to change nickname: " + nicknameError.getMessage()));
+		
+		// Returns true if the member doesn't have an assigned nickname
+		return !Optional.ofNullable(member.getNickname()).isPresent();
 	}
 }

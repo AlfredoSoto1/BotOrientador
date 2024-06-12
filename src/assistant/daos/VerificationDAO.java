@@ -8,11 +8,14 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 
 import application.core.Configs;
 import assistant.models.VerificationReport;
 import assistant.models.VerificationReport.AtomicVerificationReport;
 import assistant.models.VerificationReport.VerificationReportBuilder;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Role;
 import services.database.connections.DatabaseConnectionManager;
 
 /**
@@ -29,8 +32,7 @@ public class VerificationDAO {
 	/**
 	 * 
 	 * @param email
-	 * @param funfact
-	 * @return verification report
+	 * @return Verification Role
 	 */
 	public Optional<VerificationReport> getUserReport(String email) {
 		AtomicVerificationReport verificationResult = new AtomicVerificationReport(null);
@@ -114,6 +116,34 @@ public class VerificationDAO {
 			});
 	}
 	
+	public boolean isPrepa(Guild server, String email) {
+		return getMemberRole(server, "prepa", email).isPresent();
+	}
+	
+	public Optional<Role> getMemberRole(Guild server, String rolename, String email) {
+		AtomicLong roleID = new AtomicLong(-1L);
+		
+		final String SQL = prepareSQLGetMemberRole();
+		
+		DatabaseConnectionManager.instance()
+			.getConnection(Configs.DB_CONNECTION).get().establishConnection(connection -> {
+				
+				PreparedStatement stmt = connection.prepareStatement(SQL);
+				stmt.setLong(1, server.getIdLong());
+				stmt.setString(2, email);
+				stmt.setString(3, rolename);
+				
+				// Execute the query and obtain the results
+				ResultSet result = stmt.executeQuery();
+				if(result.next())
+					roleID.set(result.getLong("role_id"));
+					
+				result.close();
+				stmt.close();
+			});
+		return Optional.ofNullable(server.getRoleById(roleID.get()));
+	}
+	
 	private String prepareSQLVerificationReport() {
 		return 
 		"""
@@ -175,6 +205,21 @@ public class VerificationDAO {
 		        set funfact = ?
 		    from update_verification
 		    where member.fverid = update_verification.verid;
+		""";
+	}
+	
+	private String prepareSQLGetMemberRole() {
+		return 
+		"""
+		select longid as role_id
+		    from orientador
+		        inner join verification    on orientador.fverid = verid
+		        inner join member          on member.fverid = verid
+		        inner join memberrole      on fmemid = memid
+		        inner join discordrole     on fdroleid = droleid
+		        inner join serverownership on fseoid = seoid
+		    where 
+		        discserid = ? and email = ? and memberrole.name = ?
 		""";
 	}
 }
