@@ -239,12 +239,12 @@ public class VerificationCmd extends InteractionModel implements CommandI {
         	} catch (InsufficientPermissionException ipe) {
         		super.feedbackDev("Insufficient permissions to assign role or change nickname: " + ipe.getMessage());
         	}
+
+        	// Confirm and commit verification
+        	verificationDAO.confirmVerification(email, funfacts);
+
+        	// TODO Send welcome message through DMs
         });
-    	
-    	// Confirm and commit verification
-    	verificationDAO.confirmVerification(email, funfacts);
-    	
-    	// TODO Send welcome message through DMs
     }
 	
 	private void assignRoleAndChangeNickname(InteractionHook hook, Guild server, Member member, VerificationReport report) throws InterruptedException, InsufficientPermissionException {
