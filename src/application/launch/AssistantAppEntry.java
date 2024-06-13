@@ -3,8 +3,6 @@
  */
 package application.launch;
 
-import java.sql.PreparedStatement;
-
 import application.core.Application;
 import application.core.Configs;
 import application.core.RegisterApplication;
