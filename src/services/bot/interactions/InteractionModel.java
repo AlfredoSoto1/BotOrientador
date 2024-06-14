@@ -6,7 +6,8 @@ package services.bot.interactions;
 import java.util.HashMap;
 import java.util.Map;
 
-import application.core.Configs;
+import assistant.daos.InteractionModelDAO;
+import assistant.models.MemberRole;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -24,10 +25,17 @@ public abstract class InteractionModel {
 	private Map<String, ButtonActionEvent> buttonEvents;
 	private Map<String, SelectMenuActionEvent> selectMenuEvents;
 	
+	/**
+	 * This should be protected so that all sub classes
+	 * of this interaction model can access the default CRUD operations
+	 */
+	protected InteractionModelDAO interactionModelDAO;
+	
 	protected InteractionModel() {
 		this.modalEvents = new HashMap<>();
 		this.buttonEvents = new HashMap<>();
 		this.selectMenuEvents = new HashMap<>();
+		this.interactionModelDAO = new InteractionModelDAO();
 	}
 	
 	public void onInit(ReadyEvent event) {
@@ -88,8 +96,7 @@ public abstract class InteractionModel {
 	
 	protected boolean validateCommandUse(SlashCommandInteractionEvent event) {
 		// Obtain the required role to allow member to continue
-		// TODO FIXME
-		Role requiredRole = event.getGuild().getRolesByName(Configs.get().assistantConfigs().developer_role, true).get(0);
+		Role requiredRole = interactionModelDAO.getMemberRole(event.getGuild(), MemberRole.BOT_DEVELOPER);
 		
 		// Validate if the member has the required role to continue
 		boolean hasRole = event.getMember().getRoles().contains(requiredRole);

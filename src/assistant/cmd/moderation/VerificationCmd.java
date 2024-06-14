@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 import assistant.daos.VerificationDAO;
+import assistant.models.MemberRole;
 import assistant.models.VerificationReport;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
@@ -36,6 +37,7 @@ import services.bot.interactions.InteractionModel;
 public class VerificationCmd extends InteractionModel implements CommandI {
 	
 	private static final String COMMAND_LABEL = "channel";
+	
 	private VerificationDAO verificationDAO;
 	private AsyncTaskQueue verificationQueue;
 	
@@ -204,8 +206,8 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	private void onModalVerificationRespond(ModalInteractionEvent event) {
 		
 		// Obtain the roles of the EOs in charge of Discord
-		Role modRole = event.getGuild().getRolesByName("Moderator", true).get(0);
-		Role bdeRole = event.getGuild().getRolesByName("BotDeveloper", true).get(0);
+		Role modRole = super.interactionModelDAO.getMemberRole(event.getGuild(), MemberRole.MODERATOR);
+		Role bdeRole = super.interactionModelDAO.getMemberRole(event.getGuild(), MemberRole.BOT_DEVELOPER);
 		
         // Respond to the user (ephemeral response)
         event.reply("Thank you for verifying, any time soon you'll be able to have all the coresponding roles").setEphemeral(true).queue();

@@ -63,7 +63,8 @@ public class RegistrationCmd extends InteractionModel implements CommandI {
 			new OptionData(OptionType.STRING, "department", "adapt bot to server", true)
 				.addChoices(choices),
 				
-			new OptionData(OptionType.STRING, "log-channel", "send server logs", true));
+			new OptionData(OptionType.STRING, "log-channel", "send server logs", true),
+			new OptionData(OptionType.ATTACHMENT, "role-mapping", "registers each role", true));
 	}
 
 	@Override
