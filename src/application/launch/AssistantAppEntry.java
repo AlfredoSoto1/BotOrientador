@@ -35,11 +35,11 @@ public class AssistantAppEntry extends Application {
 			 *  This is the database that the entire program will be based on.
 			 *  Database location is not accessible anywhere inside the project.
 			 */
-			new DatabaseConnection(Configs.DB_CONNECTION, Configs.DB_DRIVER, Configs.get().databaseCredentials())
+			new DatabaseConnection(Configs.DB_CONNECTION, Configs.DB_DRIVER, Configs.databaseCredentials())
 		);
 
 		// Initiate the Discord Application
-		ECEAssistant BOT_ASSISTANT = new ECEAssistant(Configs.get().token());
+		ECEAssistant BOT_ASSISTANT = new ECEAssistant(Configs.token());
 		
 		BOT_ASSISTANT.start();
 	}

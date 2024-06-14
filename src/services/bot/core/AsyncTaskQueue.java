@@ -46,8 +46,7 @@ public class AsyncTaskQueue {
             	// Process tasks until the queue is empty
                 while (!taskQueue.isEmpty()) {
                     Runnable task = taskQueue.poll();
-                    if (task != null)
-                        task.run(); 
+                    task.run(); 
                 }
             } finally {
             	// Reset the processing flag

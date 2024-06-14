@@ -78,6 +78,11 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	}
 	
 	@Override
+	public void onDispose() {
+		verificationQueue.shutdown();
+	} 
+	
+	@Override
 	public boolean isGlobal() {
 		return isGlobal;
 	}
@@ -210,7 +215,7 @@ public class VerificationCmd extends InteractionModel implements CommandI {
         String funfacts = event.getValue("funfact-id").getAsString();
         
         // Obtain verification report from database
-        Optional<VerificationReport> report = verificationDAO.getUserReport(email);
+        Optional<VerificationReport> report = verificationDAO.getUserReport(event.getGuild(), email);
         
         if (!report.isPresent()) {
         	String hookMessage = 
@@ -241,7 +246,7 @@ public class VerificationCmd extends InteractionModel implements CommandI {
         	}
 
         	// Confirm and commit verification
-        	verificationDAO.confirmVerification(email, funfacts);
+        	verificationDAO.confirmVerification(event.getGuild(), email, funfacts);
 
         	// TODO Send welcome message through DMs
         });
@@ -283,7 +288,7 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	
 	private boolean setRoles(Guild server, Member member, String email) {
 		// Obtain the roles that the user has associated to the email
-		List<Long> classificationRoles = verificationDAO.getUserClassificationRoles(email);
+		List<Long> classificationRoles = verificationDAO.getUserClassificationRoles(server, email);
 		
 		// Set the roles to the member
 		for (Long role_id : classificationRoles) {
@@ -299,12 +304,11 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	}
 	
 	private boolean setNickname(Guild server, Member member, VerificationReport report) {
-		// Set the nickname of the prepa to be always uppercase
-		String nickname = verificationDAO.isPrepa(server, report.getEmail()) ? report.getFullname().toUpperCase() : report.getFullname();
+		String nickname = report.getFullname();
     	
 		server.modifyNickname(member, nickname).queue(
-			nicknameSuccess -> super.feedbackDev(String.format("Successfully changed nickname from [%s] to [%s]", member.getEffectiveName(), nickname)),
-			nicknameError   -> super.feedbackDev("Failed to change nickname: " + nicknameError.getMessage()));
+			nicknameSuccess -> super.feedbackDev("Successfully changed nickname from [%s] to [%s]", member.getEffectiveName(), nickname),
+			nicknameError   -> super.feedbackDev("Failed to change nickname: %s", nicknameError.getMessage()));
 		
 		// Returns true if the member doesn't have an assigned nickname
 		return !Optional.ofNullable(member.getNickname()).isPresent();

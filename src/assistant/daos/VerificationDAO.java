@@ -30,11 +30,15 @@ public class VerificationDAO {
 	}
 	
 	/**
+	 * Generates a user report as an optional.
+	 * If the optional is empty, that means that there
+	 * is no record in relation to the email provided.
 	 * 
+	 * @param server
 	 * @param email
 	 * @return Verification Role
 	 */
-	public Optional<VerificationReport> getUserReport(String email) {
+	public Optional<VerificationReport> getUserReport(Guild server, String email) {
 		AtomicVerificationReport verificationResult = new AtomicVerificationReport(null);
 		
 		final String SQL = prepareSQLVerificationReport();
@@ -76,7 +80,15 @@ public class VerificationDAO {
 		return Optional.ofNullable(verificationResult.get());
 	}
 	
-	public List<Long> getUserClassificationRoles(String email) {
+	/**
+	 * Obtains all the roles that the member has
+	 * in a server.
+	 * 
+	 * @param server
+	 * @param email
+	 * @return List of roles
+	 */
+	public List<Long> getUserClassificationRoles(Guild server, String email) {
 		List<Long> classificationRoles = new ArrayList<>();
 		
 		final String SQL = prepareSQLClassificationRoles();
@@ -100,7 +112,14 @@ public class VerificationDAO {
 		return classificationRoles;
 	}
 	
-	public void confirmVerification(String email, String funfact) {
+	/**
+	 * Confirms the verification of the member.
+	 * 
+	 * @param server
+	 * @param email
+	 * @param funfact
+	 */
+	public void confirmVerification(Guild server, String email, String funfact) {
 		
 		final String SQL = prepareSQLConfirmVerification();
 		
@@ -116,10 +135,22 @@ public class VerificationDAO {
 			});
 	}
 	
-	public boolean isPrepa(Guild server, String email) {
-		return getMemberRole(server, "prepa", email).isPresent();
-	}
-	
+	/**
+	 * Obtains the role of a member using the default
+	 * naming roles of the EO team.
+	 * The default naming of roles of the EO team is:
+	 * - prepa
+	 * - EstudianteOrientador
+	 * - ...etc
+	 * 
+	 * If the optional is empty, that means that the email
+	 * or role name is not in the database.
+	 * 
+	 * @param server
+	 * @param rolename
+	 * @param email
+	 * @return Role
+	 */
 	public Optional<Role> getMemberRole(Guild server, String rolename, String email) {
 		AtomicLong roleID = new AtomicLong(-1L);
 		

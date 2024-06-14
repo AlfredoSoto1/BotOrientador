@@ -107,18 +107,6 @@ public class ListenerAdapterManager extends ListenerAdapter {
 		}
 	}
 	
-	/**
-	 * Free all memory after bot shuts down
-	 */
-	public void dispose() {
-		modals.clear();
-		buttons.clear();
-		selectMenus.clear();
-		commands.clear();
-		messages.clear();
-		interactions.clear();
-	}
-	
 	@Override
 	public void onReady(ReadyEvent event) {
 		// Delete all commands before re-upserting them
@@ -141,6 +129,14 @@ public class ListenerAdapterManager extends ListenerAdapter {
 		// thread when to dispose all content generated
 		// asynchronously from the bot application
 		latch.countDown();
+		
+		// Free memory
+		modals.clear();
+		buttons.clear();
+		selectMenus.clear();
+		commands.clear();
+		messages.clear();
+		interactions.clear();
 	}
 	
 	@Override

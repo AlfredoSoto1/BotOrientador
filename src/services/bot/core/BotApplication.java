@@ -119,11 +119,8 @@ public abstract class BotApplication {
 		// Shuts down the jda constructed
 		jdaConstructed.shutdown();
 		
-		// dispose all resources that the listener has keep
-		// during the life time of the application. This has
-		// to be called before shutdown().
-		listenerManager.dispose();
-
+		// Free all allocated data related to
+		// the sub class custom bot application.
 		dispose();
 	}
 }
