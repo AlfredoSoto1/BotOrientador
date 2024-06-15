@@ -105,7 +105,7 @@
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<release>20</release>
+					<release>21</release>
 				</configuration>
 			</plugin>
 			<plugin>
