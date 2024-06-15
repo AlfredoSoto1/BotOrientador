@@ -206,11 +206,11 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	private void onModalVerificationRespond(ModalInteractionEvent event) {
 		
 		// Obtain the roles of the EOs in charge of Discord
-		Role modRole = super.interactionModelDAO.getMemberRole(event.getGuild(), MemberRole.MODERATOR);
-		Role bdeRole = super.interactionModelDAO.getMemberRole(event.getGuild(), MemberRole.BOT_DEVELOPER);
+		Role modRole = super.interactionModelDAO.getServerMemberRole(event.getGuild(), MemberRole.MODERATOR);
+		Role bdeRole = super.interactionModelDAO.getServerMemberRole(event.getGuild(), MemberRole.BOT_DEVELOPER);
 		
         // Respond to the user (ephemeral response)
-        event.reply("Thank you for verifying, any time soon you'll be able to have all the coresponding roles").setEphemeral(true).queue();
+        event.reply("Gracias por unirte al server, en cualquier momento recibiras tus roles.").setEphemeral(true).queue();
         
         // Retrieve the values entered by the user
         String email = event.getValue("email-id").getAsString();
@@ -290,7 +290,7 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	
 	private boolean setRoles(Guild server, Member member, String email) {
 		// Obtain the roles that the user has associated to the email
-		List<Long> classificationRoles = verificationDAO.getUserClassificationRoles(server, email);
+		List<Long> classificationRoles = verificationDAO.getServerUserRoles(server, email);
 		
 		// Set the roles to the member
 		for (Long role_id : classificationRoles) {

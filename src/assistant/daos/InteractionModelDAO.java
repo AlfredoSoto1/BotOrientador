@@ -32,7 +32,7 @@ public class InteractionModelDAO {
 	 * @param email
 	 * @return role
 	 */
-	public Role getMemberRole(Guild server, MemberRole memberRole) {
+	public Role getServerMemberRole(Guild server, MemberRole memberRole) {
 		final String SQL = 
 			"""
 			select distinct longroleid

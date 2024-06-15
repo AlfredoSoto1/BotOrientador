@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 import assistant.daos.RegistrationDAO;
+import assistant.models.RegistrationStatus;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -63,8 +64,7 @@ public class RegistrationCmd extends InteractionModel implements CommandI {
 			new OptionData(OptionType.STRING, "department", "adapt bot to server", true)
 				.addChoices(choices),
 				
-			new OptionData(OptionType.STRING, "log-channel", "send server logs", true),
-			new OptionData(OptionType.ATTACHMENT, "role-mapping", "registers each role", true));
+			new OptionData(OptionType.STRING, "log-channel", "send server logs", true));
 	}
 
 	@Override
@@ -93,20 +93,19 @@ public class RegistrationCmd extends InteractionModel implements CommandI {
 		// Register the server directly on the database
 		// This request returns a status flag to be used as output
 		// in the embed message.
-		String registrationStatus = registrationDAO.registerServer(event.getGuild().getIdLong(), Long.parseLong(logChannel), departmentOption);
+		RegistrationStatus serverStatus = registrationDAO.registerServer(event.getGuild(), Long.parseLong(logChannel), departmentOption);
 		
 		// Register server roles
-		String roleStatus = registrationDAO.registerServerRoles(registrationStatus, event.getGuild().getIdLong(), event.getGuild().getRoles());
+		RegistrationStatus roleStatus = registrationDAO.registerServerRoles(serverStatus, event.getGuild(), event.getGuild().getRoles());
 		
 		// Prepare the embed message to display on log channel
-		sendRegistrationEmbed(departmentOption, logTextChannel.get(), registrationStatus, roleStatus);
+		sendRegistrationEmbed(departmentOption, logTextChannel.get(), serverStatus, roleStatus);
 		
 		// Reply to the client to close the response
 		event.reply("Assistant Registration Done").setEphemeral(true).queue();
 	}
 	
-	private void sendRegistrationEmbed(String department, TextChannel textChannel, String registrationStatus, String roleStatus) {
-		
+	private void sendRegistrationEmbed(String department, TextChannel textChannel, RegistrationStatus serverStatus, RegistrationStatus roleStatus) {
 		/*
 		 * Embedded messages
 		 */
@@ -148,11 +147,11 @@ public class RegistrationCmd extends InteractionModel implements CommandI {
 		log_registration_description = String.format(
 				log_registration_description,
 				textChannel.getIdLong(),
-				registrationStatus
+				"[" + serverStatus + "]" + serverStatus.getMessage()
 			);
 		roles_registration_description = String.format(
 				roles_registration_description,
-				roleStatus
+				"[" + roleStatus + "]" + roleStatus.getMessage()
 			);
 		
 		EmbedBuilder embedBuider = new EmbedBuilder();

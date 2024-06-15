@@ -96,7 +96,7 @@ public abstract class InteractionModel {
 	
 	protected boolean validateCommandUse(SlashCommandInteractionEvent event) {
 		// Obtain the required role to allow member to continue
-		Role requiredRole = interactionModelDAO.getMemberRole(event.getGuild(), MemberRole.BOT_DEVELOPER);
+		Role requiredRole = interactionModelDAO.getServerMemberRole(event.getGuild(), MemberRole.BOT_DEVELOPER);
 		
 		// Validate if the member has the required role to continue
 		boolean hasRole = event.getMember().getRoles().contains(requiredRole);

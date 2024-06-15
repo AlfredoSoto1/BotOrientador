@@ -58,15 +58,16 @@ public class VerificationDAO {
 			        is_verified           as is_verified,
 			        team.name             as team_name,
 			        orgname               as orgname,
-			        longid                as team_role
+			        longroleid            as team_role
 			    from verification
-			        inner join member      on verid   = member.fverid
-			        inner join team        on teamid  = member.fteamid
-			        inner join program     on progid  = fprogid
-			        inner join all_people  on verid   = all_people.fverid
-			        inner join discordrole on droleid = fdroleid
+			        inner join member          on verid   = member.fverid
+			        inner join team            on teamid  = member.fteamid
+			        inner join program         on progid  = fprogid
+			        inner join all_people      on verid   = all_people.fverid
+			        inner join discordrole     on droleid = fdroleid
+			        inner join serverownership on seoid   = fseoid
 			    where
-			        email = ?
+			        discserid = ? and email = ?
 			""";
 		
 		AtomicVerificationReport verificationResult = new AtomicVerificationReport(null);
@@ -75,11 +76,11 @@ public class VerificationDAO {
 			// Prepare a new statement with the proper SQL statement
 			// to obtain the user's data for verification
 			PreparedStatement stmt = connection.prepareStatement(SQL);
-			stmt.setString(1, email);
+			stmt.setLong(1, server.getIdLong());
+			stmt.setString(2, email);
 			
 			// Execute the query and obtain the results
 			ResultSet result = stmt.executeQuery();
-			
 			while(result.next()) {
 				// Using the verification report builder, build
 				// a new instance of a verification report. The
@@ -117,29 +118,30 @@ public class VerificationDAO {
 	 * @param email
 	 * @return List of roles
 	 */
-	public List<Long> getUserClassificationRoles(Guild server, String email) {
+	public List<Long> getServerUserRoles(Guild server, String email) {
 		final String SQL =
 			"""
-			select longid as classification_role
-			    from memberrole
-			        inner join member       on fmemid  = memid
-			        inner join discordrole  on droleid = fdroleid
-			        inner join verification on fverid  = verid
+			select longroleid
+			    from verification
+			        inner join member          on fverid = verid
+			        inner join memberrole      on fmemid = memid
+			        inner join discordrole     on fdroleid = droleid
+			        inner join serverownership on fseoid = seoid
 			    where 
-			        email = ?
+			        discserid = ? and email = ?
 			""";
 		
 		List<Long> classificationRoles = new ArrayList<>();
 		
 		RunnableQueries rq = connection -> {
 			PreparedStatement stmt = connection.prepareStatement(SQL);
-			stmt.setString(1, email);
+			stmt.setLong(1, server.getIdLong());
+			stmt.setString(2, email);
 			
 			// Execute the query and obtain the results
 			ResultSet result = stmt.executeQuery();
-			
 			while(result.next())
-				classificationRoles.add(result.getLong("classification_role"));
+				classificationRoles.add(result.getLong("longroleid"));
 			
 			result.close();
 			stmt.close();
