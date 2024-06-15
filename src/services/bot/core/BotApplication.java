@@ -123,4 +123,8 @@ public abstract class BotApplication {
 		// the sub class custom bot application.
 		dispose();
 	}
+	
+	public JDA getJDA() {
+		return jdaConstructed;
+	}
 }

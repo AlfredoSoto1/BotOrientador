@@ -22,13 +22,13 @@ import services.bot.interactions.InteractionModel;
 /**
  * @author Alfredo
  */
-public class RegistrationCmd extends InteractionModel implements CommandI {
+public class ServerRegistrationCmd extends InteractionModel implements CommandI {
 
 	private RegistrationDAO registrationDAO;
 	
 	private boolean isGlobal;
 	
-	public RegistrationCmd() {
+	public ServerRegistrationCmd() {
 		this.registrationDAO = new RegistrationDAO();
 	}
 	

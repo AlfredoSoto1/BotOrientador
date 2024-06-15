@@ -266,7 +266,7 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	    while (failedRoleAssignment && tryCount < 5) {
 	    	failedRoleAssignment = setRoles(server, member, report.getEmail());
 	    	tryCount++;
-	    	Thread.sleep(1000);
+	    	Thread.sleep(100);
 	    }
 	    
 	    // reset the try count
@@ -278,7 +278,7 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	    while (failedNicknameAssignment && tryCount < 5) {
 	    	failedNicknameAssignment = setNickname(server, member, report);
 	    	tryCount++;
-	    	Thread.sleep(1000);
+	    	Thread.sleep(100);
 	    }
 	    
 	    if (failedRoleAssignment)

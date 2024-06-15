@@ -28,7 +28,7 @@ import assistant.cmd.info.UprmMapCmd;
 import assistant.cmd.links.LinksCmd;
 import assistant.cmd.links.MadeWebCmd;
 import assistant.cmd.moderation.AssistantCmd;
-import assistant.cmd.moderation.RegistrationCmd;
+import assistant.cmd.moderation.ServerRegistrationCmd;
 import assistant.cmd.moderation.RoleSelectionCmd;
 import assistant.cmd.moderation.VerificationCmd;
 import services.bot.core.BotApplication;
@@ -80,6 +80,7 @@ public class ECEAssistant extends BotApplication {
 		 * - DAO and model implementation for command
 		 * - Command with DAOs implementation
 		 */
+		// TODO: Update global variable to commands that actually needs them
 
 		/*
 		 * Require manual update to work with database
@@ -98,24 +99,35 @@ public class ECEAssistant extends BotApplication {
 		UprmMapCmd uprmMap = new UprmMapCmd();
 		RulesCmd serverRules = new RulesCmd();
 		CalendarCmd calendar = new CalendarCmd();
-		
-		
-		// TODO: Update global variable to commands that actually needs them
+
 		faq.setGlobal(false);
-//		faculty.setGlobal(false);
-//		uprmMap.setGlobal(false);
 		helpMenu.setGlobal(false);
-//		calendar.setGlobal(false);
-//		findBuilding.setGlobal(false);
+		uprmMap.setGlobal(false);
+		serverRules.setGlobal(false);
+		calendar.setGlobal(false);
+
+		faculty.setGlobal(false);
+		projects.setGlobal(false);
+		organizations.setGlobal(false);
+		eoInfo.setGlobal(false);
+		findBuilding.setGlobal(false);
 		
-		interactions.add(faq);
-//		interactions.add(faculty);
+		/*
+		 * Add the commands that have hard-coded data
+		 */
+//		interactions.add(faq);
+//		interactions.add(helpMenu);
 //		interactions.add(uprmMap);
-		interactions.add(helpMenu);
-//		interactions.add(projects);
+//		interactions.add(serverRules);
 //		interactions.add(calendar);
+		
+		/*
+		 * Add the commands that require database to
+		 * retrieve the data.
+		 */
+//		interactions.add(faculty);
+//		interactions.add(projects);
 //		interactions.add(eoInfo);
-		interactions.add(serverRules);
 //		interactions.add(findBuilding);
 //		interactions.add(organizations);
 	}
@@ -130,8 +142,8 @@ public class ECEAssistant extends BotApplication {
 		madeWeb.setGlobal(false);
 		usefulLinks.setGlobal(false);
 
-		interactions.add(madeWeb);
-		interactions.add(usefulLinks);
+//		interactions.add(madeWeb);
+//		interactions.add(usefulLinks);
 	}
 	
 	private void prepareContactsCommands() {
@@ -153,12 +165,12 @@ public class ECEAssistant extends BotApplication {
 		academicAdvisory.setGlobal(false);
 		economicAssistance.setGlobal(false);
 		
-		interactions.add(dcsp);
-		interactions.add(department);
-		interactions.add(academicAdvisory);
-		interactions.add(economicAssistance);
-		interactions.add(universityGuard);
-		interactions.add(deanOfStudents);
+//		interactions.add(dcsp);
+//		interactions.add(department);
+//		interactions.add(academicAdvisory);
+//		interactions.add(economicAssistance);
+//		interactions.add(universityGuard);
+//		interactions.add(deanOfStudents);
 	}
 	
 	private void prepareFilesCommands() {
@@ -182,11 +194,9 @@ public class ECEAssistant extends BotApplication {
 		 */
 //		interactions.add(new LoginCmd());
 		interactions.add(new AssistantCmd(this));
-		interactions.add(new VerificationCmd());
-		interactions.add(new RegistrationCmd());
-		interactions.add(new RoleSelectionCmd());
-		interactions.add(new GamesCmd());
-		
-		// Do a registration server command
+//		interactions.add(new VerificationCmd());
+//		interactions.add(new ServerRegistrationCmd());
+//		interactions.add(new RoleSelectionCmd());
+//		interactions.add(new GamesCmd());
 	}
 }

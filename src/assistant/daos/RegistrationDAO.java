@@ -167,7 +167,7 @@ public class RegistrationDAO {
 	    StringBuilder placeHolder = new StringBuilder();
 
 	    for (int i = 0; i < rowCount; i++) {
-	        placeHolder.append("(?, ?)");
+	        placeHolder.append("(?, ?, ?)");
 	        if (i < rowCount - 1) 
 	            placeHolder.append(", ");
 	    }

@@ -98,6 +98,10 @@ public abstract class InteractionModel {
 		// Obtain the required role to allow member to continue
 		Role requiredRole = interactionModelDAO.getServerMemberRole(event.getGuild(), MemberRole.BOT_DEVELOPER);
 		
+		// If the role is not found, force the required role to be administrator
+		if (requiredRole == null)
+			requiredRole = event.getGuild().getRolesByName("administrator", true).get(0);
+		
 		// Validate if the member has the required role to continue
 		boolean hasRole = event.getMember().getRoles().contains(requiredRole);
 		
@@ -141,7 +145,7 @@ public abstract class InteractionModel {
 		return nativeSelectMenu;
 	}
 	
-	protected void feedbackDev(String feedback, Object... parameters) {
+	public void feedbackDev(String feedback, Object... parameters) {
 		
 	}
 }

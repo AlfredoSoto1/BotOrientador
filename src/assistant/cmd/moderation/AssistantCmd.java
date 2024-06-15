@@ -5,8 +5,8 @@ package assistant.cmd.moderation;
 
 import java.util.List;
 
+import assistant.models.AssistantOptions;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import services.bot.core.BotApplication;
@@ -18,12 +18,11 @@ import services.bot.interactions.InteractionModel;
  *
  */
 public class AssistantCmd extends InteractionModel implements CommandI {
-
-	private static final String COMMAND_LABEL = "service";
-	private static final String OPTION_DISCONNECT = "disconnect";
 	
-	private boolean isGlobal;
+	private static final String COMMAND_LABEL = "service";
+	
 	private BotApplication bot;
+	private boolean isGlobal;
 	
 	public AssistantCmd(BotApplication bot) {
 		this.bot = bot;
@@ -53,7 +52,7 @@ public class AssistantCmd extends InteractionModel implements CommandI {
 	public List<OptionData> getOptions() {
 		return List.of(
 			new OptionData(OptionType.STRING, COMMAND_LABEL, "Choose a command", true)
-				.addChoice("disconnect", OPTION_DISCONNECT)
+				.addChoice("disconnect", AssistantOptions.DISCONNECT.getOption())
 			);
 	}
 
@@ -62,12 +61,14 @@ public class AssistantCmd extends InteractionModel implements CommandI {
 		if(!super.validateCommandUse(event))
 			return;
 		
-		OptionMapping programOption = event.getOption(COMMAND_LABEL);
+		AssistantOptions option = AssistantOptions.asOption(event.getOption(COMMAND_LABEL).getAsString());
 		
-		if (programOption.getAsString().equals(OPTION_DISCONNECT)) {
+		switch(option) {
+		case AssistantOptions.DISCONNECT:
 			event.reply("Shutting down...").setEphemeral(true).queue();
 			bot.shutdown();
-		} else {
+			break;
+		default:
 			// skip this action if no reply was provided
 			event.reply("Mmhh this command does nothing, try again with another one").setEphemeral(true).queue();
 		}

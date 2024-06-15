@@ -7,22 +7,41 @@
 	<artifactId>BotOrientador</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.3.0</version>
+		<relativePath /> <!-- lookup parent from repository -->
+	</parent>
+	
+	<properties>
+		<java.version>22</java.version>
+	</properties>
+	
 	<dependencies>
-		
+
 		<!-- Discord Dependencies -->
 		<dependency>
 			<groupId>net.dv8tion</groupId>
 			<artifactId>JDA</artifactId>
 			<version>5.0.0-beta.13</version>
-			<!-- Optionally disable audio natives to reduce jar size by
-			excluding `opus-java`
-		    <exclusions>
-		        <exclusion>
-		            <groupId>club.minnced</groupId>
-		            <artifactId>opus-java</artifactId>
-		        </exclusion>
-		    </exclusions>
-		    -->
+		</dependency>
+
+		<!-- Spring Boot Starter Web -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>webapplication</groupId>
+			<artifactId>WebApplication</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 
 		<!-- Application Dependencies -->
@@ -45,9 +64,8 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.13.1</version>
 		</dependency>
-		
+
 		<!-- Database Dependencies -->
 
 		<!-- For accessing a database we have two options, either a postgres database or a Microsoft access DB file -->
@@ -56,35 +74,6 @@
 		<dependency>
 		    <groupId>org.postgresql</groupId>
 		    <artifactId>postgresql</artifactId>
-		    <version>42.3.10</version>
-		</dependency>
-
-		<!-- UCanAccess | it needs all the dependencies bellow in order to work -->
-		<dependency>
-			<groupId>net.sf.ucanaccess</groupId>
-			<artifactId>ucanaccess</artifactId>
-			<version>5.0.1</version>
-		</dependency>
-
-		<!-- Apache Commons Lang -->
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>3.12.0</version>
-		</dependency>
-
-		<!-- Apache Commons Logging -->
-		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<version>1.2</version>
-		</dependency>
-
-		<!-- HSQLDB -->
-		<dependency>
-			<groupId>org.hsqldb</groupId>
-			<artifactId>hsqldb</artifactId>
-			<version>2.6.1</version>
 		</dependency>
 
 		<!-- Apache POI for reading and writing Excel files -->
@@ -115,10 +104,13 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
 				<configuration>
 					<release>20</release>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>
