@@ -21,7 +21,9 @@ public abstract class BotApplication {
 	private JDA jdaConstructed;
 	private JDABuilder jdaBuilder;
 	private ListenerAdapterManager listenerManager;
+
 	private CountDownLatch latch;
+	private BotConfiguration configuration;
 	
 	// Make this later be saved on a config file
 	private EnumSet<GatewayIntent> intents = EnumSet.of(
@@ -52,14 +54,15 @@ public abstract class BotApplication {
 	 * 
 	 * @param token
 	 */
-	public BotApplication(String token) {
+	public BotApplication(BotConfiguration configuration) {
+		this.configuration = configuration;
 		// Create a count down latch of 1 unit/time.
 		// This is for when the bot gets shutted down it
 		// has one unit time to safely terminate itself and
 		// clean all memory used by the application.
 		latch = new CountDownLatch(1);
 		
-		jdaBuilder = JDABuilder.createDefault(token);
+		jdaBuilder = JDABuilder.createDefault(configuration.getToken());
 		
 		/*
 		 * Set bot status and activity
@@ -126,5 +129,9 @@ public abstract class BotApplication {
 	
 	public JDA getJDA() {
 		return jdaConstructed;
+	}
+	
+	public BotConfiguration getConfiguration() {
+		return configuration;
 	}
 }

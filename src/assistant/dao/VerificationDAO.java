@@ -13,9 +13,8 @@ import assistant.model.VerificationReport;
 import assistant.model.VerificationReport.AtomicVerificationReport;
 import assistant.model.VerificationReport.VerificationReportBuilder;
 import net.dv8tion.jda.api.entities.Guild;
-import service.database.DatabaseConnectionManager;
-import service.database.DatabaseConnection.RunnableQueries;
-import service.server.core.Configs;
+import service.database.DatabaseConnection.RunnableSQL;
+import service.server.core.Application;
 
 /**
  * @author Alfredo
@@ -72,7 +71,7 @@ public class VerificationDAO {
 		
 		AtomicVerificationReport verificationResult = new AtomicVerificationReport(null);
 		
-		RunnableQueries rq = connection -> {
+		RunnableSQL rq = connection -> {
 			// Prepare a new statement with the proper SQL statement
 			// to obtain the user's data for verification
 			PreparedStatement stmt = connection.prepareStatement(SQL);
@@ -104,8 +103,7 @@ public class VerificationDAO {
 			stmt.close();
 		};
 		
-		DatabaseConnectionManager.instance()
-			.getConnection(Configs.DB_CONNECTION).get().establishConnection(rq);
+		Application.instance().getDatabaseConnection().establishConnection(rq);
 
 		return Optional.ofNullable(verificationResult.get());
 	}
@@ -133,7 +131,7 @@ public class VerificationDAO {
 		
 		List<Long> classificationRoles = new ArrayList<>();
 		
-		RunnableQueries rq = connection -> {
+		RunnableSQL rq = connection -> {
 			PreparedStatement stmt = connection.prepareStatement(SQL);
 			stmt.setLong(1, server.getIdLong());
 			stmt.setString(2, email);
@@ -147,8 +145,7 @@ public class VerificationDAO {
 			stmt.close();
 		};
 		
-		DatabaseConnectionManager.instance()
-			.getConnection(Configs.DB_CONNECTION).get().establishConnection(rq);
+		Application.instance().getDatabaseConnection().establishConnection(rq);
 
 		return classificationRoles;
 	}
@@ -177,7 +174,7 @@ public class VerificationDAO {
 			    where member.fverid = update_verification.verid;
 			""";
 		
-		RunnableQueries rq = connection -> {
+		RunnableSQL rq = connection -> {
 			PreparedStatement stmt = connection.prepareStatement(SQL);
 			stmt.setString(1, email);
 			stmt.setString(2, funfact);
@@ -186,7 +183,6 @@ public class VerificationDAO {
 			stmt.close();
 		};
 		
-		DatabaseConnectionManager.instance()
-			.getConnection(Configs.DB_CONNECTION).get().establishConnection(rq);
+		Application.instance().getDatabaseConnection().establishConnection(rq);
 	}
 }

@@ -15,9 +15,8 @@ import assistant.model.RegistrationStatus;
 import assistant.model.RegistrationStatus.AtomicRegistrationStatus;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
-import service.database.DatabaseConnectionManager;
-import service.database.DatabaseConnection.RunnableQueries;
-import service.server.core.Configs;
+import service.database.DatabaseConnection.RunnableSQL;
+import service.server.core.Application;
 
 /**
  * @author Alfredo
@@ -52,7 +51,7 @@ public class RegistrationDAO {
 			""";
 		AtomicRegistrationStatus status = new AtomicRegistrationStatus(RegistrationStatus.SUCCESS);
 		
-		RunnableQueries rq = connection -> {
+		RunnableSQL rq = connection -> {
 			// Set the pre-set values to the query
 			PreparedStatement stmt = connection.prepareStatement(SQL);
 			stmt.setString(1, department);
@@ -74,8 +73,7 @@ public class RegistrationDAO {
 			}
 		};
 		
-		DatabaseConnectionManager.instance()
-			.getConnection(Configs.DB_CONNECTION).get().establishConnection(rq);
+		Application.instance().getDatabaseConnection().establishConnection(rq);
 		
 		return status.get();
 	}
@@ -108,7 +106,7 @@ public class RegistrationDAO {
 		final String SQL = String.format(SQL_insert, getRolePlaceHolder(serverRoles.size()));
 		AtomicRegistrationStatus status = new AtomicRegistrationStatus(RegistrationStatus.SUCCESS);
 		
-		RunnableQueries rq = connection -> {
+		RunnableSQL rq = connection -> {
 			PreparedStatement stmt = connection.prepareStatement(SQL);
 			
 			AtomicInteger valuePosition = new AtomicInteger();
@@ -124,8 +122,7 @@ public class RegistrationDAO {
 			}
 		};
 		
-		DatabaseConnectionManager.instance()
-			.getConnection(Configs.DB_CONNECTION).get().establishConnection(rq);
+		Application.instance().getDatabaseConnection().establishConnection(rq);
 		
 		return status.get();
 	}
@@ -145,7 +142,7 @@ public class RegistrationDAO {
 		// Create a list containing the departments
 		List<String> departments = new LinkedList<>();
 		
-		RunnableQueries rq = connection -> {
+		RunnableSQL rq = connection -> {
 			// Create a new statement and prepare
 			// a result set to contain all results from query
 			Statement stmt = connection.createStatement();
@@ -157,8 +154,7 @@ public class RegistrationDAO {
 			stmt.close();
 		};
 		
-		DatabaseConnectionManager.instance()
-			.getConnection(Configs.DB_CONNECTION).get().establishConnection(rq);
+		Application.instance().getDatabaseConnection().establishConnection(rq);
 		
 		return departments;
 	}

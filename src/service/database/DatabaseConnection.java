@@ -13,42 +13,30 @@ public class DatabaseConnection {
 	/**
 	 * @author alfredo
 	 */
-	public interface RunnableQueries {
-		public void runQueries(Connection connection) throws SQLException;
+	public interface RunnableSQL {
+		public void run(Connection connection) throws SQLException;
 	}
 	
-	private String name;
-	private String driver;
 	private Connection connection;
-	private DatabaseCredentials credentials;
+	private DatabaseConfiguration configuration;
 	
 	/**
 	 * Creates a Database connection that can be
 	 * used throughout the application. Once the application
 	 * ends, it gets cleaned up automatically.
 	 * 
-	 * @param connectionName
 	 * @param connectionDriver
 	 * @param credentials
 	 */
-	public DatabaseConnection(String connectionName, String connectionDriver, DatabaseCredentials credentials) {
-		this.name = connectionName;
-		this.driver = connectionDriver;
-		this.credentials = credentials;
-	}
-	
-	/**
-	 * @return database connection name
-	 */
-	public String getName() {
-		return name;
+	public DatabaseConnection(DatabaseConfiguration configuration) {
+		this.configuration = configuration;
 	}
 	
 	/**
 	 * @return database connection driver type
 	 */
 	public String getDriver() {
-		return driver;
+		return configuration.getDriverClassName();
 	}
 	
 	/**
@@ -67,14 +55,14 @@ public class DatabaseConnection {
 	 * 
 	 * @param queries
 	 */
-	public void establishConnection(RunnableQueries queries) {
+	public void establishConnection(RunnableSQL queries) {
 		try {
 			// Connect to database
 			this.connect();
 			
 			// Join the connection and 
 			// do all cool stuff with database
-			queries.runQueries(connection);
+			queries.run(connection);
 			
 		} catch (SQLException e) {
 			// Print errors
@@ -95,12 +83,12 @@ public class DatabaseConnection {
 				this.connection.close();
 		} catch (SQLException e) {
 			// Connection as already disconnected
-			System.out.println(name + " has already disconnected from database.");
+			System.out.println("Database has already disconnected.");
 		}
 	}
 	
 	private void connect() throws SQLException {
-		if(credentials == null)
+		if(configuration == null)
 			throw new IllegalArgumentException("You must enter credentials in order to establish a connection!");
 		
 		// If not connected, imply connection
@@ -111,16 +99,16 @@ public class DatabaseConnection {
 			// This must be included so that the 
 			// Application once compiled into a jar-file
 			// Can execute with no problem
-			Class.forName(driver);
+			Class.forName(configuration.getDriverClassName());
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 		
 		// Establish a new connection with driver from credentials
 		this.connection = DriverManager.getConnection(
-			credentials.url(),      
-			credentials.username(), 
-			credentials.password()  
+			configuration.getDatabaseUrl(),      
+			configuration.getUsername(), 
+			configuration.getPassword()  
 		);
 	}
 }

@@ -28,6 +28,7 @@ import assistant.command.links.LinksCmd;
 import assistant.command.links.MadeWebCmd;
 import assistant.command.moderation.AssistantCmd;
 import service.discord.core.BotApplication;
+import service.discord.core.BotConfiguration;
 import service.discord.core.ListenerAdapterManager;
 import service.discord.interaction.InteractionModel;
 
@@ -42,8 +43,8 @@ public class ECEAssistant extends BotApplication {
 	 * 
 	 * @param token
 	 */
-	public ECEAssistant(String token) {
-		super(token);
+	public ECEAssistant(BotConfiguration configuration) {
+		super(configuration);
 		this.interactions = new HashSet<>();
 	}
 

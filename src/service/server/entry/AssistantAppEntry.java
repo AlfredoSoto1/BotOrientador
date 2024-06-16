@@ -3,16 +3,10 @@
  */
 package service.server.entry;
 
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.PropertySource;
 
-import service.database.DatabaseConnection;
-import service.database.DatabaseConnectionManager;
 import service.server.core.Application;
-import service.server.core.Configs;
 import service.server.core.RegisterApplication;
 
 /**
@@ -31,48 +25,48 @@ import service.server.core.RegisterApplication;
  * 
  */
 @SpringBootApplication
-@ComponentScan("service.rest")
-//@PropertySource("classpath:main.resources/application.properties")
+@ComponentScan("service")
 @RegisterApplication(name = "Discord Assistants", version = "v2024.2.SO4")
 public class AssistantAppEntry extends Application {
 	
-	private static ConfigurableApplicationContext context;
-
 	public static void main(String[] args) {
 		// Create a new assistant application to start running
-//		Application.run(new AssistantAppEntry());
-		
-		SpringApplication.run(AssistantAppEntry.class, args);
-		
-//		try {
-//			Thread.sleep(3000);
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		}
-//		
-//		context.close();
+		Application.run(new AssistantAppEntry(), args);
     }
 
 	@Override
-	public void start() {
-		DatabaseConnectionManager.instance().addDatabaseConnection(
-			/**
-			 *  Create a new database connection
-			 *  
-			 *  This is the database that the entire program will be based on.
-			 *  Database location is not accessible anywhere inside the project.
-			 */
-			new DatabaseConnection(Configs.DB_CONNECTION, Configs.DB_DRIVER, Configs.databaseCredentials())
-		);
-
-		// Initiate the Discord Application
-//		ECEAssistant BOT_ASSISTANT = new ECEAssistant(Configs.token());
-//		BOT_ASSISTANT.start();
+	public void onBotStart() {
+		// TODO Auto-generated method stub
 		
 	}
-	
+
 	@Override
-	public void shutdown() {
-		DatabaseConnectionManager.dispose();
+	public void onRestStart() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onDatabaseStart() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onBotShutdown() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onRestShutdown() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onDatabaseShutdown() {
+		// TODO Auto-generated method stub
+		
 	}
 }

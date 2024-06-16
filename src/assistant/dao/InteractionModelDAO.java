@@ -10,9 +10,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import assistant.model.MemberRole;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
-import service.database.DatabaseConnectionManager;
-import service.database.DatabaseConnection.RunnableQueries;
-import service.server.core.Configs;
+import service.database.DatabaseConnection.RunnableSQL;
+import service.server.core.Application;
 
 /**
  * @author Alfredo
@@ -48,7 +47,7 @@ public class InteractionModelDAO {
 		// it will just return null as default.
 		AtomicLong roleID = new AtomicLong(-1L);
 		
-		RunnableQueries rq = connection -> {
+		RunnableSQL rq = connection -> {
 			PreparedStatement stmt = connection.prepareStatement(SQL);
 			
 			stmt.setString(1, memberRole.getName());
@@ -63,8 +62,7 @@ public class InteractionModelDAO {
 			stmt.close();
 		};
 		
-		DatabaseConnectionManager.instance()
-			.getConnection(Configs.DB_CONNECTION).get().establishConnection(rq);
+		Application.instance().getDatabaseConnection().establishConnection(rq);
 		
 		// Check JDA documentation for when it returns null for invalid IDs
 		return server.getRoleById(roleID.get());
