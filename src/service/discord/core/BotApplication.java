@@ -23,7 +23,7 @@ public abstract class BotApplication {
 	private ListenerAdapterManager listenerManager;
 
 	private CountDownLatch latch;
-	private BotConfiguration configuration;
+	private BotConfiguration configration;
 	
 	// Make this later be saved on a config file
 	private EnumSet<GatewayIntent> intents = EnumSet.of(
@@ -55,7 +55,7 @@ public abstract class BotApplication {
 	 * @param token
 	 */
 	public BotApplication(BotConfiguration configuration) {
-		this.configuration = configuration;
+		this.configration = configuration;
 		// Create a count down latch of 1 unit/time.
 		// This is for when the bot gets shutted down it
 		// has one unit time to safely terminate itself and
@@ -132,6 +132,6 @@ public abstract class BotApplication {
 	}
 	
 	public BotConfiguration getConfiguration() {
-		return configuration;
+		return configration;
 	}
 }
