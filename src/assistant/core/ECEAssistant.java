@@ -125,7 +125,7 @@ public class ECEAssistant extends BotApplication {
 //		interactions.add(faculty);
 //		interactions.add(projects);
 //		interactions.add(eoInfo);
-//		interactions.add(findBuilding);
+		interactions.add(findBuilding);
 //		interactions.add(organizations);
 	}
 	

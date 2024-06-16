@@ -9,7 +9,6 @@ import java.util.concurrent.CountDownLatch;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
-import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 
@@ -70,7 +69,8 @@ public abstract class BotApplication {
 		 * TODO: This needs to be separated in a different method
 		 */
 		jdaBuilder.setStatus(OnlineStatus.ONLINE);
-		jdaBuilder.setActivity(Activity.playing("Your personal assistant here to serve!"));
+		// TODO: set custom activity
+//		jdaBuilder.setActivity(Activity.playing("Your personal assistant here to serve!"));
 		
 		// Give the bot the necessary permissions
 		jdaBuilder.enableIntents(intents);

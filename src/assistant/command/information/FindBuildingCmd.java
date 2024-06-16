@@ -47,11 +47,14 @@ public class FindBuildingCmd extends InteractionModel implements CommandI {
 
 	@Override
 	public List<OptionData> getOptions() {
-		return List.of(new OptionData(OptionType.STRING, COMMAND_LABEL, "Dime que salón necesitas encontrar", true));
+		return List.of(
+			new OptionData(OptionType.STRING, COMMAND_LABEL, "Dispone la localización del edificio en el que se encuentra", true));
 	}
 
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
+		
+		
 		
 //		// Obtain from executed command the values inserted as
 //		// parameters when member wrote the command

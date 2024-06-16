@@ -58,11 +58,8 @@ public abstract class Application {
 	}
 	
 	private void initialize(String[] args) {
-		if(this.getClass().isAnnotationPresent(RegisterApplication.class)) {
-			// Check application registration (Optional)
-			RegisterApplication applicationRegistration = this.getClass().getAnnotation(RegisterApplication.class);
-			System.out.println("[Application] : " + applicationRegistration.name() + " | version: " + applicationRegistration.version());
-		}
+		this.consoleLogRegistration();
+		
 		// Create new spring application
 		context = SpringApplication.run(AssistantAppEntry.class, args);
 		// Create a new database connection
@@ -71,18 +68,38 @@ public abstract class Application {
 		// TODO: you have to automate this to support multiple bots
 		assistant = new ECEAssistant(context.getBean(BotConfiguration.class));
 		
+		System.out.println("[Application] Initialized");
+		// Handle start of the application for customization
 		onRestStart();
 		onDatabaseStart();
 		onBotStart();
 
-		assistant.start();
+		System.out.println("[Application] Started");
 		
+		// Start the bot
+		assistant.start();
+
+		System.out.println("[Application] Bot ended");
+		
+		// Shutdown everything
 		onBotShutdown();
 		onDatabaseShutdown();
 		onRestShutdown();
+
+		System.out.println("[Application] Shutting down");
 		
 		// Disconnect the database and exit the spring application
 		databaseConnection.disconnect();
 		SpringApplication.exit(context);
+
+		System.out.println("[Application] Ended");
+	}
+	
+	private void consoleLogRegistration() {
+		if(!this.getClass().isAnnotationPresent(RegisterApplication.class))
+			return;
+		// Check application registration (Optional)
+		RegisterApplication applicationRegistration = this.getClass().getAnnotation(RegisterApplication.class);
+		System.out.println("[Application] " + applicationRegistration.name() + " | version: " + applicationRegistration.version());
 	}
 }

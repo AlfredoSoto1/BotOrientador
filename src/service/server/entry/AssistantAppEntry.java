@@ -17,7 +17,6 @@ import service.server.core.RegisterApplication;
  * - Create WebApplication that can gather the necessary 
  *   data to insert into the database.
  *   
- * 
  * - finish the other commands that require data from db
  * 
  * - Complete the role selection display
@@ -26,7 +25,7 @@ import service.server.core.RegisterApplication;
  */
 @SpringBootApplication
 @ComponentScan("service")
-@RegisterApplication(name = "Discord Assistants", version = "v2024.2.SO4")
+@RegisterApplication(name = "Discord Assistant", version = "v2024.2.SO4")
 public class AssistantAppEntry extends Application {
 	
 	public static void main(String[] args) {
