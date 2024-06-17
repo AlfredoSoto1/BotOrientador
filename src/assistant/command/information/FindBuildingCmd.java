@@ -54,6 +54,15 @@ public class FindBuildingCmd extends InteractionModel implements CommandI {
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
 		
+		// Obtain building codification from command
+		
+		// Sanitize the building codification
+		
+		// Read from database and get a transcript
+		// that contains the google pin and other data related
+		
+		// Reply to the member in an embed the data from the transcript
+		
 		
 		
 //		// Obtain from executed command the values inserted as
@@ -116,21 +125,21 @@ public class FindBuildingCmd extends InteractionModel implements CommandI {
 //			.setEphemeral(event.isFromGuild())
 //			.queue();
 //		}
-		
-		event.reply(
-			// If the google pin is not present in the database, reply to
-			// the member other alternatives on how to fix his problem.
-			event.getUser().getAsMention() +
-			", No encuentro en mi base de datos el salón <unknown:working progress> :pensive:\n" + 
-			"""
-			Si entiendes que el salón que buscas está correctamente escrito, notifícale
-			a un estudiante orientador o a un Bot-Developer para que pueda atender el asunto.		
-			"""
-		)
-		// This message can only be seen by the one
-		// who wrote the command. This is to avoid command
-		// cluttering in the channel
-		.setEphemeral(event.isFromGuild())
-		.queue();
+//		
+//		event.reply(
+//			// If the google pin is not present in the database, reply to
+//			// the member other alternatives on how to fix his problem.
+//			event.getUser().getAsMention() +
+//			", No encuentro en mi base de datos el salón <unknown:working progress> :pensive:\n" + 
+//			"""
+//			Si entiendes que el salón que buscas está correctamente escrito, notifícale
+//			a un estudiante orientador o a un Bot-Developer para que pueda atender el asunto.		
+//			"""
+//		)
+//		// This message can only be seen by the one
+//		// who wrote the command. This is to avoid command
+//		// cluttering in the channel
+//		.setEphemeral(event.isFromGuild())
+//		.queue();
 	}
 }

@@ -54,10 +54,7 @@ public class FacultyCmd extends InteractionModel implements CommandI {
 	@Override
 	public List<OptionData> getOptions() {
 		return List.of(
-			new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje un departamento", true)
-				.addChoice("INEL/ICOM - Department", OPTION_SELECTED_INEL_ICOM)
-				.addChoice("INSO/CIIC - Department", OPTION_SELECTED_INSO_CIIC)
-			);
+			new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje un departamento", true));
 	}
 
 	@Override

@@ -69,6 +69,8 @@ public class ECEAssistant extends BotApplication {
 	}
 	
 	private void prepareInfoCommands() {
+		// TODO: Update global variable to commands that actually needs them
+
 		/*
 		 * TODO:
 		 * - Verification command and behavior
@@ -77,8 +79,12 @@ public class ECEAssistant extends BotApplication {
 		 * - DAO and model implementation for command
 		 * - Command with DAOs implementation
 		 */
-		// TODO: Update global variable to commands that actually needs them
-
+		
+		/**
+		 * TODO: Command implementation with CRUD operations
+		 * 
+		 */
+		
 		/*
 		 * Require manual update to work with database
 		 */
