@@ -7,9 +7,12 @@ import java.awt.Color;
 import java.util.List;
 import java.util.Optional;
 
-import assistant.dao.VerificationDAO;
-import assistant.model.MemberRole;
-import assistant.model.VerificationReport;
+import assistant.discord.core.AsyncTaskQueue;
+import assistant.discord.interaction.CommandI;
+import assistant.discord.interaction.InteractionModel;
+import assistant.rest.dao.VerificationDAO;
+import assistant.rest.dto.MemberRole;
+import assistant.rest.dto.VerificationReport;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -27,9 +30,6 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
-import service.discord.core.AsyncTaskQueue;
-import service.discord.interaction.CommandI;
-import service.discord.interaction.InteractionModel;
 
 /**
  * @author Alfredo

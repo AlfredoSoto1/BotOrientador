@@ -6,13 +6,13 @@ package assistant.command.information;
 import java.awt.Color;
 import java.util.List;
 
+import assistant.discord.interaction.CommandI;
+import assistant.discord.interaction.InteractionModel;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import service.discord.interaction.CommandI;
-import service.discord.interaction.InteractionModel;
 
 /**
  * @author Alfredo

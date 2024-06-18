@@ -5,13 +5,13 @@ package assistant.command.moderation;
 
 import java.util.List;
 
-import assistant.model.AssistantOptions;
+import assistant.discord.app.BotApplication;
+import assistant.discord.interaction.CommandI;
+import assistant.discord.interaction.InteractionModel;
+import assistant.rest.dto.AssistantOptions;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import service.discord.core.BotApplication;
-import service.discord.interaction.CommandI;
-import service.discord.interaction.InteractionModel;
 
 /**
  * @author Alfredo

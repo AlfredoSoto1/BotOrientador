@@ -6,11 +6,11 @@ package assistant.command.links;
 import java.io.File;
 import java.util.List;
 
+import assistant.discord.interaction.CommandI;
+import assistant.discord.interaction.InteractionModel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.utils.FileUpload;
-import service.discord.interaction.CommandI;
-import service.discord.interaction.InteractionModel;
 
 /**
  * @author Alfredo
