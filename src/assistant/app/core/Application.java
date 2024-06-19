@@ -88,8 +88,8 @@ public abstract class Application {
 		System.out.println("[Application] Shutting down");
 		
 		// Disconnect the database and exit the spring application
-		databaseConnection.disconnect();
-		SpringApplication.exit(context);
+//		databaseConnection.disconnect();
+//		SpringApplication.exit(context);
 
 		System.out.println("[Application] Ended");
 	}
