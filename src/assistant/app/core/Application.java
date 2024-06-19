@@ -9,7 +9,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import assistant.app.entry.AssistantAppEntry;
 import assistant.database.DatabaseConfiguration;
 import assistant.database.DatabaseConnection;
-import assistant.discord.app.BotConfiguration;
 import assistant.discord.app.ECEAssistant;
 
 /**
@@ -63,10 +62,10 @@ public abstract class Application {
 		// Create new spring application
 		context = SpringApplication.run(AssistantAppEntry.class, args);
 		// Create a new database connection
-		databaseConnection = new DatabaseConnection(context.getBean(DatabaseConfiguration.class));
+		databaseConnection = new DatabaseConnection(new DatabaseConfiguration());
 		// Create new Assistant bot
 		// TODO: you have to automate this to support multiple bots
-//		assistant = new ECEAssistant(context.getBean(BotConfiguration.class));
+//		assistant = new ECEAssistant(new BotConfiguration());
 		
 		System.out.println("[Application] Initialized");
 		// Handle start of the application for customization

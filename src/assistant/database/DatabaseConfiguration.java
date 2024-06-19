@@ -3,33 +3,26 @@
  */
 package assistant.database;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.stereotype.Component;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 /**
  * @author Alfredo
  */
-@Component
-@Configuration
-@PropertySource("classpath:config/application.properties")
 public class DatabaseConfiguration {
 	
-	@Value("${spring.datasource.url}")
     private String databaseUrl;
-
-    @Value("${spring.datasource.username}")
     private String username;
-
-    @Value("${spring.datasource.password}")
     private String password;
-
-    @Value("${spring.datasource.driver-class-name}")
     private String driverClassName;
 
     public DatabaseConfiguration() {
-    	
+    	Properties properties = loadProperties();
+    	this.databaseUrl = properties.getProperty("spring.datasource.url");
+    	this.username = properties.getProperty("spring.datasource.username");
+    	this.password = properties.getProperty("spring.datasource.password");
+    	this.driverClassName = properties.getProperty("spring.datasource.driver-class-name");
     }
 
     public String getDatabaseUrl() {
@@ -46,5 +39,20 @@ public class DatabaseConfiguration {
 
     public String getDriverClassName() {
         return driverClassName;
+    }
+    
+    private Properties loadProperties() {
+        Properties properties = new Properties();
+
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream("config/database.properties")) {
+            if (input == null)
+            	throw new IOException("Sorry, unable to find database.properties");
+            // Load the properties file
+            properties.load(input);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+        return properties;
     }
 }
