@@ -6,6 +6,11 @@ package assistant.rest.service;
 /**
  * @author Alfredo
  */
-public class BuilldingService {
-
+public class BuildingService {
+	
+	public BuildingService() {
+		
+	}
+	
+	
 }

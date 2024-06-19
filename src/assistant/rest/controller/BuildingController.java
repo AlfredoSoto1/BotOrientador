@@ -3,6 +3,9 @@
  */
 package assistant.rest.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +15,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import assistant.rest.dto.Building;
+import assistant.rest.dto.PostStatement;
+import assistant.rest.dto.PutStatement;
+
 /**
  * @author Alfredo
  */
@@ -20,27 +27,27 @@ import org.springframework.web.bind.annotation.RestController;
 public class BuildingController {
 
 	@GetMapping
-	public String getBuilding() {
-		return "getAllFaculty";
+	public List<Building> getBuilding() {
+		return new ArrayList<>();
 	}
 
 	@GetMapping("/{id}")
-    public String getBuilding(@PathVariable Integer id) {
-        return "professor";
+    public Building getBuilding(@PathVariable Integer id) {
+        return null;
     }
 	
     @PostMapping
-    public String addBuilding(@RequestBody String professor) {
-    	return ""; // return the added record
+    public PostStatement addBuilding(@RequestBody Building building) {
+    	return null; // return the added record
     }
     
     @PutMapping("/{id}")
-    public String updateBuilding(@PathVariable Integer id, @RequestBody String professor) {
-    	return ""; // return the updated record
+    public PutStatement updateBuilding(@PathVariable Integer id, @RequestBody Building building) {
+    	return null; // return the updated record
     }
     
     @DeleteMapping("/{id}")
-    public String deleteBuilding(@PathVariable Integer id) {
-    	return ""; // Return the record
+    public Building deleteBuilding(@PathVariable Integer id) {
+    	return null; // Return the record
     }
 }
