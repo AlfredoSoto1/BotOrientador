@@ -50,16 +50,29 @@ public class MemberService {
 		return memberDAO.getMemberProgram(verid);
 	}
 	
-	public int addMember(MemberDTO memberDTO, String program, String team) {
+	public int addEOrientador(MemberDTO memberDTO, String program, String team) {
 		if(!MemberProgram.isProgram(program))
 			return -1;
 		return memberDAO.insertOrientadorMember(memberDTO, program, team);
 	}
+
+	public int addPrepa(MemberDTO memberDTO, String program, String team) {
+		if(!MemberProgram.isProgram(program))
+			return -1;
+		return memberDAO.insertPrepaMember(memberDTO, program, team);
+	}
 	
-	public List<Integer> addMembers(List<MemberDTO> members, String program, String team) {
+	public List<Integer> addEOrientadores(List<MemberDTO> members, String program, String team) {
 		List<Integer> results = new ArrayList<>();
 		for(MemberDTO member : members)
 			results.add(memberDAO.insertOrientadorMember(member, program, team));
+		return results;
+	}
+
+	public List<Integer> addPrepas(List<MemberDTO> members, String program, String team) {
+		List<Integer> results = new ArrayList<>();
+		for(MemberDTO member : members)
+			results.add(memberDAO.insertPrepaMember(member, program, team));
 		return results;
 	}
 	

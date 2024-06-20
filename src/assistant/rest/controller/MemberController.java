@@ -61,9 +61,9 @@ public class MemberController {
         return ResponseEntity.of(service.getMemberProgram(id));
     }
 	
-	@PostMapping("/{program}-{team}")
-	public ResponseEntity<?> addMember(@PathVariable String program, @PathVariable String team, @RequestBody MemberDTO member) {
-		int idResult = service.addMember(member, program, team);
+	@PostMapping("/{program}-{team}/eo")
+	public ResponseEntity<?> addEOrientador(@PathVariable String program, @PathVariable String team, @RequestBody MemberDTO member) {
+		int idResult = service.addEOrientador(member, program, team);
 		
 		if(idResult > 0) {
 			return ResponseEntity.status(HttpStatus.CREATED).body(idResult);
@@ -72,9 +72,31 @@ public class MemberController {
 		}
 	}
 
-	@PostMapping("/{program}-{team}/group")
-    public ResponseEntity<?> addMembers(@PathVariable String program, @PathVariable String team, @RequestBody List<MemberDTO> member) {
-		List<Integer> results = service.addMembers(member, program, team);
+	@PostMapping("/{program}-{team}/eo/group")
+    public ResponseEntity<?> addEOrientadores(@PathVariable String program, @PathVariable String team, @RequestBody List<MemberDTO> member) {
+		List<Integer> results = service.addEOrientadores(member, program, team);
+		
+		if(!results.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.CREATED).body(results);
+		} else {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to insert");
+		}
+    }
+	
+	@PostMapping("/{program}-{team}/prepa")
+	public ResponseEntity<?> addPrepa(@PathVariable String program, @PathVariable String team, @RequestBody MemberDTO member) {
+		int idResult = service.addPrepa(member, program, team);
+		
+		if(idResult > 0) {
+			return ResponseEntity.status(HttpStatus.CREATED).body(idResult);
+		} else {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to insert");
+		}
+	}
+
+	@PostMapping("/{program}-{team}/prepa/group")
+    public ResponseEntity<?> addPrepas(@PathVariable String program, @PathVariable String team, @RequestBody List<MemberDTO> member) {
+		List<Integer> results = service.addPrepas(member, program, team);
 		
 		if(!results.isEmpty()) {
 			return ResponseEntity.status(HttpStatus.CREATED).body(results);

@@ -407,6 +407,132 @@ public class MemberDAO {
 				stmt_orientador.setInt(3, verid);
 				
 				stmt_orientador.executeUpdate();
+				
+				stmt_member.setString(1, member.getFunfact());
+				stmt_member.setInt(2, verid);
+				stmt_member.setString(3, teamname);
+				
+				ResultSet result_member = stmt_member.executeQuery();
+				if(!result_member.next()) {
+					result_member.close();
+					throw new SQLException();
+				}
+				int memid = result_member.getInt("memid");
+				result_member.close();
+				
+				stmt_advancement.setInt(1, memid);
+				stmt_advancement.executeUpdate();
+				
+				connection.commit();
+				idResult.set(verid);
+			} catch (SQLException sqle) {
+				connection.rollback();
+			} finally {
+				stmt_verification.close();
+				stmt_orientador.close();
+				stmt_member.close();
+				stmt_advancement.close();
+				connection.setAutoCommit(true);
+			}
+		};
+		
+		Application.instance().getDatabaseConnection().establishConnection(rq);
+		return idResult.get();
+	}
+	
+	public int insertPrepaMember(MemberDTO member, String program, String teamname) {
+		final String SQL_SELECT_PROGRAM = 
+			"""
+	        select progid from program
+		        where 
+		            name = ?
+			""";
+		final String SQL_INSERT_VERIFICATION = 
+			"""
+		    insert into verification(email, fprogid)
+		        select ?, progid
+		            from program
+		        where 
+		            name = ?
+			returning verid
+			""";
+		final String SQL_INSERT_PREPA = 
+			"""
+		    insert into prepa (fname, flname, mlname, initial, sex, fverid)
+		        values (?, ?, ?, ?, ?, ?)
+			""";
+		final String SQL_SELECT_TEAM = 
+			"""
+		    select teamid from team
+		        where 
+		            team.name = ?
+			""";
+		final String SQL_INSERT_MEMBER = 
+			"""
+			insert into member (funfact, fverid, fteamid)
+			    select ?, ?, teamid from team
+			        where 
+			            team.name = ?
+			returning memid
+			""";
+		final String SQL_INSERT_ADVANCEMENT = 
+			"""
+			insert into advancement (name, fmemid) values('participation', ?)
+			""";
+		AtomicInteger idResult = new AtomicInteger(-1);
+		
+		RunnableSQL rq = connection -> {
+			connection.setAutoCommit(false);
+			
+			PreparedStatement stmt_program = connection.prepareStatement(SQL_SELECT_PROGRAM);
+			stmt_program.setString(1, program);
+			
+			ResultSet result_program = stmt_program.executeQuery();
+			if(!result_program.next()) {
+				connection.rollback();
+				connection.setAutoCommit(true);
+				result_program.close();
+				stmt_program.close();
+				return;
+			}
+			
+			PreparedStatement stmt_team = connection.prepareStatement(SQL_SELECT_TEAM);
+			stmt_team.setString(1, teamname);
+			
+			ResultSet result_team = stmt_team.executeQuery();
+			if(!result_team.next()) {
+				result_team.close();
+				stmt_program.close();
+				connection.rollback();
+				connection.setAutoCommit(true);
+				return;
+			}
+			
+			PreparedStatement stmt_verification = connection.prepareStatement(SQL_INSERT_VERIFICATION);
+			PreparedStatement stmt_prepa        = connection.prepareStatement(SQL_INSERT_PREPA);
+			PreparedStatement stmt_member       = connection.prepareStatement(SQL_INSERT_MEMBER);
+			PreparedStatement stmt_advancement  = connection.prepareStatement(SQL_INSERT_ADVANCEMENT);
+			
+			try {
+				stmt_verification.setString(1, member.getEmail());
+				stmt_verification.setString(2, program);
+				
+				ResultSet result_verification = stmt_verification.executeQuery();
+				if(!result_verification.next()) {
+					result_verification.close();
+					throw new SQLException();
+				}
+				int verid = result_verification.getInt("verid");
+				result_verification.close();
+				
+				stmt_prepa.setString(1, member.getFirstname());
+				stmt_prepa.setString(2, member.getLastname().split(" ")[0]);
+				stmt_prepa.setString(3, member.getLastname().split(" ")[1]);
+				stmt_prepa.setString(4, ""+member.getInitial());
+				stmt_prepa.setString(5, ""+member.getSex());
+				stmt_prepa.setInt(6, verid);
+				
+				stmt_prepa.executeUpdate();
 
 				stmt_member.setString(1, member.getFunfact());
 				stmt_member.setInt(2, verid);
@@ -429,7 +555,7 @@ public class MemberDAO {
 				connection.rollback();
 			} finally {
 				stmt_verification.close();
-				stmt_orientador.close();
+				stmt_prepa.close();
 				stmt_member.close();
 				stmt_advancement.close();
 				connection.setAutoCommit(true);
