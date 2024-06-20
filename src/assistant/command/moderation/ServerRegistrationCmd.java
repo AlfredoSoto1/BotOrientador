@@ -10,8 +10,8 @@ import java.util.Optional;
 
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
+import assistant.discord.object.RegistrationStatus;
 import assistant.rest.dao.RegistrationDAO;
-import assistant.rest.dto.RegistrationStatus;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;

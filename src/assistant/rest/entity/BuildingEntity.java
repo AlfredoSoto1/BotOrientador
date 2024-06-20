@@ -1,23 +1,37 @@
 /**
  * 
  */
-package assistant.rest.dto;
+package assistant.rest.entity;
 
 /**
  * @author Alfredo
  */
-public class Building {
+public class BuildingEntity {
 	
+	private int id;
 	private String code;
 	private String name;
 	private String gpin;
 	
-	public Building(String code, String name, String gpin) {
+	public BuildingEntity() {
+		
+	}
+	
+	public BuildingEntity(int id, String code, String name, String gpin) {
+		this.id = id;
 		this.code = code;
 		this.name = name;
 		this.gpin = gpin;
 	}
 
+	public int getID() {
+		return id;
+	}
+
+	public void setID(int id) {
+		this.id = id;
+	}
+	
 	public String getCode() {
 		return code;
 	}

@@ -8,7 +8,7 @@ import java.util.List;
 import assistant.discord.app.BotApplication;
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
-import assistant.rest.dto.AssistantOptions;
+import assistant.discord.object.AssistantOptions;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;

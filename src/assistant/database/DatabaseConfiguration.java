@@ -19,10 +19,10 @@ public class DatabaseConfiguration {
 
     public DatabaseConfiguration() {
     	Properties properties = loadProperties();
-    	this.databaseUrl = properties.getProperty("spring.datasource.url");
-    	this.username = properties.getProperty("spring.datasource.username");
-    	this.password = properties.getProperty("spring.datasource.password");
-    	this.driverClassName = properties.getProperty("spring.datasource.driver-class-name");
+    	this.databaseUrl = properties.getProperty("database.url");
+    	this.username = properties.getProperty("database.username");
+    	this.password = properties.getProperty("database.password");
+    	this.driverClassName = properties.getProperty("database.driver-class-name");
     }
 
     public String getDatabaseUrl() {

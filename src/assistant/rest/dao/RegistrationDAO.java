@@ -13,8 +13,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import assistant.app.core.Application;
 import assistant.database.DatabaseConnection.RunnableSQL;
-import assistant.rest.dto.RegistrationStatus;
-import assistant.rest.dto.RegistrationStatus.AtomicRegistrationStatus;
+import assistant.discord.object.RegistrationStatus;
+import assistant.discord.object.RegistrationStatus.AtomicRegistrationStatus;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 

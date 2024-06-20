@@ -3,9 +3,9 @@
  */
 package assistant.rest.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,11 +13,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import assistant.rest.dto.Building;
-import assistant.rest.dto.PostStatement;
-import assistant.rest.dto.PutStatement;
+import assistant.rest.dto.BuildingDTO;
+import assistant.rest.service.BuildingService;
 
 /**
  * @author Alfredo
@@ -26,28 +26,43 @@ import assistant.rest.dto.PutStatement;
 @RequestMapping("/assistant/building")
 public class BuildingController {
 
-	@GetMapping
-	public List<Building> getBuilding() {
-		return new ArrayList<>();
+	private final BuildingService service;
+	
+	@Autowired
+	public BuildingController(BuildingService service) {
+		this.service = service;
 	}
-
+	
+	@GetMapping
+	public ResponseEntity<?> getBuildings(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "5") Integer size) {
+		return ResponseEntity.ok(service.getAll(page, size));
+	}
+	
 	@GetMapping("/{id}")
-    public Building getBuilding(@PathVariable Integer id) {
-        return null;
+    public ResponseEntity<?> getBuilding(@PathVariable Integer id) {
+        return ResponseEntity.ofNullable(service.getByID(id));
     }
 	
     @PostMapping
-    public PostStatement addBuilding(@RequestBody Building building) {
-    	return null; // return the added record
+    public ResponseEntity<?> addBuilding(@RequestBody BuildingDTO building) {
+        int recordID = service.insertBuilding(building);
+        
+        if (recordID > 0) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(recordID);
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to insert");
+        }
     }
     
     @PutMapping("/{id}")
-    public PutStatement updateBuilding(@PathVariable Integer id, @RequestBody Building building) {
-    	return null; // return the updated record
+    public ResponseEntity<?> updateBuilding(@PathVariable Integer id, @RequestBody BuildingDTO building) {
+    	return ResponseEntity.ofNullable(service.updateBuilding(id, building));
     }
     
     @DeleteMapping("/{id}")
-    public Building deleteBuilding(@PathVariable Integer id) {
-    	return null; // Return the record
+    public ResponseEntity<?> deleteBuilding(@PathVariable Integer id) {
+    	return ResponseEntity.ofNullable(service.deleteBuilding(id));
     }
 }

@@ -1,11 +1,12 @@
 /**
  * 
  */
-package assistant.rest.dto;
+package assistant.discord.object;
 
 /**
  * @author Alfredo
  */
+@Deprecated
 public enum MemberRole {
 	// Moderation - level
 	BOTS                   ("Bots"),
@@ -20,17 +21,7 @@ public enum MemberRole {
 	PREPA                  ("Prepa"),
 	NOT_VERIFIED           ("Not-Verified"),
 	ESTUDIANTE_GRADUADO    ("EstudianteGraduado"),
-	ESTUDIANTE_ORIENTADOR  ("EstudianteOrientador"),
-	
-	// Department - level
-	INEL("INEL"),
-	ICOM("ICOM"),
-	INSO("INSO"),
-	CIIC("CIIC"),
-	ININ("ININ"),
-	FISI("FISI"),
-	ECON("ECON"),
-	GERH("GERH");
+	ESTUDIANTE_ORIENTADOR  ("EstudianteOrientador");
 	
 	/**
 	 * Establish literal name that is used
@@ -50,7 +41,7 @@ public enum MemberRole {
 	/**
 	 * @return literal name of the member role
 	 */
-	public String getName() {
+	public String getLiteral() {
 		return literalName;
 	}
 }

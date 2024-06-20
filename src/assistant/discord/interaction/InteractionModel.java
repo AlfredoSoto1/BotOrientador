@@ -6,8 +6,8 @@ package assistant.discord.interaction;
 import java.util.HashMap;
 import java.util.Map;
 
+import assistant.discord.object.MemberRole;
 import assistant.rest.dao.InteractionModelDAO;
-import assistant.rest.dto.MemberRole;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;

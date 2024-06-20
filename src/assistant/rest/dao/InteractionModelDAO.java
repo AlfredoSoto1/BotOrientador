@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import assistant.app.core.Application;
 import assistant.database.DatabaseConnection.RunnableSQL;
-import assistant.rest.dto.MemberRole;
+import assistant.discord.object.MemberRole;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 
@@ -50,7 +50,7 @@ public class InteractionModelDAO {
 		RunnableSQL rq = connection -> {
 			PreparedStatement stmt = connection.prepareStatement(SQL);
 			
-			stmt.setString(1, memberRole.getName());
+			stmt.setString(1, memberRole.getLiteral());
 			stmt.setLong(2, server.getIdLong());
 			
 			// Execute the query and obtain single role

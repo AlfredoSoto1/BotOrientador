@@ -1,7 +1,7 @@
 /**
  * 
  */
-package assistant.rest.dto;
+package assistant.discord.object;
 
 /**
  * @author Alfredo
