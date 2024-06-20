@@ -8,6 +8,7 @@ package assistant.rest.dto;
  */
 public class BuildingDTO {
 	
+	private int id;
 	private String code;
 	private String name;
 	private String gpin;
@@ -20,6 +21,14 @@ public class BuildingDTO {
 		this.code = code;
 		this.name = name;
 		this.gpin = gpin;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 
 	public String getCode() {
