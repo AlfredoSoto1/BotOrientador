@@ -18,14 +18,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class ServiceDTO {
 
 	private int id;
-	private int depid;
-	private ContactDTO contact;
 
 	private String name;
 	private String description;
+	private String department;
 	private String availability;
+	
 	private List<String> offering;
 	private Map<String, String[]> additional;
+
+	private ContactDTO contact;
 
 	public ServiceDTO() {
 		this.offering = new ArrayList<>();
@@ -40,12 +42,12 @@ public class ServiceDTO {
 		this.id = id;
 	}
 
-	public int getDepid() {
-		return depid;
+	public String getDepartment() {
+		return department;
 	}
 
-	public void setDepid(int depid) {
-		this.depid = depid;
+	public void setDepartment(String department) {
+		this.department = department;
 	}
 
 	public ContactDTO getContact() {

@@ -69,17 +69,18 @@ public class ServiceDAO {
 		final String SQL = 
 			"""
 			select  servid,
-					fdepid,
+					abreviation,
 					fcontid,
-					name,
+					service.name,
+					service.description,
 					office,
 					availability,
-					description,
 					offering,
 					additional,
 					email
 				from service
-					inner join contact on contid = fcontid
+					inner join contact    on contid = fcontid
+					inner join department on depid  = fdepid
 			
 			order by servid asc
 			offset ?
@@ -96,7 +97,7 @@ public class ServiceDAO {
 			while(result.next()) {
 				ServiceDTO service = new ServiceDTO();
 				service.setId(result.getInt("servid"));
-				service.setDepid(result.getInt("fdepid"));
+				service.setDepartment(result.getString("abreviation"));
 				service.setName(result.getString("name"));
 				service.setDescription(result.getString("description"));
 				service.setAvailability(result.getString("availability"));
@@ -124,17 +125,18 @@ public class ServiceDAO {
 		final String SQL = 
 			"""
 			select  servid,
-					fdepid,
+					abreviation,
 					fcontid,
-					name,
+					service.name,
+					service.description,
 					office,
 					availability,
-					description,
 					offering,
 					additional,
 					email
 				from service
-					inner join contact on contid = fcontid
+					inner join contact    on contid = fcontid
+					inner join department on depid  = fdepid
 				where
 					servid = ?
 			""";
@@ -148,7 +150,7 @@ public class ServiceDAO {
 			ResultSet result = stmt.executeQuery();
 			while(result.next()) {
 				service.setId(result.getInt("servid"));
-				service.setDepid(result.getInt("fdepid"));
+				service.setDepartment(result.getString("abreviation"));
 				service.setName(result.getString("name"));
 				service.setDescription(result.getString("description"));
 				service.setAvailability(result.getString("availability"));

@@ -9,10 +9,10 @@ package assistant.rest.dto;
 public class DiscordRegistrationDTO {
 	
 	private int id;
-	private int depid;
 	private long serverid;
 	private long logChannelId;
 	private String joinedAt;
+	private String department;
 	
 	public DiscordRegistrationDTO() {
 
@@ -24,14 +24,6 @@ public class DiscordRegistrationDTO {
 
 	public void setId(int id) {
 		this.id = id;
-	}
-
-	public int getDepid() {
-		return depid;
-	}
-
-	public void setDepid(int depid) {
-		this.depid = depid;
 	}
 
 	public long getServerid() {
@@ -57,5 +49,12 @@ public class DiscordRegistrationDTO {
 	public void setJoinedAt(String joinedAt) {
 		this.joinedAt = joinedAt;
 	}
-	
+
+	public String getDepartment() {
+		return department;
+	}
+
+	public void setDepartment(String department) {
+		this.department = department;
+	}
 }

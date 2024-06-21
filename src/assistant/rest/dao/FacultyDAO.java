@@ -69,10 +69,15 @@ public class FacultyDAO {
 	public List<FacultyDTO> getAll(int offset, int limit) {
 		final String SQL =
 			"""
-			select  facid, fcontid, fdepid, 
-			        name, jobentitlement, description, office, email
+			select  facid, fcontid, abreviation, 
+			        faculty.name,
+			        faculty.description, 
+			        jobentitlement, 
+			        office, 
+			        email
 				from faculty
-			        inner join contact on fcontid = contid
+			        inner join contact    on fcontid = contid
+			        inner join department on fdepid  = depid
 			offset ?
 			limit  ?
 			""";
@@ -89,7 +94,7 @@ public class FacultyDAO {
 				ContactDTO contact = new ContactDTO();
 				
 				professor.setId(result.getInt("facid"));
-				professor.setDepid(result.getInt("fdepid"));
+				professor.setDepartment(result.getString("abreviation"));
 				
 				professor.setName(result.getString("name"));
 				professor.setJobentitlement(result.getString("jobentitlement"));
@@ -118,10 +123,15 @@ public class FacultyDAO {
 	public Optional<FacultyDTO> getProfessor(int id) {
 		final String SQL_SELECT_FACULTY =
 			"""
-			select  facid, fcontid, fdepid, 
-			        name, jobentitlement, description, office, email
+			select  facid, fcontid, abreviation, 
+			        faculty.name,
+			        faculty.description, 
+			        jobentitlement, 
+			        office, 
+			        email
 				from faculty
 			        inner join contact on fcontid = contid
+			        inner join department on fdepid  = depid
 				where 
 					facid = ?
 			""";
@@ -137,7 +147,7 @@ public class FacultyDAO {
 			int contid = -1;
 			while(result.next()) {
 				professor.setId(result.getInt("facid"));
-				professor.setDepid(result.getInt("fdepid"));
+				professor.setDepartment(result.getString("abreviation"));
 				
 				professor.setName(result.getString("name"));
 				professor.setJobentitlement(result.getString("jobentitlement"));

@@ -9,12 +9,12 @@ package assistant.rest.dto;
 public class FacultyDTO {
 
 	private int id;
-	private int depid;
 
 	private String name;
-	private String jobentitlement;
 	private String description;
+	private String department;
 	private String office;
+	private String jobentitlement;
 
 	private ContactDTO contact;
 
@@ -70,12 +70,12 @@ public class FacultyDTO {
 		this.contact = contact;
 	}
 
-	public int getDepid() {
-		return depid;
+	public String getDepartment() {
+		return department;
 	}
 
-	public void setDepid(int depid) {
-		this.depid = depid;
+	public void setDepartment(String department) {
+		this.department = department;
 	}
 
 }
