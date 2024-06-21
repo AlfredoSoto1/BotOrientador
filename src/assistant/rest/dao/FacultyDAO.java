@@ -3,8 +3,10 @@
  */
 package assistant.rest.dao;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -101,46 +103,7 @@ public class FacultyDAO {
 				
 				faculty.add(professor);
 				
-				PreparedStatement stmt_project = connection.prepareStatement(SQL_SELECT_PROJECT);
-				PreparedStatement stmt_organiz = connection.prepareStatement(SQL_SELECT_ORGANIZATION);
-				PreparedStatement stmt_extensi = connection.prepareStatement(SQL_SELECT_EXTENSION);
-				PreparedStatement stmt_webpage = connection.prepareStatement(SQL_SELECT_WEB);
-				PreparedStatement stmt_socialm = connection.prepareStatement(SQL_SELECT_SOCIAL);
-				
-				stmt_project.setInt(1, contid);
-				stmt_organiz.setInt(1, contid);
-				stmt_extensi.setInt(1, contid);
-				stmt_webpage.setInt(1, contid);
-				stmt_socialm.setInt(1, contid);
-				
-				ResultSet result_project = stmt_project.executeQuery();
-				ResultSet result_organiz = stmt_organiz.executeQuery();
-				ResultSet result_extensi = stmt_extensi.executeQuery();
-				ResultSet result_webpage = stmt_webpage.executeQuery();
-				ResultSet result_socialm = stmt_socialm.executeQuery();
-				
-				while(result_project.next())
-					contact.addProjects(new ProjectDTO(result_project.getInt("projecid"), result_project.getString("name"), result_project.getString("description")));
-				while(result_organiz.next())
-					contact.addOrganizations(new OrganizationDTO(result_organiz.getInt("orgid"), result_organiz.getString("name"), result_organiz.getString("description")));
-				while(result_extensi.next())
-					contact.addExtensions(new ExtensionDTO(result_extensi.getInt("extid"), result_extensi.getString("ext")));
-				while(result_webpage.next())
-					contact.addWebpages(new WebpageDTO(result_webpage.getInt("webid"), result_webpage.getString("url"), result_webpage.getString("description")));
-				while(result_socialm.next())
-					contact.addSocialmedias(new SocialMediaDTO(result_socialm.getInt("socialid"), result_socialm.getString("platform"), result_socialm.getString("urlhandle")));
-				
-				result_project.close();
-				result_organiz.close();
-				result_extensi.close();
-				result_webpage.close();
-				result_socialm.close();
-				
-				stmt_project.close();
-				stmt_organiz.close();
-				stmt_extensi.close();
-				stmt_webpage.close();
-				stmt_socialm.close();
+				contactInfoSelect(connection, contact, contid);
 			}
 			
 			result.close();
@@ -194,49 +157,53 @@ public class FacultyDAO {
 			if(contid < 0)
 				return;
 			
-			PreparedStatement stmt_project = connection.prepareStatement(SQL_SELECT_PROJECT);
-			PreparedStatement stmt_organiz = connection.prepareStatement(SQL_SELECT_ORGANIZATION);
-			PreparedStatement stmt_extensi = connection.prepareStatement(SQL_SELECT_EXTENSION);
-			PreparedStatement stmt_webpage = connection.prepareStatement(SQL_SELECT_WEB);
-			PreparedStatement stmt_socialm = connection.prepareStatement(SQL_SELECT_SOCIAL);
-			
-			stmt_project.setInt(1, contid);
-			stmt_organiz.setInt(1, contid);
-			stmt_extensi.setInt(1, contid);
-			stmt_webpage.setInt(1, contid);
-			stmt_socialm.setInt(1, contid);
-			
-			ResultSet result_project = stmt_project.executeQuery();
-			ResultSet result_organiz = stmt_organiz.executeQuery();
-			ResultSet result_extensi = stmt_extensi.executeQuery();
-			ResultSet result_webpage = stmt_webpage.executeQuery();
-			ResultSet result_socialm = stmt_socialm.executeQuery();
-			
-			while(result_project.next())
-				contact.addProjects(new ProjectDTO(result_project.getInt("projecid"), result_project.getString("name"), result_project.getString("description")));
-			while(result_organiz.next())
-				contact.addOrganizations(new OrganizationDTO(result_organiz.getInt("orgid"), result_organiz.getString("name"), result_organiz.getString("description")));
-			while(result_extensi.next())
-				contact.addExtensions(new ExtensionDTO(result_extensi.getInt("extid"), result_extensi.getString("ext")));
-			while(result_webpage.next())
-				contact.addWebpages(new WebpageDTO(result_webpage.getInt("webid"), result_webpage.getString("url"), result_webpage.getString("description")));
-			while(result_socialm.next())
-				contact.addSocialmedias(new SocialMediaDTO(result_socialm.getInt("socialid"), result_socialm.getString("platform"), result_socialm.getString("urlhandle")));
-			
-			result_project.close();
-			result_organiz.close();
-			result_extensi.close();
-			result_webpage.close();
-			result_socialm.close();
-			
-			stmt_project.close();
-			stmt_organiz.close();
-			stmt_extensi.close();
-			stmt_webpage.close();
-			stmt_socialm.close();
+			contactInfoSelect(connection, contact, contid);
 		};
 		
 		Application.instance().getDatabaseConnection().establishConnection(rq);
 		return found.get() ? Optional.of(professor) : Optional.empty();
+	}
+	
+	private void contactInfoSelect(Connection connection,  ContactDTO contact, int contid) throws SQLException {
+		PreparedStatement stmt_project = connection.prepareStatement(SQL_SELECT_PROJECT);
+		PreparedStatement stmt_organiz = connection.prepareStatement(SQL_SELECT_ORGANIZATION);
+		PreparedStatement stmt_extensi = connection.prepareStatement(SQL_SELECT_EXTENSION);
+		PreparedStatement stmt_webpage = connection.prepareStatement(SQL_SELECT_WEB);
+		PreparedStatement stmt_socialm = connection.prepareStatement(SQL_SELECT_SOCIAL);
+		
+		stmt_project.setInt(1, contid);
+		stmt_organiz.setInt(1, contid);
+		stmt_extensi.setInt(1, contid);
+		stmt_webpage.setInt(1, contid);
+		stmt_socialm.setInt(1, contid);
+		
+		ResultSet result_project = stmt_project.executeQuery();
+		ResultSet result_organiz = stmt_organiz.executeQuery();
+		ResultSet result_extensi = stmt_extensi.executeQuery();
+		ResultSet result_webpage = stmt_webpage.executeQuery();
+		ResultSet result_socialm = stmt_socialm.executeQuery();
+		
+		while(result_project.next())
+			contact.addProjects(new ProjectDTO(result_project.getInt("projecid"), result_project.getString("name"), result_project.getString("description")));
+		while(result_organiz.next())
+			contact.addOrganizations(new OrganizationDTO(result_organiz.getInt("orgid"), result_organiz.getString("name"), result_organiz.getString("description")));
+		while(result_extensi.next())
+			contact.addExtensions(new ExtensionDTO(result_extensi.getInt("extid"), result_extensi.getString("ext")));
+		while(result_webpage.next())
+			contact.addWebpages(new WebpageDTO(result_webpage.getInt("webid"), result_webpage.getString("url"), result_webpage.getString("description")));
+		while(result_socialm.next())
+			contact.addSocialmedias(new SocialMediaDTO(result_socialm.getInt("socialid"), result_socialm.getString("platform"), result_socialm.getString("urlhandle")));
+		
+		result_project.close();
+		result_organiz.close();
+		result_extensi.close();
+		result_webpage.close();
+		result_socialm.close();
+		
+		stmt_project.close();
+		stmt_organiz.close();
+		stmt_extensi.close();
+		stmt_webpage.close();
+		stmt_socialm.close();
 	}
 }
