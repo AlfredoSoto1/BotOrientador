@@ -3,9 +3,8 @@
  */
 package assistant.rest.controller;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,28 +41,19 @@ public class FacultyController {
 	}
 
 	@GetMapping("/{id}")
-    public ResponseEntity<?> getProfessor(@RequestParam(required = false, defaultValue = "") List<String> contacts, @PathVariable Integer id) {
-		if(contacts.size() > 5)
-			return ResponseEntity.badRequest().body("too many contact arguments");
-		
-		for(String contact : contacts) {
-			switch(contact.toLowerCase()) {
-			case "projects":
-			case "organizations":
-			case "extensions":
-			case "webpages":
-			case "socialmedias":
-				
-			}
-		}
-		
-		
+    public ResponseEntity<?> getProfessor(@PathVariable Integer id) {
 		return ResponseEntity.of(service.getProfessor(id));
     }
 	
-    @PostMapping
-    public ResponseEntity<?> addProfessor(@RequestBody FacultyDTO professor) {
-    	return ResponseEntity.ok(null);
+    @PostMapping("/{department}")
+    public ResponseEntity<?> addProfessor(@PathVariable String department, @RequestBody FacultyDTO professor) {
+    	int idResult = service.addProfessor(professor, department);
+		
+		if(idResult > 0) {
+			return ResponseEntity.status(HttpStatus.CREATED).body(idResult);
+		} else {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to insert");
+		}
     }
     
     @PutMapping("/{id}")

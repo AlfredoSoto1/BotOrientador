@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.stereotype.Repository;
 
@@ -103,7 +104,7 @@ public class FacultyDAO {
 				
 				faculty.add(professor);
 				
-				contactInfoSelect(connection, contact, contid);
+				contactInfoSelect(connection, contact);
 			}
 			
 			result.close();
@@ -157,25 +158,146 @@ public class FacultyDAO {
 			if(contid < 0)
 				return;
 			
-			contactInfoSelect(connection, contact, contid);
+			contactInfoSelect(connection, contact);
 		};
 		
 		Application.instance().getDatabaseConnection().establishConnection(rq);
 		return found.get() ? Optional.of(professor) : Optional.empty();
 	}
 	
-	private void contactInfoSelect(Connection connection,  ContactDTO contact, int contid) throws SQLException {
+	public int insertProfessor(FacultyDTO professor, String departmentAbreviation) {
+		final String SQL_INSERT_PROJECT =
+			"""
+			insert into project(name, description, fcontid) values (?, ?, ?)
+			""";
+		final String SQL_INSERT_ORGANIZATION =
+			"""
+			insert into organization (name, description, fcontid) values (?, ?, ?)
+			""";
+		final String SQL_INSERT_EXTENSION =
+			"""
+			insert into extension (ext, fcontid) values (?, ?)
+			""";
+		final String SQL_INSERT_WEBPAGE =
+			"""
+			insert into webpage (url, description, fcontid) values (?, ?, ?)
+			""";
+		final String SQL_INSERT_SOCIALMEDIA =
+			"""
+			insert into webpage (url, platform, fcontid) values (?, ?, ?)
+			""";
+		final String SQL_INSERT_PROFESSOR =
+			"""
+			insert into faculty (name, jobentitlement, office, description, fcontid, fdepid)
+			select 
+			        ?,               -- placeholder for name
+			        ?,               -- placeholder for jobentitlement
+			        ?,               -- placeholder for office
+			        ?,               -- placeholder for description
+			        get_or_insert_contact(?),
+			        (select depid from department where abreviation = ? limit 1)  
+			returning facid, fcontid;
+			""";
+		AtomicInteger facid = new AtomicInteger(-1);
+		
+		RunnableSQL rq = connection -> {
+			connection.setAutoCommit(false);
+			
+			try {
+				PreparedStatement stmt_professor = connection.prepareStatement(SQL_INSERT_PROFESSOR);
+				stmt_professor.setString(1, professor.getName());
+				stmt_professor.setString(2, professor.getJobentitlement());
+				stmt_professor.setString(3, professor.getOffice());
+				stmt_professor.setString(4, professor.getDescription());
+				stmt_professor.setString(5, professor.getContact().getEmail());
+				stmt_professor.setString(6, departmentAbreviation);
+				
+				ResultSet result = stmt_professor.executeQuery();
+				int contid = -1;
+				if(result.next()) {
+					facid.set(result.getInt("facid"));
+					contid = result.getInt("fcontid");
+				}
+				
+				PreparedStatement stmt_project = connection.prepareStatement(SQL_INSERT_PROJECT);
+				PreparedStatement stmt_organiz = connection.prepareStatement(SQL_INSERT_ORGANIZATION);
+				PreparedStatement stmt_extensi = connection.prepareStatement(SQL_INSERT_EXTENSION);
+				PreparedStatement stmt_webpage = connection.prepareStatement(SQL_INSERT_WEBPAGE);
+				PreparedStatement stmt_socialm = connection.prepareStatement(SQL_INSERT_SOCIALMEDIA);
+				
+				if (!professor.getContact().getProjects().isEmpty()) {
+					for(ProjectDTO p : professor.getContact().getProjects()) {
+						stmt_project.setString(1, p.getName());
+						stmt_project.setString(2, p.getDescription());
+						stmt_project.setInt(3, contid);
+						stmt_project.addBatch();
+					}
+					stmt_project.executeBatch();
+				}
+				
+				if (!professor.getContact().getOrganizations().isEmpty()) {
+					for(OrganizationDTO o : professor.getContact().getOrganizations()) {
+						stmt_organiz.setString(1, o.getName());
+						stmt_organiz.setString(2, o.getDescription());
+						stmt_organiz.setInt(3, contid);
+						stmt_organiz.addBatch();
+					}
+					stmt_organiz.executeBatch();
+				}
+				
+				if (!professor.getContact().getExtensions().isEmpty()) {
+					for(ExtensionDTO e : professor.getContact().getExtensions()) {
+						stmt_extensi.setString(1, e.getExt());
+						stmt_extensi.setInt(2, contid);
+						stmt_extensi.addBatch();
+					}
+					stmt_extensi.executeBatch();
+				}
+				
+				if (!professor.getContact().getWebpages().isEmpty()) {
+					for(WebpageDTO w : professor.getContact().getWebpages()) {
+						stmt_webpage.setString(1, w.getUrl());
+						stmt_webpage.setString(2, w.getDescription());
+						stmt_webpage.setInt(3, contid);
+						stmt_webpage.addBatch();
+					}
+					stmt_webpage.executeBatch();
+				}
+				
+				if (!professor.getContact().getSocialmedias().isEmpty()) {
+					for(SocialMediaDTO s : professor.getContact().getSocialmedias()) {
+						stmt_socialm.setString(1, s.getUrl());
+						stmt_socialm.setString(2, s.getPlatform());
+						stmt_socialm.setInt(3, contid);
+						stmt_socialm.addBatch();
+					}
+					stmt_socialm.executeBatch();
+				}
+				connection.commit();
+			} catch(SQLException sqle) {
+				sqle.printStackTrace();
+				connection.rollback();
+			} finally {
+				connection.setAutoCommit(true);
+			}
+		};
+		
+		Application.instance().getDatabaseConnection().establishConnection(rq);
+		return facid.get();
+	}
+	
+	private void contactInfoSelect(Connection connection,  ContactDTO contact) throws SQLException {
 		PreparedStatement stmt_project = connection.prepareStatement(SQL_SELECT_PROJECT);
 		PreparedStatement stmt_organiz = connection.prepareStatement(SQL_SELECT_ORGANIZATION);
 		PreparedStatement stmt_extensi = connection.prepareStatement(SQL_SELECT_EXTENSION);
 		PreparedStatement stmt_webpage = connection.prepareStatement(SQL_SELECT_WEB);
 		PreparedStatement stmt_socialm = connection.prepareStatement(SQL_SELECT_SOCIAL);
 		
-		stmt_project.setInt(1, contid);
-		stmt_organiz.setInt(1, contid);
-		stmt_extensi.setInt(1, contid);
-		stmt_webpage.setInt(1, contid);
-		stmt_socialm.setInt(1, contid);
+		stmt_project.setInt(1, contact.getId());
+		stmt_organiz.setInt(1, contact.getId());
+		stmt_extensi.setInt(1, contact.getId());
+		stmt_webpage.setInt(1, contact.getId());
+		stmt_socialm.setInt(1, contact.getId());
 		
 		ResultSet result_project = stmt_project.executeQuery();
 		ResultSet result_organiz = stmt_organiz.executeQuery();

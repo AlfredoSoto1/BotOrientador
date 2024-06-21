@@ -32,4 +32,9 @@ public class FacultyService {
 	public Optional<FacultyDTO> getProfessor(int id) {
 		return facultyDAO.getProfessor(id);
 	}
+	
+	public int addProfessor(FacultyDTO professor, String departmentAbreviation) {
+		return facultyDAO.insertProfessor(professor, departmentAbreviation);
+	}
+	
 }
