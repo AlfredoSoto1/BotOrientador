@@ -28,19 +28,19 @@ public class DiscordRegistrationService {
 	
 	
 	public List<DiscordRegistrationDTO> getAllRegistrations(int page, int size) {
-		return null;
+		return dregistrationDAO.getAllRegistrations(page * size, size);
 	}
 	
 	public Optional<DiscordRegistrationDTO> getRegistration(int id) {
-		return Optional.of(new DiscordRegistrationDTO());
+		return dregistrationDAO.getRegistration(id);
 	}
 	
 	public List<DiscordRoleDTO> getAllRoles(int page, int size) {
-		return null;
+		return dregistrationDAO.getAllRoles(page * size, size);
 	}
 	
 	public Optional<DiscordRoleDTO> getRole(int id) {
-		return Optional.empty();
+		return dregistrationDAO.getRole(id);
 	}
 	
 	public int registerDiscordServer(DiscordRegistrationDTO discordServer) {

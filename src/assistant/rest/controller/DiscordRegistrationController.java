@@ -31,16 +31,28 @@ public class DiscordRegistrationController {
 		this.service = service;
 	}
 	
-	@GetMapping
+	@GetMapping("/server")
 	public ResponseEntity<?> getAllDiscordServers(
 			@RequestParam(defaultValue = "0") Integer page,
 			@RequestParam(defaultValue = "5") Integer size) {
 		return ResponseEntity.ok(service.getAllRegistrations(page, size));
 	}
 	
-	@GetMapping("/{id}")
+	@GetMapping("/role")
+	public ResponseEntity<?> getAllDiscordRoles(
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "5") Integer size) {
+		return ResponseEntity.ok(service.getAllRoles(page, size));
+	}
+	
+	@GetMapping("/server/{id}")
     public ResponseEntity<?> getRegisteredDiscordServer(@PathVariable Integer id) {
-        return ResponseEntity.ofNullable(service.getRegistration(id));
+        return ResponseEntity.of(service.getRegistration(id));
+    }
+	
+	@GetMapping("/role/{id}")
+    public ResponseEntity<?> getRegisteredRole(@PathVariable Integer id) {
+        return ResponseEntity.of(service.getRole(id));
     }
 	
 //    @PostMapping

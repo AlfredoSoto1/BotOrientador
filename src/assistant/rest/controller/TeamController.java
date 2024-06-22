@@ -40,7 +40,7 @@ public class TeamController {
 	
 	@GetMapping("/{id}")
     public ResponseEntity<?> getTeam(@PathVariable Integer id) {
-        return ResponseEntity.ofNullable(service.getTeam(id));
+        return ResponseEntity.of(service.getTeam(id));
     }
 	
     @PostMapping

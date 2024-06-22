@@ -9,12 +9,21 @@ package assistant.rest.dto;
 public class DiscordRoleDTO {
 	
 	private int id;
+	private long roleid;
 	private long serverid;        // This is the actual server id from discord
 	private String name;          // This is the name that appears on the discord server
 	private String effectivename; // This is the global name that we want to refer to this role in this application
 	
 	public DiscordRoleDTO() {
 	
+	}
+
+	public long getRoleid() {
+		return roleid;
+	}
+
+	public void setRoleid(long roleid) {
+		this.roleid = roleid;
 	}
 
 	public int getId() {
