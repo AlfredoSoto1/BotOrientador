@@ -3,57 +3,50 @@
  */
 package assistant.rest.dto;
 
+import java.util.Date;
+
 /**
  * @author Alfredo
  */
 public class MemberDTO {
 	
-	private int verid, memid, generalid;
+	private int id;
+	private int userId;
 	
+	// Member primary info
 	private String firstname;
 	private String lastname;
-	private char initial;
-	private char sex;
+	private String initial;
+	private String sex;
 	
+	// Member unique info
 	private String email;
-	private boolean verified;
-	
+	private String username;
 	private String funfact;
+	private String program;
+	
+	// Verification status
+	private boolean verified;
+	private Date verificationDate;
 	
 	public MemberDTO() {
 
 	}
 
-	public int getVerid() {
-		return verid;
+	public int getId() {
+		return id;
 	}
 
-	public void setVerid(int verid) {
-		this.verid = verid;
+	public void setId(int id) {
+		this.id = id;
 	}
 
-	public int getMemid() {
-		return memid;
+	public int getUserId() {
+		return userId;
 	}
 
-	public void setMemid(int memid) {
-		this.memid = memid;
-	}
-
-	public int getGeneralid() {
-		return generalid;
-	}
-
-	public void setGeneralid(int generalid) {
-		this.generalid = generalid;
-	}
-
-	public String getFunfact() {
-		return funfact;
-	}
-
-	public void setFunfact(String funfact) {
-		this.funfact = funfact;
+	public void setUserId(int userId) {
+		this.userId = userId;
 	}
 
 	public String getFirstname() {
@@ -72,19 +65,19 @@ public class MemberDTO {
 		this.lastname = lastname;
 	}
 
-	public char getInitial() {
+	public String getInitial() {
 		return initial;
 	}
 
-	public void setInitial(char initial) {
+	public void setInitial(String initial) {
 		this.initial = initial;
 	}
 
-	public char getSex() {
+	public String getSex() {
 		return sex;
 	}
 
-	public void setSex(char sex) {
+	public void setSex(String sex) {
 		this.sex = sex;
 	}
 
@@ -96,6 +89,30 @@ public class MemberDTO {
 		this.email = email;
 	}
 
+	public String getProgram() {
+		return program;
+	}
+
+	public void setProgram(String program) {
+		this.program = program;
+	}
+
+	public String getFunfact() {
+		return funfact;
+	}
+
+	public void setFunfact(String funfact) {
+		this.funfact = funfact;
+	}
+
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
 	public boolean isVerified() {
 		return verified;
 	}
@@ -104,4 +121,12 @@ public class MemberDTO {
 		this.verified = verified;
 	}
 
+	public Date getVerificationDate() {
+		return verificationDate;
+	}
+
+	public void setVerificationDate(Date verificationDate) {
+		this.verificationDate = verificationDate;
+	}
+	
 }

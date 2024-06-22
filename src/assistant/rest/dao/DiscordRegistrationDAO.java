@@ -17,7 +17,7 @@ import org.springframework.stereotype.Repository;
 
 import assistant.app.core.Application;
 import assistant.database.DatabaseConnection.RunnableSQL;
-import assistant.rest.dto.DiscordRegistrationDTO;
+import assistant.rest.dto.RegisteredDiscordServerDTO;
 import assistant.rest.dto.DiscordRoleDTO;
 
 /**
@@ -54,7 +54,7 @@ public class DiscordRegistrationDAO {
 		return effectiveRoles;
 	}
 	
-	public List<DiscordRegistrationDTO> getAllRegistrations(int offset, int limit) {
+	public List<RegisteredDiscordServerDTO> getAllRegisteredDiscordServers(int offset, int limit) {
 		final String SQL = 
 			"""
 			select  seoid,
@@ -69,7 +69,7 @@ public class DiscordRegistrationDAO {
 			offset ?
 			limit  ?;
 			""";
-		List<DiscordRegistrationDTO> discordServers = new ArrayList<>();
+		List<RegisteredDiscordServerDTO> discordServers = new ArrayList<>();
 		
 		RunnableSQL rq = connection -> {
 			PreparedStatement stmt = connection.prepareStatement(SQL);
@@ -78,7 +78,7 @@ public class DiscordRegistrationDAO {
 			
 			ResultSet result = stmt.executeQuery();
 			while(result.next()) {
-				DiscordRegistrationDTO discordServer = new DiscordRegistrationDTO();
+				RegisteredDiscordServerDTO discordServer = new RegisteredDiscordServerDTO();
 				discordServer.setId(result.getInt("seoid"));
 				discordServer.setServerid(result.getLong("discserid"));
 				discordServer.setLogChannelId(result.getLong("log_channel"));
@@ -95,7 +95,7 @@ public class DiscordRegistrationDAO {
 		return discordServers;
 	}
 	
-	public Optional<DiscordRegistrationDTO> getRegistration(int id) {
+	public Optional<RegisteredDiscordServerDTO> getDiscordServerRegistration(int id) {
 		final String SQL = 
 			"""
 			select  seoid,
@@ -109,7 +109,7 @@ public class DiscordRegistrationDAO {
 					seoid = ?
 			""";
 		AtomicBoolean found = new AtomicBoolean(false);
-		DiscordRegistrationDTO discordServer = new DiscordRegistrationDTO();
+		RegisteredDiscordServerDTO discordServer = new RegisteredDiscordServerDTO();
 		
 		RunnableSQL rq = connection -> {
 			PreparedStatement stmt = connection.prepareStatement(SQL);
@@ -212,7 +212,7 @@ public class DiscordRegistrationDAO {
 		return found.get() ? Optional.of(role) : Optional.empty();
 	}
 	
-	public int insertDiscordServer(DiscordRegistrationDTO discordServer) {
+	public int insertDiscordServer(RegisteredDiscordServerDTO discordServer) {
 		final String SQL = 
 			"""
 			with department_selected as (

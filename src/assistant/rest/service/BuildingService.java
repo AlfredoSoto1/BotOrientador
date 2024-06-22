@@ -26,22 +26,36 @@ public class BuildingService {
 	}
 	
 	public List<BuildingDTO> getAll(int page, int size) {
-		return buildingDAO.findAll(page * size, size);
+		return buildingDAO.getAll(page * size, size);
 	}
 	
-    public Optional<BuildingDTO> getByID(Integer id) {
-        return buildingDAO.findByID(id);
+    public Optional<BuildingDTO> findBuilding(Integer id) {
+        return buildingDAO.findBuilding(id);
     }
     
     public int insertBuilding(BuildingDTO building) {
-    	return buildingDAO.insert(building);
+    	return buildingDAO.insertBuilding(building);
     }
     
-    public Optional<BuildingDTO> updateBuilding(int id, BuildingDTO building) {
-    	return buildingDAO.update(id, building);
+    public Optional<BuildingDTO> updateBuilding(int id, BuildingDTO newBuilding) {
+    	Optional<BuildingDTO> building = buildingDAO.findBuilding(id);
+    	
+    	if(building.isPresent()) {
+    		buildingDAO.updateBuilding(id, newBuilding);
+    		return building;
+    	} else {
+    		return Optional.empty();
+    	}
     }
     
     public Optional<BuildingDTO> deleteBuilding(int id) {
-    	return buildingDAO.delete(id);
+    	Optional<BuildingDTO> building = buildingDAO.findBuilding(id);
+    	
+    	if(building.isPresent()) {
+    		buildingDAO.deleteBuilding(id);
+    		return building;
+    	} else {
+    		return Optional.empty();
+    	}
     }
 }

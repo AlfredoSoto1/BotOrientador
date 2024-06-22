@@ -11,11 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import assistant.discord.object.MemberProgram;
+import assistant.discord.object.MemberRetrievement;
 import assistant.rest.dao.MemberDAO;
+import assistant.rest.dto.EmailDTO;
 import assistant.rest.dto.MemberDTO;
-import assistant.rest.dto.MemberProgramDTO;
-import assistant.rest.dto.MemberRoleDTO;
-import assistant.rest.dto.MemberTeamDTO;
 
 /**
  * @author Alfredo
@@ -30,25 +29,38 @@ public class MemberService {
 		this.memberDAO = memberDAO;
 	}
 	
-	public List<MemberDTO> getAll(int page, int size) {
-		return memberDAO.getAll(page * size, size);
+	public List<EmailDTO> getEmails(int page, int size) {
+		return memberDAO.getEmails(page * size, size);
 	}
 	
-	public Optional<MemberDTO> getMember(int verid) {
-		return memberDAO.getMember(verid);
+	public List<MemberDTO> getAllMembers(int page, int size, MemberRetrievement retrievement) {
+		return memberDAO.getMembers(page * size, size, retrievement);
 	}
 	
-	public Optional<MemberTeamDTO> getMemberTeam(int verid) {
-		return memberDAO.getMemberTeam(verid);
+//	public Optional<MemberDTO> getPrepa(String email) {
+//		
+//	}
+//	
+//	public Optional<MemberDTO> getOrientador(String email) {
+//		
+//	}
+	
+	public Optional<MemberDTO> getMember(String email, MemberRetrievement retrievement) {
+		return memberDAO.getMember(email, retrievement);
 	}
 	
-	public Optional<MemberRoleDTO> getMemberRole(int verid) {
-		return memberDAO.getMemberRole(verid);
-	}
 	
-	public Optional<MemberProgramDTO> getMemberProgram(int verid) {
-		return memberDAO.getMemberProgram(verid);
-	}
+//	public Optional<MemberTeamDTO> getMemberTeam(int verid) {
+//		return memberDAO.getMemberTeam(verid);
+//	}
+//	
+//	public Optional<MemberRoleDTO> getMemberRole(int verid) {
+//		return memberDAO.getMemberRole(verid);
+//	}
+//	
+//	public Optional<MemberProgramDTO> getMemberProgram(int verid) {
+//		return memberDAO.getMemberProgram(verid);
+//	}
 	
 	public int addEOrientador(MemberDTO memberDTO, String program, String team) {
 		if(!MemberProgram.isProgram(program))

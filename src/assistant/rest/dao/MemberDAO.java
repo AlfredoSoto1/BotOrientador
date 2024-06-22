@@ -7,9 +7,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,10 +17,9 @@ import org.springframework.stereotype.Repository;
 
 import assistant.app.core.Application;
 import assistant.database.DatabaseConnection.RunnableSQL;
+import assistant.discord.object.MemberRetrievement;
+import assistant.rest.dto.EmailDTO;
 import assistant.rest.dto.MemberDTO;
-import assistant.rest.dto.MemberProgramDTO;
-import assistant.rest.dto.MemberRoleDTO;
-import assistant.rest.dto.MemberTeamDTO;
 
 /**
  * @author Alfredo
@@ -33,208 +31,222 @@ public class MemberDAO {
 		
 	}
 	
-	public List<MemberDTO> getAll(int offset, int limit) {
-		final String SQL =
+	public List<EmailDTO> getEmails(int offset, int limit) {
+		final String SQL_SELECT =
+			"""
+			select verid, email from verification
+			""";
+		List<EmailDTO> emails = new ArrayList<>();
+		
+		RunnableSQL rq = connection -> {
+			PreparedStatement stmt = connection.prepareStatement(SQL_SELECT);
+			
+			ResultSet result = stmt.executeQuery();
+			while(result.next()) {
+				EmailDTO member = new EmailDTO();
+				member.setId(result.getInt("verid"));
+				member.setEmail(result.getString("email"));
+				emails.add(member);
+			}
+			result.close();
+			stmt.close();
+		};
+		Application.instance().getDatabaseConnection().establishConnection(rq);
+		return emails;
+	}
+	
+	public List<MemberDTO> getMembers(int offset, int limit, MemberRetrievement retrievement) {
+		final String SQL_SELECT =
 			"""
 			with all_people as (
-			    select  orid as identifier,
-			            fname,
-			            lname,
-			            '-' as initial,
-			            '-' as sex,
+			    select  orid         as identifier,
+			            fname        as firstname,
+			            lname        as lastname,
+			            '-'          as initial,
+			            '-'          as sex,
+			            'orientador' as type,
 			            fverid
 			        from orientador
+			        
 			    union all
-			    select  prepaid as identifier,
-			            fname, 
-			            flname || ' ' || mlname as lname,
+			    select  prepaid                 as identifier,
+			            fname                   as firstname, 
+			            flname || ' ' || mlname as lastname,
 			            initial, 
-			            sex, 
-			            fverid 
+			            sex,
+			            'prepa'                 as type, 
+			            fverid
 			        from prepa
 			)
-			select  verid, memid, all_people.identifier,
-			        fname        as fname,
-			        lname        as lname,
-			        initial      as initial,
-			        sex          as sex,
-			        email        as email,
-			        is_verified  as is_verified,
-			        funfact      as funfact
+			select  verid,
+			        identifier,
+			        firstname,
+			        lastname,
+			        initial,
+			        sex,
+			        email,
+			        is_verified,
+			        verified_date,
+			        program.name                         as program_name,
+			        coalesce(jm.username, 'No username') as username,
+			        coalesce(jm.funfact,  'No fun fact') as funfact
+			    
+			    from all_people
+			        inner join verification       on fverid    = verid
+			        inner join program            on fprogid   = progid
+			        left  join joinedmember as jm on jm.fverid = verid
+			    
+			    where
+			        (? = 'EVERYONE') or 
+			        (? = 'ALL_PREPA'        and type = 'prepa')      or
+			        (? = 'ALL_ORIENTADOR'   and type = 'orientador') or
+			
+			        (? = 'ALL_VERIFIED'     and is_verified = TRUE)  or
+			        (? = 'ALL_NON_VERIFIED' and is_verified = FALSE) or
 			        
-			    from verification
-			        inner join member          on verid   = member.fverid
-			        inner join all_people      on verid   = all_people.fverid
-			offset ?
-			limit  ?
+			        (? = 'VERIFIED_PREPA'      and is_verified = TRUE and type = 'prepa')      or
+			        (? = 'VERIFIED_ORIENTADOR' and is_verified = TRUE and type = 'orientador') or
+			
+			        (? = 'NON_VERIFIED_PREPA'      and is_verified = FALSE and type = 'prepa')      or
+			        (? = 'NON_VERIFIED_ORIENTADOR' and is_verified = FALSE and type = 'orientador')
+					
+				offset ?
+				limit  ?
 			""";
-		Map<Integer, MemberDTO> members = new HashMap<>();
+		List<MemberDTO> members = new ArrayList<>();
 		
 		RunnableSQL rq = connection -> {
-			PreparedStatement stmt = connection.prepareStatement(SQL);
-			stmt.setInt(1, offset);
-			stmt.setInt(2, limit);
+			PreparedStatement stmt = connection.prepareStatement(SQL_SELECT);
+			stmt.setString(1, retrievement.name());
+			stmt.setString(2, retrievement.name());
+			stmt.setString(3, retrievement.name());
+			stmt.setString(4, retrievement.name());
+			stmt.setString(5, retrievement.name());
+			stmt.setString(6, retrievement.name());
+			stmt.setString(7, retrievement.name());
+			stmt.setString(8, retrievement.name());
+			stmt.setString(9, retrievement.name());
+			stmt.setInt(10, offset);
+			stmt.setInt(11, limit);
 			
 			ResultSet result = stmt.executeQuery();
 			while(result.next()) {
-				int verid  = result.getInt("verid");
-				int memid  = result.getInt("memid");
-				int generalid = result.getInt("identifier");
+				MemberDTO member = new MemberDTO();
+				member.setId(result.getInt("verid"));
+				member.setUserId(result.getInt("identifier"));
 				
-				MemberDTO member = members.get(verid) != null ? members.get(verid) : new MemberDTO();
+				member.setFirstname(result.getString("firstname"));
+				member.setLastname(result.getString("lastname"));
+				member.setInitial(result.getString("initial"));
+				member.setSex(result.getString("sex"));
 				
-				String firstname = result.getString("fname");
-				String lastname  = result.getString("lname");
-				String email     = result.getString("email");
-				String funfact   = result.getString("funfact");
-				
-				char sex = result.getString("sex").charAt(0);
-				char initial  = result.getString("initial").charAt(0);
-				
-				boolean verified = result.getBoolean("is_verified");
-				
-				member.setVerid(verid);
-				member.setMemid(memid);
-				member.setGeneralid(generalid);
-				
-				member.setFirstname(firstname);
-				member.setLastname(lastname);
-				member.setEmail(email);
-				member.setFunfact(funfact);
+				member.setEmail(result.getString("email"));
+				member.setProgram(result.getString("program_name"));
+				member.setFunfact(result.getString("funfact"));
+				member.setUsername(result.getString("username"));
 
-				member.setSex(sex);
-				member.setInitial(initial);
-				member.setVerified(verified);
-
-				members.put(verid, member);
+				member.setVerified(result.getBoolean("is_verified"));
+				member.setVerificationDate(result.getDate("verified_date"));
+				
+				members.add(member);
 			}
-			
 			result.close();
 			stmt.close();
 		};
-		
 		Application.instance().getDatabaseConnection().establishConnection(rq);
-		return new ArrayList<>(members.values());
+		return members;
 	}
 	
-	public Optional<MemberDTO> getMember(int verid) {
-		final String SQL =
+	public Optional<MemberDTO> getMember(String email, MemberRetrievement retrievement) {
+		final String SQL_SELECT =
 			"""
 			with all_people as (
-			    select  orid as identifier,
-			            fname,
-			            lname,
-			            '-' as initial,
-			            '-' as sex,
+			    select  orid         as identifier,
+			            fname        as firstname,
+			            lname        as lastname,
+			            '-'          as initial,
+			            '-'          as sex,
+			            'orientador' as type,
 			            fverid
 			        from orientador
+			        
 			    union all
-			    select  prepaid as identifier,
-			            fname, 
-			            flname || ' ' || mlname as lname,
+			    select  prepaid                 as identifier,
+			            fname                   as firstname, 
+			            flname || ' ' || mlname as lastname,
 			            initial, 
-			            sex, 
-			            fverid 
+			            sex,
+			            'prepa'                 as type, 
+			            fverid
 			        from prepa
 			)
-			select  memid, teamid, progid, all_people.identifier,
-			        fname        as fname,
-			        lname        as lname,
-			        initial      as initial,
-			        sex          as sex,
-			        email        as email,
-			        is_verified  as is_verified,
-			        funfact      as funfact,
-			        program.name as program_name,
-			        team.name    as team_name,
-			        orgname      as orgname,
-			        discordrole.effectivename as effectivename
+			select  verid,
+			        identifier,
+			        firstname,
+			        lastname,
+			        initial,
+			        sex,
+			        email,
+			        is_verified,
+			        verified_date,
+			        program.name                         as program_name,
+			        coalesce(jm.username, 'No username') as username,
+			        coalesce(jm.funfact,  'No fun fact') as funfact
+			    
+			    from all_people
+			        inner join verification       on fverid    = verid
+			        inner join program            on fprogid   = progid
+			        left  join joinedmember as jm on jm.fverid = verid
+			    
+			    where
+				    email = ? and
+			        (? = 'EVERYONE') or 
+			        (? = 'ALL_PREPA'        and type = 'prepa')      or
+			        (? = 'ALL_ORIENTADOR'   and type = 'orientador') or
+			
+			        (? = 'ALL_VERIFIED'     and is_verified = TRUE)  or
+			        (? = 'ALL_NON_VERIFIED' and is_verified = FALSE) or
 			        
-			    from verification
-			        inner join member          on verid   = member.fverid
-			        inner join team            on teamid  = member.fteamid
-			        inner join program         on progid  = fprogid
-			        inner join all_people      on verid   = all_people.fverid
-			        inner join memberrole      on memid   = fmemid
-			        inner join discordrole     on droleid = memberrole.fdroleid
-				where verid = ?
-			""";
-		Map<Integer, MemberDTO> members = new HashMap<>();
-		
-		RunnableSQL rq = connection -> {
-			PreparedStatement stmt = connection.prepareStatement(SQL);
-			stmt.setInt(1, verid);
+			        (? = 'VERIFIED_PREPA'      and is_verified = TRUE and type = 'prepa')      or
+			        (? = 'VERIFIED_ORIENTADOR' and is_verified = TRUE and type = 'orientador') or
 			
-			ResultSet result = stmt.executeQuery();
-			while(result.next()) {
-				int memid  = result.getInt("memid");
-				int generalid = result.getInt("identifier");
-				
-				MemberDTO member = members.get(verid) != null ? members.get(verid) : new MemberDTO();
-				
-				String firstname = result.getString("fname");
-				String lastname  = result.getString("lname");
-				String email     = result.getString("email");
-				String funfact   = result.getString("funfact");
-				
-				char sex = result.getString("sex").charAt(0);
-				char initial  = result.getString("initial").charAt(0);
-				
-				boolean verified = result.getBoolean("is_verified");
-				
-				member.setVerid(verid);
-				member.setMemid(memid);
-				member.setGeneralid(generalid);
-				
-				member.setFirstname(firstname);
-				member.setLastname(lastname);
-				member.setEmail(email);
-				member.setFunfact(funfact);
-
-				member.setSex(sex);
-				member.setInitial(initial);
-				member.setVerified(verified);
-
-				members.put(verid, member);
-			}
-
-			result.close();
-			stmt.close();
-		};
-		
-		Application.instance().getDatabaseConnection().establishConnection(rq);
-		return Optional.ofNullable(members.get(verid));
-	}
-	
-	public Optional<MemberTeamDTO> getMemberTeam(int verid) {
-		final String SQL =
-			"""
-			select  teamid, fdroleid, name, orgname
-			    from verification
-			        inner join member on verid   = member.fverid
-			        inner join team   on teamid  = member.fteamid
-			    where 
-			        verid = ?
+			        (? = 'NON_VERIFIED_PREPA'      and is_verified = FALSE and type = 'prepa')      or
+			        (? = 'NON_VERIFIED_ORIENTADOR' and is_verified = FALSE and type = 'orientador')
 			""";
 		AtomicBoolean found = new AtomicBoolean(false);
-		MemberTeamDTO memberTeam = new MemberTeamDTO();
+		MemberDTO member = new MemberDTO();
 		
 		RunnableSQL rq = connection -> {
-			PreparedStatement stmt = connection.prepareStatement(SQL);
-			stmt.setInt(1, verid);
+			PreparedStatement stmt = connection.prepareStatement(SQL_SELECT);
+			stmt.setString(1, email);
+			stmt.setString(2, retrievement.name());
+			stmt.setString(3, retrievement.name());
+			stmt.setString(4, retrievement.name());
+			stmt.setString(5, retrievement.name());
+			stmt.setString(6, retrievement.name());
+			stmt.setString(7, retrievement.name());
+			stmt.setString(8, retrievement.name());
+			stmt.setString(9, retrievement.name());
+			stmt.setString(10, retrievement.name());
 			
 			ResultSet result = stmt.executeQuery();
 			while(result.next()) {
-				int teamid = result.getInt("teamid");
-				int droleid = result.getInt("fdroleid");
+				member.setId(result.getInt("verid"));
+				member.setUserId(result.getInt("identifier"));
 				
-				String name = result.getString("name");
-				String orgname = result.getString("orgname");
+				member.setFirstname(result.getString("firstname"));
+				member.setLastname(result.getString("lastname"));
+				member.setInitial(result.getString("initial"));
+				member.setSex(result.getString("sex"));
 				
-				memberTeam.setTeamid(teamid);
-				memberTeam.setDroleid(droleid);
-				memberTeam.setName(name);
-				memberTeam.setOrgname(orgname);
+				member.setEmail(result.getString("email"));
+				member.setProgram(result.getString("program_name"));
+				member.setFunfact(result.getString("funfact"));
+				member.setUsername(result.getString("username"));
+
+				member.setVerified(result.getBoolean("is_verified"));
+				member.setVerificationDate(new Date(result.getDate("verified_date").getTime()));
+				
 				found.set(true);
 			}
 			
@@ -243,79 +255,119 @@ public class MemberDAO {
 		};
 		
 		Application.instance().getDatabaseConnection().establishConnection(rq);
-		return found.get() ? Optional.of(memberTeam) : Optional.empty();
+		return found.get() ? Optional.of(member) : Optional.empty();
 	}
 	
-	public Optional<MemberRoleDTO> getMemberRole(int verid) {
-		final String SQL =
-			"""
-			select memid, fdroleid
-			    from verification
-			        inner join member     on verid = member.fverid
-			        inner join memberrole on memid = fmemid
-			    where 
-			        verid = ?
-			""";
-		AtomicBoolean found = new AtomicBoolean(false);
-		MemberRoleDTO memberTeam = new MemberRoleDTO();
-		
-		RunnableSQL rq = connection -> {
-			PreparedStatement stmt = connection.prepareStatement(SQL);
-			stmt.setInt(1, verid);
-			
-			ResultSet result = stmt.executeQuery();
-			while(result.next()) {
-				int memid = result.getInt("memid");
-				int droleid = result.getInt("fdroleid");
-				
-				memberTeam.setMemid(memid);
-				memberTeam.setFdroleid(droleid);
-				found.set(true);
-			}
-			
-			result.close();
-			stmt.close();
-		};
-		
-		Application.instance().getDatabaseConnection().establishConnection(rq);
-		return found.get() ? Optional.of(memberTeam) : Optional.empty();
-	}
-	
-	public Optional<MemberProgramDTO> getMemberProgram(int verid) {
-		final String SQL =
-			"""
-			select progid, fdepid, name
-			    from verification
-			        inner join program on progid = fprogid
-			    where 
-			        verid = ?
-			""";
-		AtomicBoolean found = new AtomicBoolean(false);
-		MemberProgramDTO memberTeam = new MemberProgramDTO();
-		
-		RunnableSQL rq = connection -> {
-			PreparedStatement stmt = connection.prepareStatement(SQL);
-			stmt.setInt(1, verid);
-			
-			ResultSet result = stmt.executeQuery();
-			while(result.next()) {
-				int progid = result.getInt("progid");
-				int depid = result.getInt("fdepid");
-				String name = result.getString("name");
-				
-				memberTeam.setProgid(progid);
-				memberTeam.setDepid(depid);
-				memberTeam.setName(name);
-				found.set(true);
-			}
-
-			result.close();
-			stmt.close();
-		};
-		
-		Application.instance().getDatabaseConnection().establishConnection(rq);
-		return found.get() ? Optional.of(memberTeam) : Optional.empty();
-	}
+//	public Optional<MemberTeamDTO> getMemberTeam(int verid) {
+//		final String SQL =
+//			"""
+//			select  teamid, fdroleid, name, orgname
+//			    from verification
+//			        inner join member on verid   = member.fverid
+//			        inner join team   on teamid  = member.fteamid
+//			    where 
+//			        verid = ?
+//			""";
+//		AtomicBoolean found = new AtomicBoolean(false);
+//		MemberTeamDTO memberTeam = new MemberTeamDTO();
+//		
+//		RunnableSQL rq = connection -> {
+//			PreparedStatement stmt = connection.prepareStatement(SQL);
+//			stmt.setInt(1, verid);
+//			
+//			ResultSet result = stmt.executeQuery();
+//			while(result.next()) {
+//				int teamid = result.getInt("teamid");
+//				int droleid = result.getInt("fdroleid");
+//				
+//				String name = result.getString("name");
+//				String orgname = result.getString("orgname");
+//				
+//				memberTeam.setTeamid(teamid);
+//				memberTeam.setDroleid(droleid);
+//				memberTeam.setName(name);
+//				memberTeam.setOrgname(orgname);
+//				found.set(true);
+//			}
+//			
+//			result.close();
+//			stmt.close();
+//		};
+//		
+//		Application.instance().getDatabaseConnection().establishConnection(rq);
+//		return found.get() ? Optional.of(memberTeam) : Optional.empty();
+//	}
+//	
+//	public Optional<MemberRoleDTO> getMemberRole(int verid) {
+//		final String SQL =
+//			"""
+//			select memid, fdroleid
+//			    from verification
+//			        inner join member     on verid = member.fverid
+//			        inner join memberrole on memid = fmemid
+//			    where 
+//			        verid = ?
+//			""";
+//		AtomicBoolean found = new AtomicBoolean(false);
+//		MemberRoleDTO memberTeam = new MemberRoleDTO();
+//		
+//		RunnableSQL rq = connection -> {
+//			PreparedStatement stmt = connection.prepareStatement(SQL);
+//			stmt.setInt(1, verid);
+//			
+//			ResultSet result = stmt.executeQuery();
+//			while(result.next()) {
+//				int memid = result.getInt("memid");
+//				int droleid = result.getInt("fdroleid");
+//				
+//				memberTeam.setMemid(memid);
+//				memberTeam.setFdroleid(droleid);
+//				found.set(true);
+//			}
+//			
+//			result.close();
+//			stmt.close();
+//		};
+//		
+//		Application.instance().getDatabaseConnection().establishConnection(rq);
+//		return found.get() ? Optional.of(memberTeam) : Optional.empty();
+//	}
+//	
+//	public Optional<MemberProgramDTO> getMemberProgram(int verid) {
+//		final String SQL =
+//			"""
+//			select progid, fdepid, name
+//			    from verification
+//			        inner join program on progid = fprogid
+//			    where 
+//			        verid = ?
+//			""";
+//		AtomicBoolean found = new AtomicBoolean(false);
+//		MemberProgramDTO memberTeam = new MemberProgramDTO();
+//		
+//		RunnableSQL rq = connection -> {
+//			PreparedStatement stmt = connection.prepareStatement(SQL);
+//			stmt.setInt(1, verid);
+//			
+//			ResultSet result = stmt.executeQuery();
+//			while(result.next()) {
+//				int progid = result.getInt("progid");
+//				int depid = result.getInt("fdepid");
+//				String name = result.getString("name");
+//				
+//				memberTeam.setProgid(progid);
+//				memberTeam.setDepid(depid);
+//				memberTeam.setName(name);
+//				found.set(true);
+//			}
+//
+//			result.close();
+//			stmt.close();
+//		};
+//		
+//		Application.instance().getDatabaseConnection().establishConnection(rq);
+//		return found.get() ? Optional.of(memberTeam) : Optional.empty();
+//	}
 
 	public int insertOrientadorMember(MemberDTO member, String program, String teamname) {
 		final String SQL_SELECT_PROGRAM = 

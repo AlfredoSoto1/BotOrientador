@@ -27,7 +27,7 @@ public class BuildingDAO {
 		
 	}
 	
-	public List<BuildingDTO> findAll(int offset, int limit) {
+	public List<BuildingDTO> getAll(int offset, int limit) {
 		final String SQL = 
 			"""
 			select buildid, code, name, gpin
@@ -60,7 +60,7 @@ public class BuildingDAO {
 		return buildings;
 	}
 	
-	public Optional<BuildingDTO> findByID(int id) {
+	public Optional<BuildingDTO> findBuilding(int id) {
 		final String SQL = 
 			"""
 			select buildid, code, name, gpin
@@ -90,7 +90,7 @@ public class BuildingDAO {
 		return found.get() ? Optional.of(building) : Optional.empty();
 	}
 	
-	public int insert(BuildingDTO building) {
+	public int insertBuilding(BuildingDTO building) {
 		final String SQL = 
 			"""
 			insert into building (code, name, gpin)
@@ -116,13 +116,7 @@ public class BuildingDAO {
 		return inserted.get();
 	}
 	
-	public Optional<BuildingDTO> update(int id, BuildingDTO buildingDTO) {
-		final String SQL_SELECT = 
-			"""
-			select buildid, code, name, gpin
-				from building
-			where buildid = ?;
-			""";
+	public void updateBuilding(int id, BuildingDTO buildingDTO) {
 		final String SQL_UPDATE = 
 			"""
 			update building
@@ -133,27 +127,7 @@ public class BuildingDAO {
 				where
 					buildid = ?;
 			""";
-		AtomicBoolean found = new AtomicBoolean(false);
-		BuildingDTO building = new BuildingDTO();
-		
 		RunnableSQL rq = connection -> {
-			PreparedStatement select_stmt = connection.prepareStatement(SQL_SELECT);
-			select_stmt.setInt(1, id);
-			
-			ResultSet result = select_stmt.executeQuery();
-			while(result.next()) {
-				building.setId(result.getInt("buildid"));
-				building.setCode(result.getString("code"));
-				building.setName(result.getString("name"));
-				building.setGpin(result.getString("gpin"));
-				found.set(true);
-			}
-			result.close();
-			select_stmt.close();
-			
-			if (!found.get())
-				return;
-			
 			PreparedStatement update_stmt = connection.prepareStatement(SQL_UPDATE);
 			update_stmt.setString(1, buildingDTO.getCode());
 			update_stmt.setString(2, buildingDTO.getName());
@@ -163,38 +137,21 @@ public class BuildingDAO {
 			update_stmt.executeUpdate();
 			update_stmt.close();
 		};
-		
 		Application.instance().getDatabaseConnection().establishConnection(rq);
-		return found.get() ? Optional.of(building) : Optional.empty();
 	}
 	
-	public Optional<BuildingDTO> delete(int id) {
+	public void deleteBuilding(int id) {
 		final String SQL = 
 			"""
 			delete from building 
 				where buildid = ?
-			returning name, code, gpin;
 			""";
-		AtomicBoolean found = new AtomicBoolean(false);
-		BuildingDTO building = new BuildingDTO();
-		
 		RunnableSQL rq = connection -> {
 			PreparedStatement stmt = connection.prepareStatement(SQL);
 			stmt.setInt(1, id);
-			
-			// Execute the query and obtain the results
-			ResultSet result = stmt.executeQuery();
-			while(result.next()) {
-				building.setCode(result.getString("code"));
-				building.setName(result.getString("name"));
-				building.setGpin(result.getString("gpin"));
-				found.set(true);
-			}
-			result.close();
+			stmt.executeUpdate();
 			stmt.close();
 		};
-		
 		Application.instance().getDatabaseConnection().establishConnection(rq);
-		return found.get() ? Optional.of(building) : Optional.empty();
 	}
 }

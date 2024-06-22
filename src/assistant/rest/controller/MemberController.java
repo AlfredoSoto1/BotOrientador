@@ -13,10 +13,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import assistant.discord.object.MemberRetrievement;
 import assistant.rest.dto.MemberDTO;
 import assistant.rest.service.MemberService;
 
@@ -36,30 +38,48 @@ public class MemberController {
 	
 	@GetMapping
 	public ResponseEntity<?> getMembers(
-			@RequestParam(defaultValue = "0") Integer page,
-			@RequestParam(defaultValue = "5") Integer size) {
-		return ResponseEntity.ok(service.getAll(page, size));
+			@RequestHeader("Authorization")          String token,
+			@RequestParam(defaultValue = "EVERYONE") String ret,
+			@RequestParam(defaultValue = "0")        Integer page,
+			@RequestParam(defaultValue = "5")        Integer size) {
+		System.out.println(token);
+		MemberRetrievement mr = MemberRetrievement.EVERYONE;
+		try {
+			mr = MemberRetrievement.valueOf(ret);
+			return ResponseEntity.ok(service.getAllMembers(page, size, mr));
+		} catch (IllegalArgumentException ile) {
+			return ResponseEntity.badRequest().body("Invalid return argument");
+		}
 	}
 
 	@GetMapping("/{id}")
-    public ResponseEntity<?> getMember(@PathVariable Integer id) {
-        return ResponseEntity.of(service.getMember(id));
+    public ResponseEntity<?> getMember(
+    		@RequestParam(defaultValue = "EVERYONE") String ret,
+    		@PathVariable Integer id) {
+//		MemberRetrievement mr = MemberRetrievement.EVERYONE;
+//		try {
+//			mr = MemberRetrievement.valueOf(ret);
+//			return ResponseEntity.of(service.getMember(id, mr));
+//		} catch (IllegalArgumentException ile) {
+//			return ResponseEntity.badRequest().body("Invalid return argument");
+//		}
+		return ResponseEntity.badRequest().body("Invalid return argument");
     }
 	
-	@GetMapping("/{id}-team")
-	public ResponseEntity<?> getMemberTeam(@PathVariable Integer id) {
-		return ResponseEntity.of(service.getMemberTeam(id));
-	}
-	
-	@GetMapping("/{id}-role")
-	public ResponseEntity<?> getMemberRole(@PathVariable Integer id) {
-		return ResponseEntity.of(service.getMemberRole(id));
-	}
-	
-	@GetMapping("/{id}-program")
-    public ResponseEntity<?> getMemberProgram(@PathVariable Integer id) {
-        return ResponseEntity.of(service.getMemberProgram(id));
-    }
+//	@GetMapping("/{id}-team")
+//	public ResponseEntity<?> getMemberTeam(@PathVariable Integer id) {
+//		return ResponseEntity.of(service.getMemberTeam(id));
+//	}
+//	
+//	@GetMapping("/{id}-role")
+//	public ResponseEntity<?> getMemberRole(@PathVariable Integer id) {
+//		return ResponseEntity.of(service.getMemberRole(id));
+//	}
+//	
+//	@GetMapping("/{id}-program")
+//    public ResponseEntity<?> getMemberProgram(@PathVariable Integer id) {
+//        return ResponseEntity.of(service.getMemberProgram(id));
+//    }
 	
 	@PostMapping("/{program}-{team}/eo")
 	public ResponseEntity<?> addEOrientador(@PathVariable String program, @PathVariable String team, @RequestBody MemberDTO member) {

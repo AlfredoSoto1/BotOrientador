@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import assistant.rest.dto.DiscordRegistrationDTO;
+import assistant.rest.dto.RegisteredDiscordServerDTO;
 import assistant.rest.dto.DiscordRoleDTO;
 import assistant.rest.service.DiscordRegistrationService;
 
@@ -63,7 +63,7 @@ public class DiscordRegistrationController {
     }
 	
 	@PostMapping("/server")
-	public ResponseEntity<?> registerDiscordServer(@RequestBody DiscordRegistrationDTO discordServer) {
+	public ResponseEntity<?> registerDiscordServer(@RequestBody RegisteredDiscordServerDTO discordServer) {
 		int recordID = service.registerDiscordServer(discordServer);
 		
 		if (recordID > 0) {

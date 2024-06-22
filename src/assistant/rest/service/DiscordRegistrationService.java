@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import assistant.rest.dao.DiscordRegistrationDAO;
-import assistant.rest.dto.DiscordRegistrationDTO;
+import assistant.rest.dto.RegisteredDiscordServerDTO;
 import assistant.rest.dto.DiscordRoleDTO;
 
 /**
@@ -30,12 +30,12 @@ public class DiscordRegistrationService {
 		return dregistrationDAO.getEffectiveRoles();
 	}
 	
-	public List<DiscordRegistrationDTO> getAllRegistrations(int page, int size) {
-		return dregistrationDAO.getAllRegistrations(page * size, size);
+	public List<RegisteredDiscordServerDTO> getAllRegistrations(int page, int size) {
+		return dregistrationDAO.getAllRegisteredDiscordServers(page * size, size);
 	}
 	
-	public Optional<DiscordRegistrationDTO> getRegistration(int id) {
-		return dregistrationDAO.getRegistration(id);
+	public Optional<RegisteredDiscordServerDTO> getRegistration(int id) {
+		return dregistrationDAO.getDiscordServerRegistration(id);
 	}
 	
 	public List<DiscordRoleDTO> getAllRoles(int page, int size) {
@@ -46,7 +46,7 @@ public class DiscordRegistrationService {
 		return dregistrationDAO.getRole(id);
 	}
 	
-	public int registerDiscordServer(DiscordRegistrationDTO discordServer) {
+	public int registerDiscordServer(RegisteredDiscordServerDTO discordServer) {
 		return dregistrationDAO.insertDiscordServer(discordServer);
 	}
 	

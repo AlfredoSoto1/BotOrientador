@@ -42,7 +42,7 @@ public class BuildingController {
 	
 	@GetMapping("/{id}")
     public ResponseEntity<?> getBuilding(@PathVariable Integer id) {
-        return ResponseEntity.of(service.getByID(id));
+        return ResponseEntity.of(service.findBuilding(id));
     }
 	
     @PostMapping

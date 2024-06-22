@@ -36,4 +36,15 @@ public class TeamService {
 	public int addTeam(TeamDTO team) {
 		return teamDAO.insertTeam(team);
 	}
+	
+	public Optional<TeamDTO> deleteTeam(int id) {
+		Optional<TeamDTO> team = teamDAO.getTeam(id);
+		
+		if(team.isPresent()) {
+			teamDAO.deleteTeam(id);
+			return team;
+		} else {
+			return Optional.empty();
+		}
+	}
 }
