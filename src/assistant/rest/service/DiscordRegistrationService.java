@@ -26,6 +26,9 @@ public class DiscordRegistrationService {
 		this.dregistrationDAO = dregistrationDAO;
 	}
 	
+	public List<String> getEffectiveRoles() {
+		return dregistrationDAO.getEffectiveRoles();
+	}
 	
 	public List<DiscordRegistrationDTO> getAllRegistrations(int page, int size) {
 		return dregistrationDAO.getAllRegistrations(page * size, size);
@@ -44,10 +47,10 @@ public class DiscordRegistrationService {
 	}
 	
 	public int registerDiscordServer(DiscordRegistrationDTO discordServer) {
-		return 0;
+		return dregistrationDAO.insertDiscordServer(discordServer);
 	}
 	
 	public int registerRole(DiscordRoleDTO role) {
-		return 0;
+		return dregistrationDAO.insertRole(role);
 	}
 }

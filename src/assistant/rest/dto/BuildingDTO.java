@@ -17,12 +17,6 @@ public class BuildingDTO {
 		
 	}
 	
-	public BuildingDTO(String code, String name, String gpin) {
-		this.code = code;
-		this.name = name;
-		this.gpin = gpin;
-	}
-
 	public int getId() {
 		return id;
 	}

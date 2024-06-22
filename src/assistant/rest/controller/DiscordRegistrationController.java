@@ -14,7 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import assistant.rest.dto.TeamDTO;
+import assistant.rest.dto.DiscordRegistrationDTO;
+import assistant.rest.dto.DiscordRoleDTO;
 import assistant.rest.service.DiscordRegistrationService;
 
 /**
@@ -40,9 +41,15 @@ public class DiscordRegistrationController {
 	
 	@GetMapping("/role")
 	public ResponseEntity<?> getAllDiscordRoles(
+			@RequestParam(required = false, defaultValue = "false") Boolean effectiverole,
 			@RequestParam(defaultValue = "0") Integer page,
 			@RequestParam(defaultValue = "5") Integer size) {
-		return ResponseEntity.ok(service.getAllRoles(page, size));
+		
+		if(effectiverole) {
+			return ResponseEntity.ok(service.getEffectiveRoles());
+		} else {
+			return ResponseEntity.ok(service.getAllRoles(page, size));
+		}
 	}
 	
 	@GetMapping("/server/{id}")
@@ -55,14 +62,25 @@ public class DiscordRegistrationController {
         return ResponseEntity.of(service.getRole(id));
     }
 	
-//    @PostMapping
-//    public ResponseEntity<?> addBuilding(@RequestBody TeamDTO team) {
-//        int recordID = service.addTeam(team);
-//        
-//        if (recordID > 0) {
-//            return ResponseEntity.status(HttpStatus.CREATED).body(recordID);
-//        } else {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to insert");
-//        }
-//    }
+	@PostMapping("/server")
+	public ResponseEntity<?> registerDiscordServer(@RequestBody DiscordRegistrationDTO discordServer) {
+		int recordID = service.registerDiscordServer(discordServer);
+		
+		if (recordID > 0) {
+			return ResponseEntity.status(HttpStatus.CREATED).body(recordID);
+		} else {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to insert");
+		}
+	}
+	
+    @PostMapping("/role")
+    public ResponseEntity<?> registerDiscordRole(@RequestBody DiscordRoleDTO role) {
+        int recordID = service.registerRole(role);
+        
+        if (recordID > 0) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(recordID);
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to insert");
+        }
+    }
 }

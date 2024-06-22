@@ -42,7 +42,7 @@ public class BuildingController {
 	
 	@GetMapping("/{id}")
     public ResponseEntity<?> getBuilding(@PathVariable Integer id) {
-        return ResponseEntity.ofNullable(service.getByID(id));
+        return ResponseEntity.of(service.getByID(id));
     }
 	
     @PostMapping
@@ -58,11 +58,11 @@ public class BuildingController {
     
     @PutMapping("/{id}")
     public ResponseEntity<?> updateBuilding(@PathVariable Integer id, @RequestBody BuildingDTO building) {
-    	return ResponseEntity.ofNullable(service.updateBuilding(id, building));
+    	return ResponseEntity.of(service.updateBuilding(id, building));
     }
     
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteBuilding(@PathVariable Integer id) {
-    	return ResponseEntity.ofNullable(service.deleteBuilding(id));
+    	return ResponseEntity.of(service.deleteBuilding(id));
     }
 }

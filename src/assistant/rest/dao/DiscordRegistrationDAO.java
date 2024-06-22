@@ -5,10 +5,13 @@ package assistant.rest.dao;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.stereotype.Repository;
 
@@ -25,6 +28,30 @@ public class DiscordRegistrationDAO {
 
 	public DiscordRegistrationDAO() {
 
+	}
+	
+	public List<String> getEffectiveRoles() {
+		final String SQL = 
+			"""
+			select effectivename
+				from discordrole
+			group by effectivename
+			order by effectivename asc
+			""";
+		List<String> effectiveRoles = new ArrayList<>();
+		
+		RunnableSQL rq = connection -> {
+			Statement stmt = connection.createStatement();
+			
+			ResultSet result = stmt.executeQuery(SQL);
+			while(result.next())
+				effectiveRoles.add(result.getString("effectivename"));
+			result.close();
+			stmt.close();
+		};
+		
+		Application.instance().getDatabaseConnection().establishConnection(rq);
+		return effectiveRoles;
 	}
 	
 	public List<DiscordRegistrationDTO> getAllRegistrations(int offset, int limit) {
@@ -186,10 +213,85 @@ public class DiscordRegistrationDAO {
 	}
 	
 	public int insertDiscordServer(DiscordRegistrationDTO discordServer) {
-		return 0;
+		final String SQL = 
+			"""
+			with department_selected as (
+				select distinct depid 
+						from department
+					where abreviation = ? 
+				limit 1
+			)
+			insert into serverownership (discserid, log_channel, fdepid)
+			    select ?, ?, department_selected.depid
+				    from department_selected
+			returning seoid
+			""";
+		AtomicInteger idResult = new AtomicInteger(-1);
+		
+		RunnableSQL rq = connection -> {
+			connection.setAutoCommit(false);
+			PreparedStatement stmt = connection.prepareStatement(SQL);
+			stmt.setString(1, discordServer.getDepartment());
+			stmt.setLong(2, discordServer.getServerid());
+			stmt.setLong(3, discordServer.getLogChannelId());
+			
+			try {
+				ResultSet result = stmt.executeQuery();
+				while(result.next())
+					idResult.set(result.getInt("seoid"));
+				result.close();
+				stmt.close();
+				connection.commit();
+			} catch(SQLException sqle) {
+				connection.rollback();
+			} finally {
+				connection.setAutoCommit(true);
+			}
+		};
+		
+		Application.instance().getDatabaseConnection().establishConnection(rq);
+		return idResult.get();
 	}
 	
 	public int insertRole(DiscordRoleDTO role) {
-		return 0;
+		final String SQL = 
+			"""
+			with discord_server as (
+				select distinct seoid 
+						from serverownership 
+					where discserid = ? 
+				limit 1
+			)
+			insert into discordrole (name, effectivename, longroleid, fseoid)
+			    select ?, ?, ?, discord_server.seoid
+				    from discord_server
+			returning droleid
+			""";
+		AtomicInteger idResult = new AtomicInteger(-1);
+		
+		RunnableSQL rq = connection -> {
+			connection.setAutoCommit(false);
+			PreparedStatement stmt = connection.prepareStatement(SQL);
+			stmt.setLong(1, role.getServerid());
+			stmt.setString(2, role.getName());
+			stmt.setString(3, role.getEffectivename());
+			stmt.setLong(4, role.getRoleid());
+			
+			try {
+				ResultSet result = stmt.executeQuery();
+				while(result.next())
+					idResult.set(result.getInt("droleid"));
+				result.close();
+				stmt.close();
+				connection.commit();
+			} catch(SQLException sqle) {
+				connection.rollback();
+			} finally {
+				connection.setAutoCommit(true);
+			}
+		};
+		
+		Application.instance().getDatabaseConnection().establishConnection(rq);
+		return idResult.get();
 	}
 }
