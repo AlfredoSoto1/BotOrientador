@@ -7,8 +7,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import assistant.app.entry.AssistantAppEntry;
-import assistant.database.DatabaseConfiguration;
 import assistant.database.DatabaseConnection;
+import assistant.database.DatabaseCredentials;
 import assistant.discord.app.ECEAssistant;
 
 /**
@@ -57,12 +57,10 @@ public abstract class Application {
 	}
 	
 	private void initialize(String[] args) {
-		this.consoleLogRegistration();
-		
 		// Create new spring application
 		context = SpringApplication.run(AssistantAppEntry.class, args);
 		// Create a new database connection
-		databaseConnection = new DatabaseConnection(new DatabaseConfiguration());
+		databaseConnection = new DatabaseConnection(context.getBean("createDatabaseCredentials", DatabaseCredentials.class));
 		// Create new Assistant bot
 		// TODO: you have to automate this to support multiple bots
 //		assistant = new ECEAssistant(new BotConfiguration());
@@ -92,13 +90,5 @@ public abstract class Application {
 //		SpringApplication.exit(context);
 
 		System.out.println("[Application] Ended");
-	}
-	
-	private void consoleLogRegistration() {
-		if(!this.getClass().isAnnotationPresent(RegisterApplication.class))
-			return;
-		// Check application registration (Optional)
-		RegisterApplication applicationRegistration = this.getClass().getAnnotation(RegisterApplication.class);
-		System.out.println("[Application] " + applicationRegistration.name() + " | version: " + applicationRegistration.version());
 	}
 }

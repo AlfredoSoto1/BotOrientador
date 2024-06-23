@@ -7,7 +7,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 import assistant.app.core.Application;
-import assistant.app.core.RegisterApplication;
 
 /**
  * @author Alfredo
@@ -25,7 +24,6 @@ import assistant.app.core.RegisterApplication;
  */
 @SpringBootApplication
 @ComponentScan("assistant")
-@RegisterApplication(name = "Discord Assistant", version = "v2024.2.SO4")
 public class AssistantAppEntry extends Application {
 	
 	public static void main(String[] args) {

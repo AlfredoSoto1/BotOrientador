@@ -6,6 +6,7 @@ package assistant.discord.app;
 import java.util.HashSet;
 import java.util.Set;
 
+import assistant.app.settings.TokenHolder;
 import assistant.command.contacts.AcademicAdvisoryCmd;
 import assistant.command.contacts.DCSPCmd;
 import assistant.command.contacts.DeanOfStudentsCmd;
@@ -41,8 +42,8 @@ public class ECEAssistant extends BotApplication {
 	 * 
 	 * @param token
 	 */
-	public ECEAssistant(BotConfiguration configuration) {
-		super(configuration);
+	public ECEAssistant(TokenHolder botToken) {
+		super(botToken);
 		this.interactions = new HashSet<>();
 	}
 

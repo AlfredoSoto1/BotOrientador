@@ -18,7 +18,7 @@ public class DatabaseConnection {
 	}
 	
 	private Connection connection;
-	private DatabaseConfiguration configuration;
+	private DatabaseCredentials configuration;
 	
 	/**
 	 * Creates a Database connection that can be
@@ -28,7 +28,7 @@ public class DatabaseConnection {
 	 * @param connectionDriver
 	 * @param credentials
 	 */
-	public DatabaseConnection(DatabaseConfiguration configuration) {
+	public DatabaseConnection(DatabaseCredentials configuration) {
 		this.configuration = configuration;
 	}
 	
@@ -36,7 +36,7 @@ public class DatabaseConnection {
 	 * @return database connection driver type
 	 */
 	public String getDriver() {
-		return configuration.getDriverClassName();
+		return configuration.getDriver();
 	}
 	
 	/**
@@ -99,14 +99,14 @@ public class DatabaseConnection {
 			// This must be included so that the 
 			// Application once compiled into a jar-file
 			// Can execute with no problem
-			Class.forName(configuration.getDriverClassName());
+			Class.forName(configuration.getDriver());
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 		
 		// Establish a new connection with driver from credentials
 		this.connection = DriverManager.getConnection(
-			configuration.getDatabaseUrl(),      
+			configuration.getUrl(),      
 			configuration.getUsername(), 
 			configuration.getPassword()  
 		);

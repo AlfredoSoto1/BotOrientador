@@ -6,6 +6,7 @@ package assistant.discord.app;
 import java.util.EnumSet;
 import java.util.concurrent.CountDownLatch;
 
+import assistant.app.settings.TokenHolder;
 import assistant.discord.core.ListenerAdapterManager;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -23,7 +24,6 @@ public abstract class BotApplication {
 	private ListenerAdapterManager listenerManager;
 
 	private CountDownLatch latch;
-	private BotConfiguration configration;
 	
 	// Make this later be saved on a config file
 	private EnumSet<GatewayIntent> intents = EnumSet.of(
@@ -54,15 +54,14 @@ public abstract class BotApplication {
 	 * 
 	 * @param token
 	 */
-	public BotApplication(BotConfiguration configuration) {
-		this.configration = configuration;
+	public BotApplication(TokenHolder botToken) {
 		// Create a count down latch of 1 unit/time.
 		// This is for when the bot gets shutted down it
 		// has one unit time to safely terminate itself and
 		// clean all memory used by the application.
 		latch = new CountDownLatch(1);
 		
-		jdaBuilder = JDABuilder.createDefault(configuration.getToken());
+		jdaBuilder = JDABuilder.createDefault(botToken.obtainToken(this));
 		
 		/*
 		 * Set bot status and activity
@@ -130,9 +129,5 @@ public abstract class BotApplication {
 	
 	public JDA getJDA() {
 		return jdaConstructed;
-	}
-	
-	public BotConfiguration getConfiguration() {
-		return configration;
 	}
 }

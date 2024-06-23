@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import assistant.app.settings.TokenHolder;
+import assistant.app.settings.TokenType;
 import assistant.discord.object.MemberRetrievement;
 import assistant.rest.dto.MemberDTO;
 import assistant.rest.service.MemberService;
@@ -30,10 +32,12 @@ import assistant.rest.service.MemberService;
 public class MemberController {
 	
 	private final MemberService service;
+	private final List<TokenHolder> tokenHolders;
 	
 	@Autowired
-	public MemberController(MemberService service) {
+	public MemberController(List<TokenHolder> tokenHolders, MemberService service) {
 		this.service = service;
+		this.tokenHolders = tokenHolders;
 	}
 	
 	@GetMapping
@@ -42,7 +46,14 @@ public class MemberController {
 			@RequestParam(defaultValue = "EVERYONE") String ret,
 			@RequestParam(defaultValue = "0")        Integer page,
 			@RequestParam(defaultValue = "5")        Integer size) {
-		System.out.println(token);
+		
+		TokenHolder restToken = tokenHolders.stream()
+				.filter(tkholder -> tkholder.getType() == TokenType.REST_TOKEN)
+				.findFirst().get();
+		
+		if(!restToken.is(token))
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
+		
 		MemberRetrievement mr = MemberRetrievement.EVERYONE;
 		try {
 			mr = MemberRetrievement.valueOf(ret);
