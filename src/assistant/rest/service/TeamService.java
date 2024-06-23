@@ -25,12 +25,8 @@ public class TeamService {
 		this.teamDAO = teamDAO;
 	}
 	
-	public List<TeamDTO> getAll(int page, int size) {
-		return teamDAO.getAll(page * size, size);
-	}
-	
-	public Optional<TeamDTO> getTeam(int id) {
-		return teamDAO.getTeam(id);
+	public List<TeamDTO> getAll(int page, int size, String teamName) {
+		return teamDAO.getAll(page * size, size, teamName);
 	}
 	
 	public int addTeam(TeamDTO team) {
@@ -38,13 +34,6 @@ public class TeamService {
 	}
 	
 	public Optional<TeamDTO> deleteTeam(int id) {
-		Optional<TeamDTO> team = teamDAO.getTeam(id);
-		
-		if(team.isPresent()) {
-			teamDAO.deleteTeam(id);
-			return team;
-		} else {
-			return Optional.empty();
-		}
+		return teamDAO.deleteTeam(id);
 	}
 }

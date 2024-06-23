@@ -27,26 +27,26 @@ public enum MemberPosition {
 	 * in database for reference. For more details
 	 * look for the MemberRole table in schema.
 	 */
-	private final String literalName;
+	private final String effectiveName;
 	
 	/**
 	 * 
 	 * @param literalName
 	 */
 	private MemberPosition(String literalName) {
-		this.literalName = literalName;
+		this.effectiveName = literalName;
 	}
 	
 	/**
 	 * @return literal name of the member role
 	 */
-	public String getLiteral() {
-		return literalName;
+	public String getEffectiveName() {
+		return effectiveName;
 	}
 	
 	public static MemberPosition asPosition(String program) {
 		for(MemberPosition p : MemberPosition.values())
-			if(p.literalName.equalsIgnoreCase(program))
+			if(p.effectiveName.equalsIgnoreCase(program))
 				return p;
 		return null;
 	}

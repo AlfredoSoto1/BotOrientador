@@ -26,16 +26,16 @@ public class DiscordRegistrationService {
 		this.dregistrationDAO = dregistrationDAO;
 	}
 	
-	public List<String> getEffectiveRoles() {
-		return dregistrationDAO.getEffectiveRoles();
-	}
-	
-	public List<RegisteredDiscordServerDTO> getAllRegistrations(int page, int size) {
+	public List<RegisteredDiscordServerDTO> getAllRegisteredDiscordServers(int page, int size) {
 		return dregistrationDAO.getAllRegisteredDiscordServers(page * size, size);
 	}
 	
 	public Optional<RegisteredDiscordServerDTO> getRegistration(int id) {
 		return dregistrationDAO.getDiscordServerRegistration(id);
+	}
+	
+	public List<String> getEffectiveRoles() {
+		return dregistrationDAO.getEffectiveRoles();
 	}
 	
 	public List<DiscordRoleDTO> getAllRoles(int page, int size) {
