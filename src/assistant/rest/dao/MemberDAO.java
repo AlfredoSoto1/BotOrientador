@@ -199,19 +199,10 @@ public class MemberDAO {
 			        left  join joinedmember as jm on jm.fverid = verid
 			    
 			    where
-				    email = ? and
-			        (? = 'EVERYONE') or 
-			        (? = 'ALL_PREPA'        and type = 'prepa')      or
-			        (? = 'ALL_ORIENTADOR'   and type = 'orientador') or
-			
-			        (? = 'ALL_VERIFIED'     and is_verified = TRUE)  or
-			        (? = 'ALL_NON_VERIFIED' and is_verified = FALSE) or
-			        
-			        (? = 'VERIFIED_PREPA'      and is_verified = TRUE and type = 'prepa')      or
-			        (? = 'VERIFIED_ORIENTADOR' and is_verified = TRUE and type = 'orientador') or
-			
-			        (? = 'NON_VERIFIED_PREPA'      and is_verified = FALSE and type = 'prepa')      or
-			        (? = 'NON_VERIFIED_ORIENTADOR' and is_verified = FALSE and type = 'orientador')
+				    email = ?                                      and
+			        (? = 'EVERYONE')                               or 
+			        (? = 'ALL_PREPA'      and type = 'prepa')      or
+			        (? = 'ALL_ORIENTADOR' and type = 'orientador')
 			""";
 		AtomicBoolean found = new AtomicBoolean(false);
 		MemberDTO member = new MemberDTO();
@@ -222,12 +213,6 @@ public class MemberDAO {
 			stmt.setString(2, retrievement.name());
 			stmt.setString(3, retrievement.name());
 			stmt.setString(4, retrievement.name());
-			stmt.setString(5, retrievement.name());
-			stmt.setString(6, retrievement.name());
-			stmt.setString(7, retrievement.name());
-			stmt.setString(8, retrievement.name());
-			stmt.setString(9, retrievement.name());
-			stmt.setString(10, retrievement.name());
 			
 			ResultSet result = stmt.executeQuery();
 			while(result.next()) {

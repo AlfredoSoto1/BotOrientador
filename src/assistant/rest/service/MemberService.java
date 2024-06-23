@@ -37,16 +37,16 @@ public class MemberService {
 		return memberDAO.getMembers(page * size, size, retrievement);
 	}
 	
-//	public Optional<MemberDTO> getPrepa(String email) {
-//		
-//	}
-//	
-//	public Optional<MemberDTO> getOrientador(String email) {
-//		
-//	}
+	public Optional<MemberDTO> getPrepa(String email) {
+		return memberDAO.getMember(email, MemberRetrievement.ALL_PREPA);
+	}
 	
-	public Optional<MemberDTO> getMember(String email, MemberRetrievement retrievement) {
-		return memberDAO.getMember(email, retrievement);
+	public Optional<MemberDTO> getOrientador(String email) {
+		return memberDAO.getMember(email, MemberRetrievement.ALL_ORIENTADOR);
+	}
+	
+	public Optional<MemberDTO> getMember(String email) {
+		return memberDAO.getMember(email, MemberRetrievement.EVERYONE);
 	}
 	
 	

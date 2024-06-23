@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import assistant.app.settings.TokenHolder;
 import assistant.app.settings.TokenType;
 import assistant.discord.object.MemberRetrievement;
+import assistant.rest.dto.EmailDTO;
 import assistant.rest.dto.MemberDTO;
 import assistant.rest.service.MemberService;
 
@@ -44,8 +45,10 @@ public class MemberController {
 	public ResponseEntity<?> getMembers(
 			@RequestHeader("Authorization")          String token,
 			@RequestParam(defaultValue = "EVERYONE") String ret,
+			@RequestParam(defaultValue = "false")    Boolean justEmail,
 			@RequestParam(defaultValue = "0")        Integer page,
-			@RequestParam(defaultValue = "5")        Integer size) {
+			@RequestParam(defaultValue = "5")        Integer size,
+			@RequestBody(required = false)           EmailDTO email) {
 		
 		TokenHolder restToken = tokenHolders.stream()
 				.filter(tkholder -> tkholder.getType() == TokenType.REST_TOKEN)
@@ -53,6 +56,12 @@ public class MemberController {
 		
 		if(!restToken.is(token))
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
+		
+		if(justEmail)
+			return ResponseEntity.ok(service.getEmails(page, size));
+		
+		if(email != null)
+			return ResponseEntity.of(service.getMember(email.getEmail()));
 		
 		MemberRetrievement mr = MemberRetrievement.EVERYONE;
 		try {
@@ -62,20 +71,6 @@ public class MemberController {
 			return ResponseEntity.badRequest().body("Invalid return argument");
 		}
 	}
-
-	@GetMapping("/{id}")
-    public ResponseEntity<?> getMember(
-    		@RequestParam(defaultValue = "EVERYONE") String ret,
-    		@PathVariable Integer id) {
-//		MemberRetrievement mr = MemberRetrievement.EVERYONE;
-//		try {
-//			mr = MemberRetrievement.valueOf(ret);
-//			return ResponseEntity.of(service.getMember(id, mr));
-//		} catch (IllegalArgumentException ile) {
-//			return ResponseEntity.badRequest().body("Invalid return argument");
-//		}
-		return ResponseEntity.badRequest().body("Invalid return argument");
-    }
 	
 //	@GetMapping("/{id}-team")
 //	public ResponseEntity<?> getMemberTeam(@PathVariable Integer id) {
