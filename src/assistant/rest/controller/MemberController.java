@@ -41,8 +41,6 @@ public class MemberController {
 	}
 	
 	/**
-	 * Requires REST-Token to access data
-	 * 
 	 * @param page
 	 * @param size
 	 * @param server
@@ -56,7 +54,7 @@ public class MemberController {
 			@RequestParam(defaultValue = "0")        Integer page,
 			@RequestParam(defaultValue = "5")        Integer size,
 			@RequestParam(defaultValue = "-1")       Long server,
-			@RequestParam(defaultValue = "EVERYONE") String ret,
+			@RequestParam(defaultValue = "EVERYONE") MemberRetrievement ret,
 			@RequestBody(required = false)           EmailDTO email,
 			@RequestHeader("Authorization")          String token) {
 		
@@ -69,18 +67,10 @@ public class MemberController {
 		
 		// If none of the above, return all members corresponding
 		// to the retrievement type entered in the url
-		MemberRetrievement mr = MemberRetrievement.EVERYONE;
-		try {
-			mr = MemberRetrievement.valueOf(ret);
-			return ResponseEntity.ok(service.getAllMembers(page, size, mr, server));
-		} catch (IllegalArgumentException ile) {
-			return ResponseEntity.badRequest().body("Invalid return argument");
-		}
+		return ResponseEntity.ok(service.getAllMembers(page, size, ret, server));
 	}
 	
 	/**
-	 * Requires REST-Token to access data
-	 * 
 	 * @param page
 	 * @param size
 	 * @param server
@@ -89,10 +79,10 @@ public class MemberController {
 	 */
 	@GetMapping("/email")
 	public ResponseEntity<?> getEmails(
-			@RequestParam(defaultValue = "0")        Integer page,
-			@RequestParam(defaultValue = "5")        Integer size,
-			@RequestParam(defaultValue = "-1")       Long server,
-			@RequestHeader("Authorization")          String token) {
+			@RequestParam(defaultValue = "0")  Integer page,
+			@RequestParam(defaultValue = "5")  Integer size,
+			@RequestParam(defaultValue = "-1") Long server,
+			@RequestHeader("Authorization")    String token) {
 		
 		if (TokenHolder.authenticateREST(token, tokenHolders))
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
@@ -102,7 +92,6 @@ public class MemberController {
 	}
 	
 	/**
-	 * 
 	 * @param email
 	 * @param token
 	 * @return Response entity that displays the team to which the member participates
@@ -110,17 +99,16 @@ public class MemberController {
 	@GetMapping("/team")
 	public ResponseEntity<?> getMemberTeam(
 			@RequestBody(required = true)   EmailDTO email,
+			@RequestParam(required = true)  Long server,
 			@RequestHeader("Authorization") String token) {
 		
 		if (TokenHolder.authenticateREST(token, tokenHolders))
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
 		
-		return ResponseEntity.of(service.getMemberTeam(email.getEmail()));
+		return ResponseEntity.of(service.getMemberTeam(email.getEmail(), server));
 	}
 	
 	/**
-	 * Requires REST-Token to access data
-	 * 
 	 * @param member
 	 * @param server
 	 * @param teamname
@@ -133,20 +121,13 @@ public class MemberController {
 			@RequestBody(required = true)   MemberDTO member,
 			@RequestParam(required = true)  Long server,
 			@RequestParam(required = true)  String teamname,
-			@RequestParam(required = true)  String position,
+			@RequestParam(required = true)  MemberPosition position,
 			@RequestHeader("Authorization") String token) {
 		
 		if (TokenHolder.authenticateREST(token, tokenHolders))
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
 		
-		MemberPosition mp = MemberPosition.ESTUDIANTE_ORIENTADOR;
-		try {
-			mp = MemberPosition.valueOf(position);
-		} catch (IllegalArgumentException ile) {
-			return ResponseEntity.badRequest().body("Invalid return argument");
-		}
-		
-		int idResult = service.addMember(member, mp, server, teamname);
+		int idResult = service.addMember(member, position, server, teamname);
 		
 		if(idResult > 0)
 			return ResponseEntity.status(HttpStatus.CREATED).body(idResult);
@@ -155,7 +136,6 @@ public class MemberController {
 	}	
 	
 	/**
-	 * 
 	 * @param members
 	 * @param server
 	 * @param teamname
@@ -168,20 +148,13 @@ public class MemberController {
 			@RequestBody(required = true)   List<MemberDTO> members,
 			@RequestParam(required = true)  Long server,
 			@RequestParam(required = true)  String teamname,
-			@RequestParam(required = true)  String position,
+			@RequestParam(required = true)  MemberPosition position,
 			@RequestHeader("Authorization") String token) {
 		
 		if (TokenHolder.authenticateREST(token, tokenHolders))
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
 		
-		MemberPosition mp = MemberPosition.ESTUDIANTE_ORIENTADOR;
-		try {
-			mp = MemberPosition.valueOf(position);
-		} catch (IllegalArgumentException ile) {
-			return ResponseEntity.badRequest().body("Invalid return argument");
-		}
-		
-		int idResult = service.addMembers(members, mp, server, teamname).size();
+		int idResult = service.addMembers(members, position, server, teamname).size();
 		
 		if(idResult > 0)
 			return ResponseEntity.status(HttpStatus.CREATED).body(idResult);

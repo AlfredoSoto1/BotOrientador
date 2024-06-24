@@ -38,6 +38,13 @@ public class DiscordRegistrationController {
 		this.tokenHolders = tokenHolders;
 	}
 	
+	/**
+	 * @param token
+	 * @param id
+	 * @param page
+	 * @param size
+	 * @return Either a single or a collection of all registered servers
+	 */
 	@GetMapping("/server")
 	public ResponseEntity<?> getAllDiscordServers(
 			@RequestHeader("Authorization")    String token,
@@ -54,6 +61,14 @@ public class DiscordRegistrationController {
 			return ResponseEntity.of(service.getRegisteredDiscordServer(id));
 	}
 	
+	/**
+	 * @param token
+	 * @param page
+	 * @param size
+	 * @param server
+	 * @param position
+	 * @return Effective role or all roles in a server
+	 */
 	@GetMapping("/role")
 	public ResponseEntity<?> getAllDiscordRoles(
 			@RequestHeader("Authorization")   String token,
@@ -73,6 +88,10 @@ public class DiscordRegistrationController {
 		return ResponseEntity.ok(service.getAllRoles(page, size, server));
 	}
 	
+	/**
+	 * @param token
+	 * @return List of role names
+	 */
 	@GetMapping("/role-names")
 	public ResponseEntity<?> getAllDiscordRoles(@RequestHeader("Authorization") String token) {
 		
@@ -84,6 +103,11 @@ public class DiscordRegistrationController {
 		return ResponseEntity.ok(service.getEffectiveRoleNames());
 	}
 	
+	/**
+	 * @param token
+	 * @param discordServer
+	 * @return Id of the registered Discord Server
+	 */
 	@PostMapping("/server")
 	public ResponseEntity<?> registerDiscordServer(
 			@RequestHeader("Authorization") String token,
@@ -101,6 +125,11 @@ public class DiscordRegistrationController {
 		}
 	}
 	
+	/**
+	 * @param token
+	 * @param role
+	 * @return Id of the registered Discord Role
+	 */
     @PostMapping("/role")
     public ResponseEntity<?> registerDiscordRole(
     		@RequestHeader("Authorization") String token,

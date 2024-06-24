@@ -6,6 +6,7 @@ package assistant.rest.dto;
 /**
  * @author Alfredo
  */
+@Deprecated
 public class VerificationReport {
 	
 	private String email;

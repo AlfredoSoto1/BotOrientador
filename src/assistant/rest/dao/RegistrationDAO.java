@@ -21,6 +21,7 @@ import net.dv8tion.jda.api.entities.Role;
 /**
  * @author Alfredo
  */
+@Deprecated
 public class RegistrationDAO {
 	
 	public RegistrationDAO() {

@@ -19,6 +19,7 @@ import net.dv8tion.jda.api.entities.Guild;
 /**
  * @author Alfredo
  */
+@Deprecated
 public class VerificationDAO {
 	
 	private VerificationReportBuilder reportBuilder;

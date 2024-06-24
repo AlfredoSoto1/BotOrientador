@@ -8,14 +8,14 @@ package assistant.discord.object;
  */
 public enum MemberProgram {
 	// Department - level
-	INEL("INEL"),
-	ICOM("ICOM"),
-	INSO("INSO"),
-	CIIC("CIIC"),
-	ININ("ININ"),
-	FISI("FISI"),
-	ECON("ECON"),
-	GERH("GERH");
+	INEL("inel"),
+	ICOM("icom"),
+	INSO("inso"),
+	CIIC("ciic"),
+	ININ("inin"),
+	FISI("fisi"),
+	ECON("econ"),
+	GERH("gerh");
 	
 	/**
 	 * Establish literal name that is used

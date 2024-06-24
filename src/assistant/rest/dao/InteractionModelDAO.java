@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.entities.Role;
 /**
  * @author Alfredo
  */
+@Deprecated
 public class InteractionModelDAO {
 	
 	public InteractionModelDAO() {

@@ -18,8 +18,9 @@ import org.springframework.stereotype.Repository;
 import assistant.app.core.Application;
 import assistant.database.DatabaseConnection.RunnableSQL;
 import assistant.discord.object.MemberPosition;
-import assistant.rest.dto.RegisteredDiscordServerDTO;
 import assistant.rest.dto.DiscordRoleDTO;
+import assistant.rest.dto.MemberDTO;
+import assistant.rest.dto.RegisteredDiscordServerDTO;
 
 /**
  * @author Alfredo

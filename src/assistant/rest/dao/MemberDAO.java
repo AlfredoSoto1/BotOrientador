@@ -267,7 +267,7 @@ public class MemberDAO {
 		return found.get() ? Optional.of(member) : Optional.empty();
 	}
 	
-	public Optional<TeamDTO> getMemberTeam(String email) {
+	public Optional<TeamDTO> getMemberTeam(String email, long server) {
 		final String SQL =
 			"""
 			SELECT  teamid            AS teamid,
@@ -278,13 +278,15 @@ public class MemberDAO {
 			        discserid         AS discserid,
 			        dir.name          AS role_name,
 			        dir.effectivename AS effectivename
-			    FROM team
-			        INNER JOIN member          AS mem ON team.teamid = mem.fteamid
-			        INNER JOIN verification    AS ver ON ver.verid   = mem.fverid
+			    
+                FROM team
+			        INNER JOIN assignedteam    AS ast ON team.teamid = ast.fteamid
+			        INNER JOIN verification    AS ver ON ver.verid   = ast.fverid
 			        INNER JOIN discordrole     AS dir ON dir.droleid = team.fdroleid
 			        INNER JOIN serverownership AS seo ON seo.seoid   = dir.fseoid
-			    WHERE
-			        email = ?
+			    
+                WHERE
+			        email = ? AND seo.discserid = ?
 			""";
 		AtomicBoolean found = new AtomicBoolean(false);
 		TeamDTO team = new TeamDTO();
@@ -292,6 +294,7 @@ public class MemberDAO {
 		RunnableSQL rq = connection -> {
 			PreparedStatement stmt = connection.prepareStatement(SQL);
 			stmt.setString(1, email);
+			stmt.setLong(2, server);
 			
 			ResultSet result = stmt.executeQuery();
 			while(result.next()) {
@@ -318,6 +321,7 @@ public class MemberDAO {
 	}
 	
 	public int insertMember(MemberDTO member, MemberPosition positionRole, long server, String teamname) {
+		// FIXME
 		final String SQL =
 			"""
 			SELECT insert_member(
@@ -403,3 +407,85 @@ public class MemberDAO {
 		return deletedCount.get();
 	}
 }
+
+//CREATE OR REPLACE FUNCTION insert_member(
+//    p_program_name TEXT,
+//    p_email TEXT,
+//    p_position_role TEXT,
+//    p_discserid BIGINT,
+//    p_team_name TEXT,
+//    p_role_name TEXT,
+//    p_firstname TEXT,
+//    p_lastname TEXT,
+//    p_initial TEXT,
+//    p_sex TEXT
+//) RETURNS INT LANGUAGE plpgsql AS $$
+//DECLARE
+//    var_progid INT;
+//    var_verid  INT;
+//    var_flname TEXT;
+//    var_mlname TEXT;
+//BEGIN
+//    -- Step 1: Check for the program existence
+//    SELECT progid INTO var_progid FROM program WHERE name = p_program_name;
+//
+//    -- Check if var_progid is NULL, meaning program's name was not found
+//    IF var_progid IS NULL THEN
+//        RAISE EXCEPTION 'The program that you are looking for does not exist. Aborting transaction.';
+//    END IF;
+//
+//    -- Step 2: Insert into verification
+//    INSERT INTO verification (email, fprogid) VALUES (p_email, var_progid)
+//    RETURNING verid INTO var_verid;
+//
+//    -- Step 3: Insert into assigned team
+//    INSERT INTO assignedteam (fverid, fteamid)
+//        SELECT var_verid, teamid
+//            FROM team
+//                INNER JOIN discordrole     ON droleid = fdroleid
+//                INNER JOIN serverownership ON seoid = fseoid
+//            WHERE 
+//                name = p_team_name AND discserid = p_discserid;
+//
+//    -- Step 4: Insert into assigned role the position of the member
+//    INSERT INTO assignedrole (fverid, fdroleid)
+//        SELECT var_verid, droleid
+//            FROM discordrole
+//                INNER JOIN serverownership ON droleid = fdroleid
+//            WHERE
+//                effectivename = p_position_role AND discserid = p_discserid;
+//
+//    -- Step 5: Insert into assigned role the program of the member
+//    INSERT INTO assignedrole (fverid, fdroleid)
+//        SELECT var_verid, droleid
+//            FROM discordrole
+//                INNER JOIN serverownership ON droleid = fdroleid
+//            WHERE
+//                effectivename = p_program_name AND discserid = p_discserid;
+//
+//    -- Step 6: Insert the advancement table
+//    INSERT INTO advancement (name, fmemid) VALUES('participation', var_verid);
+//
+//    -- Split the last name
+//    SELECT SPLIT_PART(p_lastname, ' ', 1) INTO var_flname;
+//    SELECT SPLIT_PART(p_lastname, ' ', 2) INTO var_mlname;
+//
+//    -- Step 7: Check if we want to insert an orientador or prepa
+//    IF p_role_name = 'EstudianteOrientador' OR p_role_name = 'ConsejeroProfesional' OR p_role_name = 'EstudianteGraduado' THEN
+//        INSERT INTO orientador (fname, lname, fverid)
+//        VALUES (p_firstname, p_lastname, var_verid);
+//    ELSIF p_role_name = 'Prepa' THEN
+//        INSERT INTO prepa (fname, flname, mlname, initial, sex, fverid)
+//        VALUES (p_firstname, var_flname, var_mlname, p_initial, p_sex, var_verid);
+//    ELSE
+//        RAISE NOTICE 'No conditions matched.';
+//    END IF;
+//    RETURN var_verid;
+//
+//EXCEPTION
+//    WHEN OTHERS THEN
+//        -- Rollback the transaction on any error
+//        RAISE NOTICE 'Transaction aborted: %', SQLERRM;
+//        RETURN NULL; -- Exit the function on error and return NULL
+//END;
+//$$;

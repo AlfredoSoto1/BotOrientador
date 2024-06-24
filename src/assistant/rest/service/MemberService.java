@@ -72,8 +72,8 @@ public class MemberService {
 	 * @param email
 	 * @return Team of the member that has the given email
 	 */
-	public Optional<TeamDTO> getMemberTeam(String email) {
-		return memberDAO.getMemberTeam(email);
+	public Optional<TeamDTO> getMemberTeam(String email, long server) {
+		return memberDAO.getMemberTeam(email, server);
 	}
 	
 	public int addMember(MemberDTO memberDTO, MemberPosition rolePosition, long server, String teamname) {

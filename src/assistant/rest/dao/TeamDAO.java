@@ -28,28 +28,28 @@ public class TeamDAO {
 		
 	}
 
-	public List<TeamDTO> getAll(int offset, int limit, String teamName) {
+	public List<TeamDTO> getAllTeams(int offset, int limit, String teamName) {
 		final String SQL = 
 			"""
-			select  teamid,
+			SELECT  teamid,
 			        fdroleid,
-			        team.name                 as team_name,
-			        team.orgname              as orgname,
-			        discordrole.name          as role_name,
-			        discordrole.effectivename as effectivename,
-			        discordrole.longroleid    as longroleid,
-			        serverownership.discserid as discserid
-
-			    from team
-			        inner join discordrole     on fdroleid = droleid
-			        inner join serverownership on fseoid   = seoid
+			        team.name        AS team_name,
+			        team.orgname     AS orgname,
+			        dr.name          AS role_name,
+			        dr.effectivename AS effectivename,
+			        dr.longroleid    AS longroleid,
+			        so.discserid     AS discserid
+			    
+			    FROM team
+			        INNER JOIN discordrole     AS dr ON fdroleid = droleid
+			        INNER JOIN serverownership AS so ON fseoid   = seoid
 				       
-				where
-					team.name = ? or ? = 'None'
+				WHERE
+					team.name = ? OR ? = 'None'
 
-			order by teamid
-			offset ?
-			limit  ?;
+			ORDER BY teamid
+			OFFSET ?
+			LIMIT  ?;
 			""";
 		List<TeamDTO> teams = new ArrayList<>();
 		
@@ -88,13 +88,13 @@ public class TeamDAO {
 	public int insertTeam(TeamDTO team) {
 		final String SQL = 
 			"""
-			insert into team (name, orgname, fdroleid)
-			    select ?, ?, droleid
-		            from discordrole
-			            inner join serverownership on fseoid = seoid
-			        where
-			            effectivename = ? and discserid = ?
-			returning teamid
+			INSERT INTO team (name, orgname, fdroleid)
+			    SELECT ?, ?, droleid
+		            FROM discordrole
+			            INNER JOIN serverownership ON fseoid = seoid
+			        WHERE
+			            effectivename = ? AND discserid = ?
+			RETURNING teamid
 			""";
 		AtomicInteger idResult = new AtomicInteger(-1);
 		
@@ -119,24 +119,23 @@ public class TeamDAO {
 	public Optional<TeamDTO> deleteTeam(int id) {
 		final String SQL_DELETE = 
 			"""
-			with deleted_team as (
-			    delete from team
-			        where
-			            teamid = ?
-			    returning *
+			WITH deleted_team AS (
+			    DELETE FROM team
+			        WHERE teamid = ?
+			    RETURNING *
 			)
-			select  team.teamid       as teamid,
-			        team.fdroleid     as fdroleid,
-			        team.name         as team_name,
-			        team.orgname      as orgname,
-			        dir.name          as role_name,
-			        dir.effectivename as effectivename,
-			        dir.longroleid    as longroleid,
-			        seo.discserid     as discserid
+			SELECT  team.teamid      AS teamid,
+			        team.fdroleid    AS fdroleid,
+			        team.name        AS team_name,
+			        team.orgname     AS orgname,
+			        dr.name          AS role_name,
+			        dr.effectivename AS effectivename,
+			        dr.longroleid    AS longroleid,
+			        so.discserid     AS discserid
 			    
-			    from deleted_team     as team
-			        inner join discordrole     as dir on fdroleid = droleid
-			        inner join serverownership as seo on fseoid   = seoid
+			    FROM deleted_team    AS team
+			        INNER JOIN discordrole     AS dr ON fdroleid = droleid
+			        INNER JOIN serverownership AS so ON fseoid   = seoid
 			""";
 		AtomicBoolean deleted = new AtomicBoolean(false);
 		TeamDTO team = new TeamDTO();

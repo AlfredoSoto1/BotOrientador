@@ -75,7 +75,6 @@ public class ECEAssistant extends BotApplication {
 		 * - Verification command and behavior
 		 * - Role selection command and behavior
 		 * - Role implanting when joining server
-		 * - DAO and model implementation for command
 		 * - Command with DAOs implementation
 		 */
 		
