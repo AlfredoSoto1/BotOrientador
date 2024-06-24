@@ -9,9 +9,10 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import assistant.discord.object.MemberPosition;
 import assistant.rest.dao.DiscordRegistrationDAO;
-import assistant.rest.dto.RegisteredDiscordServerDTO;
 import assistant.rest.dto.DiscordRoleDTO;
+import assistant.rest.dto.RegisteredDiscordServerDTO;
 
 /**
  * @author Alfredo
@@ -26,26 +27,38 @@ public class DiscordRegistrationService {
 		this.dregistrationDAO = dregistrationDAO;
 	}
 	
+	/**
+	 * @param page
+	 * @param size
+	 * @return List of registered Discord Servers
+	 */
 	public List<RegisteredDiscordServerDTO> getAllRegisteredDiscordServers(int page, int size) {
 		return dregistrationDAO.getAllRegisteredDiscordServers(page * size, size);
 	}
 	
-	public Optional<RegisteredDiscordServerDTO> getRegistration(int id) {
-		return dregistrationDAO.getDiscordServerRegistration(id);
+	/**
+	 * @param id
+	 * @return Registered Discord Server
+	 */
+	public Optional<RegisteredDiscordServerDTO> getRegisteredDiscordServer(int id) {
+		return dregistrationDAO.getRegisteredDiscordServer(id);
 	}
 	
-	public List<String> getEffectiveRoles() {
-		return dregistrationDAO.getEffectiveRoles();
+	/**
+	 * @return List of the effective name roles
+	 */
+	public List<String> getEffectiveRoleNames() {
+		return dregistrationDAO.getEffectiveRoleNames();
 	}
 	
-	public List<DiscordRoleDTO> getAllRoles(int page, int size) {
-		return dregistrationDAO.getAllRoles(page * size, size);
+	public List<DiscordRoleDTO> getAllRoles(int page, int size, long server) {
+		return dregistrationDAO.getAllRoles(page * size, size, server);
 	}
 	
-	public Optional<DiscordRoleDTO> getRole(int id) {
-		return dregistrationDAO.getRole(id);
+	public Optional<DiscordRoleDTO> getEffectiveRole(MemberPosition rolePosition, long server) {
+		return dregistrationDAO.getEffectiveRole(rolePosition, server);
 	}
-	
+
 	public int registerDiscordServer(RegisteredDiscordServerDTO discordServer) {
 		return dregistrationDAO.insertDiscordServer(discordServer);
 	}

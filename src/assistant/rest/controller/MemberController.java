@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import assistant.app.settings.TokenHolder;
-import assistant.app.settings.TokenType;
 import assistant.discord.object.MemberPosition;
 import assistant.discord.object.MemberRetrievement;
 import assistant.rest.dto.EmailDTO;
@@ -61,12 +60,7 @@ public class MemberController {
 			@RequestBody(required = false)           EmailDTO email,
 			@RequestHeader("Authorization")          String token) {
 		
-		TokenHolder restToken = tokenHolders.stream()
-				.filter(tkholder -> tkholder.getType() == TokenType.REST_TOKEN)
-				.findFirst().get();
-		
-		// Validate token
-		if(token == null || !restToken.is(token))
+		if (TokenHolder.authenticateREST(token, tokenHolders))
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
 		
 		// Find the member with the given email
@@ -100,12 +94,7 @@ public class MemberController {
 			@RequestParam(defaultValue = "-1")       Long server,
 			@RequestHeader("Authorization")          String token) {
 		
-		TokenHolder restToken = tokenHolders.stream()
-				.filter(tkholder -> tkholder.getType() == TokenType.REST_TOKEN)
-				.findFirst().get();
-		
-		// Validate token
-		if(token == null || !restToken.is(token))
+		if (TokenHolder.authenticateREST(token, tokenHolders))
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
 		
 		// If no given email, then just return the emails of the members
@@ -123,12 +112,7 @@ public class MemberController {
 			@RequestBody(required = true)   EmailDTO email,
 			@RequestHeader("Authorization") String token) {
 		
-		TokenHolder restToken = tokenHolders.stream()
-				.filter(tkholder -> tkholder.getType() == TokenType.REST_TOKEN)
-				.findFirst().get();
-		
-		// Validate token
-		if(token == null || !restToken.is(token))
+		if (TokenHolder.authenticateREST(token, tokenHolders))
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
 		
 		return ResponseEntity.of(service.getMemberTeam(email.getEmail()));
@@ -152,12 +136,7 @@ public class MemberController {
 			@RequestParam(required = true)  String position,
 			@RequestHeader("Authorization") String token) {
 		
-		TokenHolder restToken = tokenHolders.stream()
-				.filter(tkholder -> tkholder.getType() == TokenType.REST_TOKEN)
-				.findFirst().get();
-		
-		// Validate token
-		if(token == null || !restToken.is(token))
+		if (TokenHolder.authenticateREST(token, tokenHolders))
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
 		
 		MemberPosition mp = MemberPosition.ESTUDIANTE_ORIENTADOR;
@@ -192,12 +171,7 @@ public class MemberController {
 			@RequestParam(required = true)  String position,
 			@RequestHeader("Authorization") String token) {
 		
-		TokenHolder restToken = tokenHolders.stream()
-				.filter(tkholder -> tkholder.getType() == TokenType.REST_TOKEN)
-				.findFirst().get();
-		
-		// Validate token
-		if(token == null || !restToken.is(token))
+		if (TokenHolder.authenticateREST(token, tokenHolders))
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
 		
 		MemberPosition mp = MemberPosition.ESTUDIANTE_ORIENTADOR;
@@ -225,12 +199,7 @@ public class MemberController {
     		@RequestBody List<Integer> memberVerificationIDs, 
     		@RequestHeader("Authorization") String token) {
     	
-		TokenHolder restToken = tokenHolders.stream()
-				.filter(tkholder -> tkholder.getType() == TokenType.REST_TOKEN)
-				.findFirst().get();
-		
-		// Validate token
-		if(token == null || !restToken.is(token))
+		if (TokenHolder.authenticateREST(token, tokenHolders))
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
     	
     	int result = service.deleteMembers(memberVerificationIDs);

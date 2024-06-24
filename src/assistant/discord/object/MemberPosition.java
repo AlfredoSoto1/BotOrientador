@@ -20,7 +20,12 @@ public enum MemberPosition {
 	PREPA                  ("Prepa"),
 	NOT_VERIFIED           ("Not-Verified"),
 	ESTUDIANTE_GRADUADO    ("EstudianteGraduado"),
-	ESTUDIANTE_ORIENTADOR  ("EstudianteOrientador");
+	ESTUDIANTE_ORIENTADOR  ("EstudianteOrientador"),
+	
+	// This is for carrying no value in
+	// response to the member position. Mostly used
+	// in controllers.
+	NONE("NONE");
 	
 	/**
 	 * Establish literal name that is used

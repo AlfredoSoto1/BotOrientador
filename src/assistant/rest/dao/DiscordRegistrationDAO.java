@@ -17,6 +17,7 @@ import org.springframework.stereotype.Repository;
 
 import assistant.app.core.Application;
 import assistant.database.DatabaseConnection.RunnableSQL;
+import assistant.discord.object.MemberPosition;
 import assistant.rest.dto.RegisteredDiscordServerDTO;
 import assistant.rest.dto.DiscordRoleDTO;
 
@@ -30,13 +31,14 @@ public class DiscordRegistrationDAO {
 
 	}
 	
-	public List<String> getEffectiveRoles() {
+	public List<String> getEffectiveRoleNames() {
 		final String SQL = 
 			"""
-			select effectivename
-				from discordrole
-			group by effectivename
-			order by effectivename asc
+			SELECT effectivename
+				FROM discordrole
+				
+			GROUP BY effectivename
+			ORDER BY effectivename ASC
 			""";
 		List<String> effectiveRoles = new ArrayList<>();
 		
@@ -57,17 +59,18 @@ public class DiscordRegistrationDAO {
 	public List<RegisteredDiscordServerDTO> getAllRegisteredDiscordServers(int offset, int limit) {
 		final String SQL = 
 			"""
-			select  seoid,
+			SELECT  seoid,
 					discserid,
 					log_channel,
 					joined_at,
 					abreviation
-				from serverownership
-					inner join department on fdepid = depid
+				
+				FROM serverownership
+					INNER JOIN department ON fdepid = depid
 					
-			order by seoid
-			offset ?
-			limit  ?;
+			ORDER BY seoid
+			OFFSET ?
+			LIMIT  ?;
 			""";
 		List<RegisteredDiscordServerDTO> discordServers = new ArrayList<>();
 		
@@ -95,17 +98,19 @@ public class DiscordRegistrationDAO {
 		return discordServers;
 	}
 	
-	public Optional<RegisteredDiscordServerDTO> getDiscordServerRegistration(int id) {
+	public Optional<RegisteredDiscordServerDTO> getRegisteredDiscordServer(int id) {
 		final String SQL = 
 			"""
-			select  seoid,
+			SELECT  seoid,
 					discserid,
 					log_channel,
 					joined_at,
 					abreviation
-				from serverownership
-					inner join department on fdepid = depid
-				where
+				
+				FROM serverownership
+					INNER JOIN department ON fdepid = depid
+				
+				WHERE
 					seoid = ?
 			""";
 		AtomicBoolean found = new AtomicBoolean(false);
@@ -133,27 +138,32 @@ public class DiscordRegistrationDAO {
 		return found.get() ? Optional.of(discordServer) : Optional.empty();
 	}
 	
-	public List<DiscordRoleDTO> getAllRoles(int offset, int limit) {
+	public List<DiscordRoleDTO> getAllRoles(int offset, int limit, long server) {
 		final String SQL = 
 			"""
-			select  droleid,
+			SELECT  droleid,
 					name,
 					effectivename,
 					longroleid,
 					discserid
-				from discordrole
-					inner join serverownership on fseoid = seoid
+				
+				FROM discordrole
+					INNER JOIN serverownership ON fseoid = seoid
 					
-			order by droleid
-			offset ?
-			limit  ?;
+				WHERE
+					discserid = ?
+					
+			ORDER BY droleid
+			OFFSET ?
+			LIMIT  ?;
 			""";
 		List<DiscordRoleDTO> roles = new ArrayList<>();
 		
 		RunnableSQL rq = connection -> {
 			PreparedStatement stmt = connection.prepareStatement(SQL);
-			stmt.setInt(1, offset);
-			stmt.setInt(2, limit);
+			stmt.setLong(1, server);
+			stmt.setInt(2, offset);
+			stmt.setInt(3, limit);
 			
 			ResultSet result = stmt.executeQuery();
 			while(result.next()) {
@@ -174,25 +184,28 @@ public class DiscordRegistrationDAO {
 		return roles;
 	}
 	
-	public Optional<DiscordRoleDTO> getRole(int id) {
+	public Optional<DiscordRoleDTO> getEffectiveRole(MemberPosition rolePosition, long server) {
 		final String SQL = 
 			"""
-			select  droleid,
+			SELECT  droleid,
 					name,
 					effectivename,
 					longroleid,
 					discserid
-				from discordrole
-					inner join serverownership on fseoid = seoid
-				where
-					droleid = ?
+				
+				FROM discordrole
+					INNER JOIN serverownership ON fseoid = seoid
+				
+				WHERE
+					effectivename = ? AND discserid = ?
 			""";
 		AtomicBoolean found = new AtomicBoolean(false);
 		DiscordRoleDTO role = new DiscordRoleDTO();
 		
 		RunnableSQL rq = connection -> {
 			PreparedStatement stmt = connection.prepareStatement(SQL);
-			stmt.setInt(1, id);
+			stmt.setString(1, rolePosition.getEffectiveName());
+			stmt.setLong(2, server);
 			
 			ResultSet result = stmt.executeQuery();
 			while(result.next()) {
@@ -215,16 +228,17 @@ public class DiscordRegistrationDAO {
 	public int insertDiscordServer(RegisteredDiscordServerDTO discordServer) {
 		final String SQL = 
 			"""
-			with department_selected as (
-				select distinct depid 
-						from department
-					where abreviation = ? 
-				limit 1
+			WITH department_selected AS (
+				SELECT depid 
+					FROM department
+					
+					WHERE abreviation = ? 
+				LIMIT 1
 			)
-			insert into serverownership (discserid, log_channel, fdepid)
-			    select ?, ?, department_selected.depid
-				    from department_selected
-			returning seoid
+			INSERT INTO serverownership (discserid, log_channel, fdepid)
+			    SELECT ?, ?, department_selected.depid
+				    FROM department_selected
+			RETURNING seoid
 			""";
 		AtomicInteger idResult = new AtomicInteger(-1);
 		
@@ -256,16 +270,16 @@ public class DiscordRegistrationDAO {
 	public int insertRole(DiscordRoleDTO role) {
 		final String SQL = 
 			"""
-			with discord_server as (
-				select distinct seoid 
-						from serverownership 
-					where discserid = ? 
-				limit 1
+			WITH discord_server AS (
+				SELECT distinct seoid 
+						FROM serverownership 
+					WHERE discserid = ? 
+				LIMIT 1
 			)
-			insert into discordrole (name, effectivename, longroleid, fseoid)
-			    select ?, ?, ?, discord_server.seoid
-				    from discord_server
-			returning droleid
+			INSERT INTO discordrole (name, effectivename, longroleid, fseoid)
+			    SELECT ?, ?, ?, discord_server.seoid
+				    FROM discord_server
+			RETURNING droleid
 			""";
 		AtomicInteger idResult = new AtomicInteger(-1);
 		

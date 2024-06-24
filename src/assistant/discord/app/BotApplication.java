@@ -61,7 +61,7 @@ public abstract class BotApplication {
 		// clean all memory used by the application.
 		latch = new CountDownLatch(1);
 		
-		jdaBuilder = JDABuilder.createDefault(botToken.obtainToken(this));
+		jdaBuilder = TokenHolder.buildJDAFromToken(this.getClass(), botToken);
 		
 		/*
 		 * Set bot status and activity
