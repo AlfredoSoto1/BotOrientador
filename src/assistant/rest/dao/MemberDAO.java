@@ -321,7 +321,6 @@ public class MemberDAO {
 	}
 	
 	public int insertMember(MemberDTO member, MemberPosition positionRole, long server, String teamname) {
-		// FIXME
 		final String SQL =
 			"""
 			SELECT insert_member(
