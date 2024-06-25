@@ -19,16 +19,15 @@ import assistant.app.core.Application;
 import assistant.database.DatabaseConnection.RunnableSQL;
 import assistant.discord.object.MemberPosition;
 import assistant.rest.dto.DiscordRoleDTO;
-import assistant.rest.dto.MemberDTO;
-import assistant.rest.dto.RegisteredDiscordServerDTO;
+import assistant.rest.dto.DiscordServerDTO;
 
 /**
  * @author Alfredo
  */
 @Repository
-public class DiscordRegistrationDAO {
+public class DiscordServerDAO {
 
-	public DiscordRegistrationDAO() {
+	public DiscordServerDAO() {
 
 	}
 	
@@ -57,7 +56,7 @@ public class DiscordRegistrationDAO {
 		return effectiveRoles;
 	}
 	
-	public List<RegisteredDiscordServerDTO> getAllRegisteredDiscordServers(int offset, int limit) {
+	public List<DiscordServerDTO> getAllRegisteredDiscordServers(int offset, int limit) {
 		final String SQL = 
 			"""
 			SELECT  seoid,
@@ -73,7 +72,7 @@ public class DiscordRegistrationDAO {
 			OFFSET ?
 			LIMIT  ?;
 			""";
-		List<RegisteredDiscordServerDTO> discordServers = new ArrayList<>();
+		List<DiscordServerDTO> discordServers = new ArrayList<>();
 		
 		RunnableSQL rq = connection -> {
 			PreparedStatement stmt = connection.prepareStatement(SQL);
@@ -82,7 +81,7 @@ public class DiscordRegistrationDAO {
 			
 			ResultSet result = stmt.executeQuery();
 			while(result.next()) {
-				RegisteredDiscordServerDTO discordServer = new RegisteredDiscordServerDTO();
+				DiscordServerDTO discordServer = new DiscordServerDTO();
 				discordServer.setId(result.getInt("seoid"));
 				discordServer.setServerid(result.getLong("discserid"));
 				discordServer.setLogChannelId(result.getLong("log_channel"));
@@ -99,7 +98,7 @@ public class DiscordRegistrationDAO {
 		return discordServers;
 	}
 	
-	public Optional<RegisteredDiscordServerDTO> getRegisteredDiscordServer(int id) {
+	public Optional<DiscordServerDTO> getRegisteredDiscordServer(int id) {
 		final String SQL = 
 			"""
 			SELECT  seoid,
@@ -115,7 +114,7 @@ public class DiscordRegistrationDAO {
 					seoid = ?
 			""";
 		AtomicBoolean found = new AtomicBoolean(false);
-		RegisteredDiscordServerDTO discordServer = new RegisteredDiscordServerDTO();
+		DiscordServerDTO discordServer = new DiscordServerDTO();
 		
 		RunnableSQL rq = connection -> {
 			PreparedStatement stmt = connection.prepareStatement(SQL);
@@ -185,7 +184,7 @@ public class DiscordRegistrationDAO {
 		return roles;
 	}
 	
-	public Optional<DiscordRoleDTO> getEffectiveRole(MemberPosition rolePosition, long server) {
+	public Optional<DiscordRoleDTO> getEffectivePositionRole(MemberPosition rolePosition, long server) {
 		final String SQL = 
 			"""
 			SELECT  droleid,
@@ -226,13 +225,12 @@ public class DiscordRegistrationDAO {
 		return found.get() ? Optional.of(role) : Optional.empty();
 	}
 	
-	public int insertDiscordServer(RegisteredDiscordServerDTO discordServer) {
+	public int insertDiscordServer(DiscordServerDTO discordServer) {
 		final String SQL = 
 			"""
 			WITH department_selected AS (
 				SELECT depid 
 					FROM department
-					
 					WHERE abreviation = ? 
 				LIMIT 1
 			)

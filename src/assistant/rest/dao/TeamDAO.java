@@ -28,7 +28,7 @@ public class TeamDAO {
 		
 	}
 
-	public List<TeamDTO> getAllTeams(int offset, int limit, String teamName) {
+	public List<TeamDTO> getAllTeams(int offset, int limit, long server) {
 		final String SQL = 
 			"""
 			SELECT  teamid,
@@ -45,7 +45,7 @@ public class TeamDAO {
 			        INNER JOIN serverownership AS so ON fseoid   = seoid
 				       
 				WHERE
-					team.name = ? OR ? = 'None'
+					discserid = ?
 
 			ORDER BY teamid
 			OFFSET ?
@@ -55,10 +55,9 @@ public class TeamDAO {
 		
 		RunnableSQL rq = connection -> {
 			PreparedStatement stmt = connection.prepareStatement(SQL);
-			stmt.setString(1, teamName);
-			stmt.setString(2, teamName);
-			stmt.setInt(3, offset);
-			stmt.setInt(4, limit);
+			stmt.setLong(1, server);
+			stmt.setInt(2, offset);
+			stmt.setInt(3, limit);
 			
 			ResultSet result = stmt.executeQuery();
 			while(result.next()) {
@@ -85,6 +84,57 @@ public class TeamDAO {
 		return teams;
 	}
 
+	public Optional<TeamDTO> getTeam(String teamName, long server) {
+		final String SQL = 
+			"""
+			SELECT  teamid,
+			        fdroleid,
+			        team.name        AS team_name,
+			        team.orgname     AS orgname,
+			        dr.name          AS role_name,
+			        dr.effectivename AS effectivename,
+			        dr.longroleid    AS longroleid,
+			        so.discserid     AS discserid
+			    
+			    FROM team
+			        INNER JOIN discordrole     AS dr ON fdroleid = droleid
+			        INNER JOIN serverownership AS so ON fseoid   = seoid
+				       
+				WHERE
+					team.name = ? AND discserid = ?
+			""";
+		AtomicBoolean found = new AtomicBoolean(false);
+		TeamDTO team = new TeamDTO();
+		
+		RunnableSQL rq = connection -> {
+			PreparedStatement stmt = connection.prepareStatement(SQL);
+			stmt.setString(1, teamName);
+			stmt.setLong(2, server);
+			
+			ResultSet result = stmt.executeQuery();
+			while(result.next()) {
+				team.setId(result.getInt("teamid"));
+				team.setName(result.getString("team_name"));
+				team.setOrgname(result.getString("orgname"));
+				
+				DiscordRoleDTO role = new DiscordRoleDTO();
+				role.setId(result.getInt("fdroleid"));
+				role.setRoleid(result.getLong("longroleid"));
+				role.setServerid(result.getLong("discserid"));
+				role.setName(result.getString("role_name"));
+				role.setEffectivename(result.getString("effectivename"));
+				team.setTeamRole(role);
+				
+				found.set(true);
+			}
+			result.close();
+			stmt.close();
+		};
+		
+		Application.instance().getDatabaseConnection().establishConnection(rq);
+		return found.get() ? Optional.of(team) : Optional.empty();
+	}
+	
 	public int insertTeam(TeamDTO team) {
 		final String SQL = 
 			"""
@@ -116,12 +166,21 @@ public class TeamDAO {
 		return idResult.get();
 	}
 	
-	public Optional<TeamDTO> deleteTeam(int id) {
+	public Optional<TeamDTO> deleteTeam(String teamname, long server) {
 		final String SQL_DELETE = 
 			"""
-			WITH deleted_team AS (
+			WITH team_record AS (
+                SELECT teamid 
+                    FROM team
+                        INNER JOIN discordrole     ON fdroleid = droleid
+                        INNER JOIN serverownership ON fseoid   = seoid
+                    WHERE
+                        discserid = ? AND team.name = ?
+                LIMIT 1
+            ), 
+            deleted_team AS (
 			    DELETE FROM team
-			        WHERE teamid = ?
+			        WHERE teamid = (SELECT team_record.teamid FROM team_record)
 			    RETURNING *
 			)
 			SELECT  team.teamid      AS teamid,
@@ -142,7 +201,9 @@ public class TeamDAO {
 
 		RunnableSQL rq = connection -> {
 			PreparedStatement stmt = connection.prepareStatement(SQL_DELETE);
-			stmt.setInt(1, id);
+			stmt.setLong(1, server);
+			stmt.setString(2, teamname);
+			
 			ResultSet result = stmt.executeQuery();
 			while(result.next()) {
 				team.setId(result.getInt("teamid"));

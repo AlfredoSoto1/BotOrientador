@@ -20,6 +20,7 @@ import assistant.rest.dto.TeamDTO;
 /**
  * @author Alfredo
  */
+@Deprecated
 @Service
 public class MemberService {
 	
@@ -57,17 +58,9 @@ public class MemberService {
 	 * @return Member that matches the given email
 	 */
 	public Optional<MemberDTO> getMember(String email) {
-		return memberDAO.getMember(email, MemberRetrievement.EVERYONE);
+		return memberDAO.getMember(email);
 	}
 
-	public Optional<MemberDTO> getPrepa(String email) {
-		return memberDAO.getMember(email, MemberRetrievement.ALL_PREPA);
-	}
-	
-	public Optional<MemberDTO> getOrientador(String email) {
-		return memberDAO.getMember(email, MemberRetrievement.ALL_ORIENTADOR);
-	}
-	
 	/**
 	 * @param email
 	 * @return Team of the member that has the given email
@@ -93,15 +86,15 @@ public class MemberService {
 	 * a team for it to participate
 	 * 
 	 * @param members
-	 * @param rolePositionm
+	 * @param rolePosition
 	 * @param server
 	 * @param teamname
 	 * @return List of all the member IDs that got added
 	 */
-	public List<Integer> addMembers(List<MemberDTO> members, MemberPosition rolePositionm, long server, String teamname) {
+	public List<Integer> addMembers(List<MemberDTO> members, MemberPosition rolePosition, long server, String teamname) {
 		List<Integer> results = new ArrayList<>();
 		for(MemberDTO member : members)
-			results.add(memberDAO.insertMember(member, rolePositionm, server, teamname));
+			results.add(memberDAO.insertMember(member, rolePosition, server, teamname));
 		return results;
 	}
 	

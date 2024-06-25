@@ -179,7 +179,7 @@ public class MemberDAO {
 		return members;
 	}
 	
-	public Optional<MemberDTO> getMember(String email, MemberRetrievement retrievement) {
+	public Optional<MemberDTO> getMember(String email) {
 		final String SQL_SELECT =
 			"""
 			WITH all_people AS (
@@ -221,12 +221,7 @@ public class MemberDAO {
 			        LEFT  JOIN joinedmember AS jm ON jm.fverid = verid
 			    
 			    WHERE
-				    email = ? AND
-				    (
-				        (? = 'EVERYONE')                               OR 
-				        (? = 'ALL_PREPA'      AND type = 'prepa')      OR
-				        (? = 'ALL_ORIENTADOR' AND type = 'orientador')
-					)
+				    email = ?
 			""";
 		AtomicBoolean found = new AtomicBoolean(false);
 		MemberDTO member = new MemberDTO();
@@ -234,9 +229,6 @@ public class MemberDAO {
 		RunnableSQL rq = connection -> {
 			PreparedStatement stmt = connection.prepareStatement(SQL_SELECT);
 			stmt.setString(1, email);
-			stmt.setString(2, retrievement.name());
-			stmt.setString(3, retrievement.name());
-			stmt.setString(4, retrievement.name());
 			
 			ResultSet result = stmt.executeQuery();
 			while(result.next()) {
@@ -408,83 +400,116 @@ public class MemberDAO {
 }
 
 //CREATE OR REPLACE FUNCTION insert_member(
-//    p_program_name TEXT,
-//    p_email TEXT,
-//    p_position_role TEXT,
-//    p_discserid BIGINT,
-//    p_team_name TEXT,
-//    p_role_name TEXT,
-//    p_firstname TEXT,
-//    p_lastname TEXT,
-//    p_initial TEXT,
-//    p_sex TEXT
-//) RETURNS INT LANGUAGE plpgsql AS $$
-//DECLARE
-//    var_progid INT;
-//    var_verid  INT;
-//    var_flname TEXT;
-//    var_mlname TEXT;
-//BEGIN
-//    -- Step 1: Check for the program existence
-//    SELECT progid INTO var_progid FROM program WHERE name = p_program_name;
+//	    p_program_name TEXT,
+//	    p_email TEXT,
+//	    p_position_role TEXT,
+//	    p_discserid BIGINT,
+//	    p_team_name TEXT,
+//	    p_role_name TEXT,
+//	    p_firstname TEXT,
+//	    p_lastname TEXT,
+//	    p_initial TEXT,
+//	    p_sex TEXT
+//	) RETURNS INT LANGUAGE plpgsql AS $$
+//	DECLARE
+//	    var_progid INT;
+//	    var_verid  INT;
+//	    var_flname TEXT;
+//	    var_mlname TEXT;
+//	BEGIN
+//	    -- Step 1: Check for the program existence
+//	    SELECT progid INTO var_progid FROM program WHERE name = p_program_name;
 //
-//    -- Check if var_progid is NULL, meaning program's name was not found
-//    IF var_progid IS NULL THEN
-//        RAISE EXCEPTION 'The program that you are looking for does not exist. Aborting transaction.';
-//    END IF;
+//	    -- Check if var_progid is NULL, meaning program's name was not found
+//	    IF var_progid IS NULL THEN
+//	        RAISE EXCEPTION 'The program that you are looking for does not exist. Aborting transaction.';
+//	    END IF;
 //
-//    -- Step 2: Insert into verification
-//    INSERT INTO verification (email, fprogid) VALUES (p_email, var_progid)
-//    RETURNING verid INTO var_verid;
+//	    -- Step 2: Insert into verification
+//	    INSERT INTO verification (email, fprogid) VALUES (p_email, var_progid)
+//	    RETURNING verid INTO var_verid;
 //
-//    -- Step 3: Insert into assigned team
-//    INSERT INTO assignedteam (fverid, fteamid)
-//        SELECT var_verid, teamid
-//            FROM team
-//                INNER JOIN discordrole     ON droleid = fdroleid
-//                INNER JOIN serverownership ON seoid = fseoid
-//            WHERE 
-//                name = p_team_name AND discserid = p_discserid;
+//	    -- Step 3: Insert into assigned team
+//	    INSERT INTO assignedteam (fverid, fteamid)
+//	        SELECT var_verid, teamid
+//	            FROM team
+//	                INNER JOIN discordrole     ON fdroleid = droleid
+//	                INNER JOIN serverownership ON fseoid   = seoid
+//	            WHERE 
+//	                team.name = p_team_name AND discserid = p_discserid;
 //
-//    -- Step 4: Insert into assigned role the position of the member
-//    INSERT INTO assignedrole (fverid, fdroleid)
-//        SELECT var_verid, droleid
-//            FROM discordrole
-//                INNER JOIN serverownership ON droleid = fdroleid
-//            WHERE
-//                effectivename = p_position_role AND discserid = p_discserid;
+//	    -- Step 4: Insert into assigned role the position of the member
+//	    INSERT INTO assignedrole (fverid, fdroleid)
+//	        SELECT var_verid, droleid
+//	            FROM discordrole
+//	                INNER JOIN serverownership ON fseoid = seoid
+//	            WHERE
+//	                effectivename = p_position_role AND discserid = p_discserid;
 //
-//    -- Step 5: Insert into assigned role the program of the member
-//    INSERT INTO assignedrole (fverid, fdroleid)
-//        SELECT var_verid, droleid
-//            FROM discordrole
-//                INNER JOIN serverownership ON droleid = fdroleid
-//            WHERE
-//                effectivename = p_program_name AND discserid = p_discserid;
+//	    -- Step 5: Insert the advancement table
+//	    INSERT INTO advancement (name, fverid) VALUES('participation', var_verid);
 //
-//    -- Step 6: Insert the advancement table
-//    INSERT INTO advancement (name, fmemid) VALUES('participation', var_verid);
+//	    -- Split the last name
+//	    SELECT SPLIT_PART(p_lastname, ' ', 1) INTO var_flname;
+//	    SELECT SPLIT_PART(p_lastname, ' ', 2) INTO var_mlname;
 //
-//    -- Split the last name
-//    SELECT SPLIT_PART(p_lastname, ' ', 1) INTO var_flname;
-//    SELECT SPLIT_PART(p_lastname, ' ', 2) INTO var_mlname;
+//	    -- Step 6: Check if we want to insert an orientador or prepa
+//	    IF p_role_name = 'EstudianteOrientador' OR p_role_name = 'ConsejeroProfesional' OR p_role_name = 'EstudianteGraduado' THEN
+//	        INSERT INTO orientador (fname, lname, fverid)
+//	        VALUES (p_firstname, p_lastname, var_verid);
+//	    ELSIF p_role_name = 'Prepa' THEN
+//	        INSERT INTO prepa (fname, flname, mlname, initial, sex, fverid)
+//	        VALUES (p_firstname, var_flname, var_mlname, p_initial, p_sex, var_verid);
+//	    ELSE
+//	        RAISE NOTICE 'No conditions matched.';
+//	    END IF;
+//	    RETURN var_verid;
 //
-//    -- Step 7: Check if we want to insert an orientador or prepa
-//    IF p_role_name = 'EstudianteOrientador' OR p_role_name = 'ConsejeroProfesional' OR p_role_name = 'EstudianteGraduado' THEN
-//        INSERT INTO orientador (fname, lname, fverid)
-//        VALUES (p_firstname, p_lastname, var_verid);
-//    ELSIF p_role_name = 'Prepa' THEN
-//        INSERT INTO prepa (fname, flname, mlname, initial, sex, fverid)
-//        VALUES (p_firstname, var_flname, var_mlname, p_initial, p_sex, var_verid);
-//    ELSE
-//        RAISE NOTICE 'No conditions matched.';
-//    END IF;
-//    RETURN var_verid;
+//	EXCEPTION
+//	    WHEN OTHERS THEN
+//	        -- Rollback the transaction on any error
+//	        RAISE NOTICE 'Transaction aborted: %', SQLERRM;
+//	        RETURN NULL; -- Exit the function on error and return NULL
+//	END;
+//	$$;
+
+
+
+
+
+//CREATE OR REPLACE FUNCTION delete_member(
+//	    p_verid INT
+//	) RETURNS BOOLEAN LANGUAGE plpgsql AS $$
+//	BEGIN
+//	    -- Step 1: Check if verid exists in verification
+//	    PERFORM 1 FROM verification WHERE verid = p_verid;
+//	    IF NOT FOUND THEN
+//	        RAISE EXCEPTION 'verid % does not exist in verification', p_verid;
+//	    END IF;
 //
-//EXCEPTION
-//    WHEN OTHERS THEN
-//        -- Rollback the transaction on any error
-//        RAISE NOTICE 'Transaction aborted: %', SQLERRM;
-//        RETURN NULL; -- Exit the function on error and return NULL
-//END;
-//$$;
+//	    -- Step 2: Delete from orientador or prepa if they exist
+//	    DELETE FROM orientador WHERE fverid = p_verid;
+//	    DELETE FROM prepa WHERE fverid = p_verid;
+//
+//	    -- Step 3: Delete from advancement
+//	    DELETE FROM advancement WHERE fverid = p_verid;
+//
+//	    -- Step 4: Delete from assigned team
+//	    DELETE FROM assignedteam WHERE fverid = p_verid;
+//
+//	    -- Step 5: Delete from assigned team
+//	    DELETE FROM assignedrole WHERE fverid = p_verid;
+//
+//	    -- Step 6: Delete from verification
+//	    DELETE FROM verification WHERE verid = p_verid;
+//
+//	    -- If everything went well, return true
+//	    RETURN TRUE;
+//
+//	EXCEPTION
+//	    WHEN OTHERS THEN
+//	        -- Handle exceptions and return false
+//	        RAISE NOTICE 'Transaction aborted: %', SQLERRM;
+//	        RETURN FALSE;
+//	END;
+//	$$;

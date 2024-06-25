@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import assistant.app.settings.TokenHolder;
 import assistant.discord.object.MemberPosition;
 import assistant.rest.dto.DiscordRoleDTO;
-import assistant.rest.dto.RegisteredDiscordServerDTO;
+import assistant.rest.dto.DiscordServerDTO;
 import assistant.rest.service.DiscordRegistrationService;
 
 /**
@@ -111,7 +111,7 @@ public class DiscordRegistrationController {
 	@PostMapping("/server")
 	public ResponseEntity<?> registerDiscordServer(
 			@RequestHeader("Authorization") String token,
-			@RequestBody RegisteredDiscordServerDTO discordServer) {
+			@RequestBody DiscordServerDTO discordServer) {
 		
 		if (TokenHolder.authenticateREST(token, tokenHolders))
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");

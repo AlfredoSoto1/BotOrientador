@@ -26,7 +26,7 @@ public class FacultyService {
 	}
 	
 	public List<FacultyDTO> getAll(int page, int size) {
-		return facultyDAO.getAll(page * size, size);
+		return facultyDAO.getAllFaculty(page * size, size);
 	}
 	
 	public Optional<FacultyDTO> getProfessor(int id) {

@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import assistant.app.settings.TokenHolder;
 import assistant.database.DatabaseEntity;
 import assistant.rest.dto.TeamDTO;
-import assistant.rest.service.DeveloperService;
+import assistant.rest.service.RegistrationService;
 
 /**
  * @author Alfredo
@@ -30,10 +30,10 @@ import assistant.rest.service.DeveloperService;
 public class DeveloperController {
 
 	private final List<TokenHolder> tokenHolders;
-	private final DeveloperService service;
+	private final RegistrationService service;
 	
 	@Autowired
-	public DeveloperController(List<TokenHolder> tokenHolders, DeveloperService service) {
+	public DeveloperController(List<TokenHolder> tokenHolders, RegistrationService service) {
 		this.service = service;
 		this.tokenHolders = tokenHolders;
 	}

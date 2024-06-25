@@ -66,20 +66,21 @@ public class FacultyDAO {
 		 
 	}
 	
-	public List<FacultyDTO> getAll(int offset, int limit) {
+	public List<FacultyDTO> getAllFaculty(int offset, int limit) {
 		final String SQL =
 			"""
-			select  facid, fcontid, abreviation, 
+			SELECT  facid, fcontid, abreviation, 
 			        faculty.name,
 			        faculty.description, 
 			        jobentitlement, 
 			        office, 
 			        email
-				from faculty
-			        inner join contact    on fcontid = contid
-			        inner join department on fdepid  = depid
-			offset ?
-			limit  ?
+				
+                FROM faculty
+			        INNER JOIN contact    ON fcontid = contid
+			        INNER JOIN department ON fdepid  = depid
+			OFFSET ?
+			LIMIT  ?
 			""";
 		List<FacultyDTO> faculty = new ArrayList<>();
 		
@@ -120,20 +121,23 @@ public class FacultyDAO {
 		return faculty;
 	}
 	
-	public Optional<FacultyDTO> getProfessor(int id) {
+	public Optional<FacultyDTO> getProfessor(String departmentAbbreviation) {
 		final String SQL_SELECT_FACULTY =
 			"""
-			select  facid, fcontid, abreviation, 
+			SELECT  facid, 
+                    fcontid, 
+                    abreviation, 
 			        faculty.name,
 			        faculty.description, 
 			        jobentitlement, 
 			        office, 
 			        email
-				from faculty
-			        inner join contact on fcontid = contid
-			        inner join department on fdepid  = depid
-				where 
-					facid = ?
+				
+                FROM faculty
+			        INNER JOIN contact    ON fcontid = contid
+			        INNER JOIN department ON fdepid  = depid
+				WHERE 
+					abreviation = ?
 			""";
 		AtomicBoolean found = new AtomicBoolean(false);
 		FacultyDTO professor = new FacultyDTO();
@@ -141,7 +145,7 @@ public class FacultyDAO {
 		
 		RunnableSQL rq = connection -> {
 			PreparedStatement stmt_faculty = connection.prepareStatement(SQL_SELECT_FACULTY);
-			stmt_faculty.setInt(1, id);
+			stmt_faculty.setString(1, departmentAbbreviation);
 
 			ResultSet result = stmt_faculty.executeQuery();
 			int contid = -1;
@@ -198,15 +202,7 @@ public class FacultyDAO {
 			""";
 		final String SQL_INSERT_PROFESSOR =
 			"""
-			insert into faculty (name, jobentitlement, office, description, fcontid, fdepid)
-			select 
-			        ?,               -- placeholder for name
-			        ?,               -- placeholder for jobentitlement
-			        ?,               -- placeholder for office
-			        ?,               -- placeholder for description
-			        get_or_insert_contact(?),
-			        (select depid from department where abreviation = ? limit 1)  
-			returning facid, fcontid;
+			SELECT insert_professor(?, ?, ?, ?, ?, ?) as facid
 			""";
 		AtomicInteger facid = new AtomicInteger(-1);
 		

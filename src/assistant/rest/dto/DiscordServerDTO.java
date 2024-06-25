@@ -6,7 +6,7 @@ package assistant.rest.dto;
 /**
  * @author Alfredo
  */
-public class RegisteredDiscordServerDTO {
+public class DiscordServerDTO {
 	
 	private int id;
 	private long serverid;
@@ -14,7 +14,7 @@ public class RegisteredDiscordServerDTO {
 	private String joinedAt;
 	private String department;
 	
-	public RegisteredDiscordServerDTO() {
+	public DiscordServerDTO() {
 
 	}
 
