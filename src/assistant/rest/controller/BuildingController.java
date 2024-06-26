@@ -3,6 +3,8 @@
  */
 package assistant.rest.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,10 +14,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import assistant.app.settings.TokenHolder;
 import assistant.rest.dto.BuildingDTO;
 import assistant.rest.service.BuildingService;
 
@@ -27,28 +31,46 @@ import assistant.rest.service.BuildingService;
 public class BuildingController {
 
 	private final BuildingService service;
+	private final List<TokenHolder> tokenHolders;
 	
 	@Autowired
-	public BuildingController(BuildingService service) {
+	public BuildingController(List<TokenHolder> tokenHolders, BuildingService service) {
 		this.service = service;
+		this.tokenHolders = tokenHolders;
 	}
 	
 	@GetMapping
 	public ResponseEntity<?> getBuildings(
 			@RequestParam(defaultValue = "0") Integer page,
-			@RequestParam(defaultValue = "5") Integer size) {
-		return ResponseEntity.ok(service.getAll(page, size));
+			@RequestParam(defaultValue = "5") Integer size,
+			@RequestHeader("Authorization")   String token) {
+		
+		if (TokenHolder.authenticateREST(token, tokenHolders))
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
+		
+		return ResponseEntity.ok(service.getAllBuilding(page, size));
 	}
 	
 	@GetMapping("/{id}")
-    public ResponseEntity<?> getBuilding(@PathVariable Integer id) {
+    public ResponseEntity<?> getBuilding(
+    		@PathVariable Integer id,
+    		@RequestHeader("Authorization") String token) {
+		
+		if (TokenHolder.authenticateREST(token, tokenHolders))
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
+		
         return ResponseEntity.of(service.findBuilding(id));
     }
 	
     @PostMapping
-    public ResponseEntity<?> addBuilding(@RequestBody BuildingDTO building) {
+    public ResponseEntity<?> addBuilding(
+    		@RequestBody BuildingDTO building,
+    		@RequestHeader("Authorization") String token) {
+    	
+    	if (TokenHolder.authenticateREST(token, tokenHolders))
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
+    	
         int recordID = service.insertBuilding(building);
-        
         if (recordID > 0) {
             return ResponseEntity.status(HttpStatus.CREATED).body(recordID);
         } else {
@@ -57,12 +79,25 @@ public class BuildingController {
     }
     
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateBuilding(@PathVariable Integer id, @RequestBody BuildingDTO building) {
+    public ResponseEntity<?> updateBuilding(
+    		@PathVariable Integer id, 
+    		@RequestBody BuildingDTO building,
+    		@RequestHeader("Authorization") String token) {
+    	
+    	if (TokenHolder.authenticateREST(token, tokenHolders))
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
+    	
     	return ResponseEntity.of(service.updateBuilding(id, building));
     }
     
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteBuilding(@PathVariable Integer id) {
+    public ResponseEntity<?> deleteBuilding(
+    		@PathVariable Integer id,
+    		@RequestHeader("Authorization") String token) {
+    	
+    	if (TokenHolder.authenticateREST(token, tokenHolders))
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
+    	
     	return ResponseEntity.of(service.deleteBuilding(id));
     }
 }

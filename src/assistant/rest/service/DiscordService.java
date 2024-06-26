@@ -17,14 +17,13 @@ import assistant.rest.dto.DiscordServerDTO;
 /**
  * @author Alfredo
  */
-@Deprecated
 @Service
-public class DiscordRegistrationService {
+public class DiscordService {
 
 	private final DiscordServerDAO dregistrationDAO;
 	
 	@Autowired
-	public DiscordRegistrationService(DiscordServerDAO dregistrationDAO) {
+	public DiscordService(DiscordServerDAO dregistrationDAO) {
 		this.dregistrationDAO = dregistrationDAO;
 	}
 	

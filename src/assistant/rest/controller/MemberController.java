@@ -40,21 +40,12 @@ public class MemberController {
 		this.tokenHolders = tokenHolders;
 	}
 	
-	/**
-	 * @param page
-	 * @param size
-	 * @param server
-	 * @param ret
-	 * @param email
-	 * @param token
-	 * @return Response entity that contains a list of Members 
-	 */
 	@GetMapping
 	public ResponseEntity<?> getMembers(
 			@RequestParam(defaultValue = "0")        Integer page,
 			@RequestParam(defaultValue = "5")        Integer size,
-			@RequestParam(defaultValue = "-1")       Long server,
 			@RequestParam(defaultValue = "EVERYONE") MemberRetrievement ret,
+			@RequestParam(defaultValue = "-1")       Long server,
 			@RequestBody(required = false)           EmailDTO email,
 			@RequestHeader("Authorization")          String token) {
 		
@@ -70,19 +61,12 @@ public class MemberController {
 		return ResponseEntity.ok(service.getAllMembers(page, size, ret, server));
 	}
 	
-	/**
-	 * @param page
-	 * @param size
-	 * @param server
-	 * @param token
-	 * @return Response entity that contains a list of Emails
-	 */
 	@GetMapping("/email")
 	public ResponseEntity<?> getEmails(
-			@RequestParam(defaultValue = "0")  Integer page,
-			@RequestParam(defaultValue = "5")  Integer size,
-			@RequestParam(defaultValue = "-1") Long server,
-			@RequestHeader("Authorization")    String token) {
+			@RequestParam(defaultValue = "0") Integer page,
+			@RequestParam(defaultValue = "5") Integer size,
+			@RequestParam(required = true)    Long server,
+			@RequestHeader("Authorization")   String token) {
 		
 		if (TokenHolder.authenticateREST(token, tokenHolders))
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
@@ -90,12 +74,7 @@ public class MemberController {
 		// If no given email, then just return the emails of the members
 		return ResponseEntity.ok(service.getEmails(page, size, server));
 	}
-	
-	/**
-	 * @param email
-	 * @param token
-	 * @return Response entity that displays the team to which the member participates
-	 */
+
 	@GetMapping("/team")
 	public ResponseEntity<?> getMemberTeam(
 			@RequestBody(required = true)   EmailDTO email,
@@ -108,14 +87,6 @@ public class MemberController {
 		return ResponseEntity.of(service.getMemberTeam(email.getEmail(), server));
 	}
 	
-	/**
-	 * @param member
-	 * @param server
-	 * @param teamname
-	 * @param position
-	 * @param token
-	 * @return Response entity with the ID of the member added
-	 */
 	@PostMapping
 	public ResponseEntity<?> addMember(
 			@RequestBody(required = true)   MemberDTO member,
@@ -127,22 +98,13 @@ public class MemberController {
 		if (TokenHolder.authenticateREST(token, tokenHolders))
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
 		
-		int idResult = service.addMember(member, position, server, teamname);
-		
-		if(idResult > 0)
-			return ResponseEntity.status(HttpStatus.CREATED).body(idResult);
+		int result = service.addMember(member, position, server, teamname);
+		if(result > 0)
+			return ResponseEntity.status(HttpStatus.CREATED).body(result);
 		
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to insert");
 	}	
 	
-	/**
-	 * @param members
-	 * @param server
-	 * @param teamname
-	 * @param position
-	 * @param token
-	 * @return Response entity with the number of members added
-	 */
 	@PostMapping("/group")
 	public ResponseEntity<?> addMemberCollection(
 			@RequestBody(required = true)   List<MemberDTO> members,
@@ -154,19 +116,13 @@ public class MemberController {
 		if (TokenHolder.authenticateREST(token, tokenHolders))
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
 		
-		int idResult = service.addMembers(members, position, server, teamname).size();
-		
-		if(idResult > 0)
-			return ResponseEntity.status(HttpStatus.CREATED).body(idResult);
+		int result = service.addMembers(members, position, server, teamname).size();
+		if(result > 0)
+			return ResponseEntity.status(HttpStatus.CREATED).body(result);
 		
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to insert");
 	}	
 	
-    /**
-     * 
-     * @param memberVerificationIDs
-     * @return Response entity with the count of members deleted
-     */
     @DeleteMapping
     public ResponseEntity<?> deleteMembers(
     		@RequestBody List<Integer> memberVerificationIDs, 
@@ -176,7 +132,6 @@ public class MemberController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
     	
     	int result = service.deleteMembers(memberVerificationIDs);
-		
 		if(result > 0) {
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body(result);
 		} else {

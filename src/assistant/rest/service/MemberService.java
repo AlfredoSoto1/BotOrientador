@@ -20,7 +20,6 @@ import assistant.rest.dto.TeamDTO;
 /**
  * @author Alfredo
  */
-@Deprecated
 @Service
 public class MemberService {
 	

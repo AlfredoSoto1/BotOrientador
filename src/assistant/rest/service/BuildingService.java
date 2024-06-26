@@ -25,7 +25,7 @@ public class BuildingService {
 		this.buildingDAO = buildingDAO;
 	}
 	
-	public List<BuildingDTO> getAll(int page, int size) {
+	public List<BuildingDTO> getAllBuilding(int page, int size) {
 		return buildingDAO.getAll(page * size, size);
 	}
 	

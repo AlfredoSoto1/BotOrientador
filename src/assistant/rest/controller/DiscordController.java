@@ -20,31 +20,24 @@ import assistant.app.settings.TokenHolder;
 import assistant.discord.object.MemberPosition;
 import assistant.rest.dto.DiscordRoleDTO;
 import assistant.rest.dto.DiscordServerDTO;
-import assistant.rest.service.DiscordRegistrationService;
+import assistant.rest.service.DiscordService;
 
 /**
  * @author Alfredo
  */
 @Controller
-@RequestMapping("/assistant/registration")
-public class DiscordRegistrationController {
+@RequestMapping("/assistant/discord")
+public class DiscordController {
 	
+	private final DiscordService service;
 	private final List<TokenHolder> tokenHolders;
-	private final DiscordRegistrationService service;
 	
 	@Autowired
-	public DiscordRegistrationController(List<TokenHolder> tokenHolders, DiscordRegistrationService service) {
+	public DiscordController(List<TokenHolder> tokenHolders, DiscordService service) {
 		this.service = service;
 		this.tokenHolders = tokenHolders;
 	}
 	
-	/**
-	 * @param token
-	 * @param id
-	 * @param page
-	 * @param size
-	 * @return Either a single or a collection of all registered servers
-	 */
 	@GetMapping("/server")
 	public ResponseEntity<?> getAllDiscordServers(
 			@RequestHeader("Authorization")    String token,
@@ -55,20 +48,14 @@ public class DiscordRegistrationController {
 		if (TokenHolder.authenticateREST(token, tokenHolders))
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
 		
+		// If the id is not -1, then return all discord servers
+		// else, return the server with the id given as parameter
 		if(id == -1)
 			return ResponseEntity.ok(service.getAllRegisteredDiscordServers(page, size));
 		else
 			return ResponseEntity.of(service.getRegisteredDiscordServer(id));
 	}
 	
-	/**
-	 * @param token
-	 * @param page
-	 * @param size
-	 * @param server
-	 * @param position
-	 * @return Effective role or all roles in a server
-	 */
 	@GetMapping("/role")
 	public ResponseEntity<?> getAllDiscordRoles(
 			@RequestHeader("Authorization")   String token,
@@ -88,10 +75,6 @@ public class DiscordRegistrationController {
 		return ResponseEntity.ok(service.getAllRoles(page, size, server));
 	}
 	
-	/**
-	 * @param token
-	 * @return List of role names
-	 */
 	@GetMapping("/role-names")
 	public ResponseEntity<?> getAllDiscordRoles(@RequestHeader("Authorization") String token) {
 		
@@ -103,11 +86,6 @@ public class DiscordRegistrationController {
 		return ResponseEntity.ok(service.getEffectiveRoleNames());
 	}
 	
-	/**
-	 * @param token
-	 * @param discordServer
-	 * @return Id of the registered Discord Server
-	 */
 	@PostMapping("/server")
 	public ResponseEntity<?> registerDiscordServer(
 			@RequestHeader("Authorization") String token,
@@ -117,7 +95,6 @@ public class DiscordRegistrationController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
 		
 		int recordID = service.registerDiscordServer(discordServer);
-		
 		if (recordID > 0) {
 			return ResponseEntity.status(HttpStatus.CREATED).body(recordID);
 		} else {
@@ -125,11 +102,6 @@ public class DiscordRegistrationController {
 		}
 	}
 	
-	/**
-	 * @param token
-	 * @param role
-	 * @return Id of the registered Discord Role
-	 */
     @PostMapping("/role")
     public ResponseEntity<?> registerDiscordRole(
     		@RequestHeader("Authorization") String token,
@@ -139,7 +111,6 @@ public class DiscordRegistrationController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
 		
         int recordID = service.registerRole(role);
-        
         if (recordID > 0) {
             return ResponseEntity.status(HttpStatus.CREATED).body(recordID);
         } else {

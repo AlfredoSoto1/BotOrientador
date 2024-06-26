@@ -17,6 +17,7 @@ import org.springframework.stereotype.Repository;
 import assistant.app.core.Application;
 import assistant.database.DatabaseConnection.RunnableSQL;
 import assistant.rest.dto.ContactDTO;
+import assistant.rest.dto.EmailDTO;
 import assistant.rest.dto.ExtensionDTO;
 import assistant.rest.dto.OrganizationDTO;
 import assistant.rest.dto.ProjectDTO;
@@ -28,7 +29,7 @@ import assistant.rest.dto.WebpageDTO;
  * @author Alfredo
  */
 @Repository
-public class ServiceDAO {
+public class ServicesDAO {
 
 	private final String SQL_SELECT_PROJECT =
 		"""
@@ -61,11 +62,40 @@ public class ServiceDAO {
 			where fcontid = ?
 		""";
 	
-	public ServiceDAO() {
+	public ServicesDAO() {
 		
 	}
 	
-	public List<ServiceDTO> getAll(int offset, int limit) {
+	public List<EmailDTO> getServiceEmails() {
+		final String SQL = 
+			"""
+			SELECT  servid,
+					email
+				FROM service
+					INNER JOIN contact ON contid = fcontid
+			""";
+		List<EmailDTO> emails = new ArrayList<>();
+		
+		RunnableSQL rq = connection -> {
+			PreparedStatement stmt = connection.prepareStatement(SQL);
+			
+			ResultSet result = stmt.executeQuery();
+			while(result.next()) {
+				EmailDTO email = new EmailDTO();
+				email.setId(result.getInt("servid"));
+				email.setEmail(result.getString("email"));
+				
+				emails.add(email);
+			}
+			result.close();
+			stmt.close();
+		};
+		
+		Application.instance().getDatabaseConnection().establishConnection(rq);
+		return emails;
+	}
+	
+	public List<ServiceDTO> getAllServices(int offset, int limit) {
 		final String SQL = 
 			"""
 			select  servid,
@@ -121,10 +151,10 @@ public class ServiceDAO {
 		return services;
 	}
 	
-	public Optional<ServiceDTO> getService(int id) {
+	public Optional<ServiceDTO> getService(EmailDTO email) {
 		final String SQL = 
 			"""
-			select  servid,
+			SELECT  servid,
 					abreviation,
 					fcontid,
 					service.name,
@@ -134,18 +164,18 @@ public class ServiceDAO {
 					offering,
 					additional,
 					email
-				from service
-					inner join contact    on contid = fcontid
-					inner join department on depid  = fdepid
-				where
-					servid = ?
+				FROM service
+					INNER JOIN contact    ON contid = fcontid
+					INNER JOIN department ON depid  = fdepid
+				WHERE
+					email = ?
 			""";
 		AtomicBoolean found = new AtomicBoolean(false);
 		ServiceDTO service = new ServiceDTO();
 		
 		RunnableSQL rq = connection -> {
 			PreparedStatement stmt = connection.prepareStatement(SQL);
-			stmt.setInt(1, id);
+			stmt.setString(1, email.getEmail());
 			
 			ResultSet result = stmt.executeQuery();
 			while(result.next()) {

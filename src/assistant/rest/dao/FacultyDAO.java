@@ -18,6 +18,7 @@ import org.springframework.stereotype.Repository;
 import assistant.app.core.Application;
 import assistant.database.DatabaseConnection.RunnableSQL;
 import assistant.rest.dto.ContactDTO;
+import assistant.rest.dto.EmailDTO;
 import assistant.rest.dto.ExtensionDTO;
 import assistant.rest.dto.FacultyDTO;
 import assistant.rest.dto.OrganizationDTO;
@@ -66,7 +67,34 @@ public class FacultyDAO {
 		 
 	}
 	
-	public List<FacultyDTO> getAllFaculty(int offset, int limit) {
+	public List<EmailDTO> getFacultyEmails() {
+		final String SQL =
+			"""
+			SELECT  facid, email
+                FROM faculty
+			        INNER JOIN contact ON fcontid = contid
+			""";
+		List<EmailDTO> emails = new ArrayList<>();
+		
+		RunnableSQL rq = connection -> {
+			PreparedStatement stmt = connection.prepareStatement(SQL);
+			
+			ResultSet result = stmt.executeQuery();
+			while(result.next()) {
+				EmailDTO email = new EmailDTO();
+				email.setId(result.getInt("facid"));
+				email.setEmail(result.getString("email"));
+				emails.add(email);
+			}
+			result.close();
+			stmt.close();
+		};
+		
+		Application.instance().getDatabaseConnection().establishConnection(rq);
+		return emails;
+	}
+	
+	public List<FacultyDTO> getAllFaculty(int offset, int limit, String department) {
 		final String SQL =
 			"""
 			SELECT  facid, fcontid, abreviation, 
@@ -79,6 +107,9 @@ public class FacultyDAO {
                 FROM faculty
 			        INNER JOIN contact    ON fcontid = contid
 			        INNER JOIN department ON fdepid  = depid
+				WHERE
+					abreviation = ?
+				
 			OFFSET ?
 			LIMIT  ?
 			""";
@@ -86,8 +117,9 @@ public class FacultyDAO {
 		
 		RunnableSQL rq = connection -> {
 			PreparedStatement stmt = connection.prepareStatement(SQL);
-			stmt.setInt(1, offset);
-			stmt.setInt(2, limit);
+			stmt.setString(1, department);
+			stmt.setInt(2, offset);
+			stmt.setInt(3, limit);
 			
 			ResultSet result = stmt.executeQuery();
 			while(result.next()) {
@@ -121,7 +153,7 @@ public class FacultyDAO {
 		return faculty;
 	}
 	
-	public Optional<FacultyDTO> getProfessor(String departmentAbbreviation) {
+	public Optional<FacultyDTO> getProfessor(EmailDTO email) {
 		final String SQL_SELECT_FACULTY =
 			"""
 			SELECT  facid, 
@@ -137,7 +169,7 @@ public class FacultyDAO {
 			        INNER JOIN contact    ON fcontid = contid
 			        INNER JOIN department ON fdepid  = depid
 				WHERE 
-					abreviation = ?
+					email = ?
 			""";
 		AtomicBoolean found = new AtomicBoolean(false);
 		FacultyDTO professor = new FacultyDTO();
@@ -145,7 +177,7 @@ public class FacultyDAO {
 		
 		RunnableSQL rq = connection -> {
 			PreparedStatement stmt_faculty = connection.prepareStatement(SQL_SELECT_FACULTY);
-			stmt_faculty.setString(1, departmentAbbreviation);
+			stmt_faculty.setString(1, email.getEmail());
 
 			ResultSet result = stmt_faculty.executeQuery();
 			int contid = -1;
@@ -179,7 +211,7 @@ public class FacultyDAO {
 		return found.get() ? Optional.of(professor) : Optional.empty();
 	}
 	
-	public int insertProfessor(FacultyDTO professor, String departmentAbreviation) {
+	public int insertProfessor(FacultyDTO professor, String departmentAbbreviation) {
 		final String SQL_INSERT_PROJECT =
 			"""
 			insert into project(name, description, fcontid) values (?, ?, ?)
@@ -202,7 +234,15 @@ public class FacultyDAO {
 			""";
 		final String SQL_INSERT_PROFESSOR =
 			"""
-			SELECT insert_professor(?, ?, ?, ?, ?, ?) as facid
+			insert into faculty (name, jobentitlement, office, description, fcontid, fdepid)
+			select 
+			        ?,               -- placeholder for name
+			        ?,               -- placeholder for jobentitlement
+			        ?,               -- placeholder for office
+			        ?,               -- placeholder for description
+			        get_or_insert_contact(?),
+			        (select depid from department where abreviation = ? limit 1)  
+			returning facid, fcontid;
 			""";
 		AtomicInteger facid = new AtomicInteger(-1);
 		
@@ -216,7 +256,7 @@ public class FacultyDAO {
 				stmt_professor.setString(3, professor.getOffice());
 				stmt_professor.setString(4, professor.getDescription());
 				stmt_professor.setString(5, professor.getContact().getEmail());
-				stmt_professor.setString(6, departmentAbreviation);
+				stmt_professor.setString(6, departmentAbbreviation);
 				
 				ResultSet result = stmt_professor.executeQuery();
 				int contid = -1;

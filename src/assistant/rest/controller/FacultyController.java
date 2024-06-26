@@ -3,19 +3,22 @@
  */
 package assistant.rest.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import assistant.app.settings.TokenHolder;
+import assistant.rest.dto.EmailDTO;
 import assistant.rest.dto.FacultyDTO;
 import assistant.rest.service.FacultyService;
 
@@ -27,42 +30,62 @@ import assistant.rest.service.FacultyService;
 public class FacultyController {
 	
 	private final FacultyService service;
+	private final List<TokenHolder> tokenHolders;
 	
 	@Autowired
-	public FacultyController(FacultyService service) {
+	public FacultyController(List<TokenHolder> tokenHolders, FacultyService service) {
 		this.service = service;
+		this.tokenHolders = tokenHolders;
 	}
 	
 	@GetMapping
 	public ResponseEntity<?> getFaculty(
+			@RequestHeader("Authorization") String token,
+			@RequestParam(required = true)  String department,
 			@RequestParam(defaultValue = "0") Integer page,
 			@RequestParam(defaultValue = "5") Integer size) {
-		return ResponseEntity.ok(service.getAll(page, size));
+		
+		if (TokenHolder.authenticateREST(token, tokenHolders))
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
+		
+		return ResponseEntity.ok(service.getFaculty(page, size, department));
 	}
 
-	@GetMapping("/{id}")
-    public ResponseEntity<?> getProfessor(@PathVariable Integer id) {
-		return ResponseEntity.of(service.getProfessor(id));
+	@GetMapping("/professor")
+    public ResponseEntity<?> getProfessor(
+    		@RequestBody(required = true)   EmailDTO email,
+    		@RequestHeader("Authorization") String token) {
+		
+		if (TokenHolder.authenticateREST(token, tokenHolders))
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
+		
+		return ResponseEntity.ok(service.getProfessor(email));
     }
 	
-    @PostMapping("/{department}")
-    public ResponseEntity<?> addProfessor(@PathVariable String department, @RequestBody FacultyDTO professor) {
-    	int idResult = service.addProfessor(professor, department);
+	@GetMapping("/professor/email")
+    public ResponseEntity<?> getEmails(
+    		@RequestHeader("Authorization") String token) {
 		
+		if (TokenHolder.authenticateREST(token, tokenHolders))
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
+		
+		return ResponseEntity.ok(service.getFacultyEmails());
+    }
+	
+    @PostMapping("/professor/{department}")
+    public ResponseEntity<?> addProfessor(
+    		@PathVariable String department, 
+    		@RequestBody FacultyDTO professor,
+    		@RequestHeader("Authorization") String token) {
+    	
+		if (TokenHolder.authenticateREST(token, tokenHolders))
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
+		
+    	int idResult = service.addProfessor(professor, department);
 		if(idResult > 0) {
 			return ResponseEntity.status(HttpStatus.CREATED).body(idResult);
 		} else {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to insert");
 		}
-    }
-    
-    @PutMapping("/{id}")
-    public String updateProfessor(@PathVariable Integer id, @RequestBody String professor) {
-    	return "";
-    }
-    
-    @DeleteMapping("/{id}")
-    public String deleteProfessor(@PathVariable Integer id) {
-    	return "";
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import assistant.rest.dao.FacultyDAO;
+import assistant.rest.dto.EmailDTO;
 import assistant.rest.dto.FacultyDTO;
 
 /**
@@ -25,16 +26,19 @@ public class FacultyService {
 		this.facultyDAO = facultyDAO;
 	}
 	
-	public List<FacultyDTO> getAll(int page, int size) {
-		return facultyDAO.getAllFaculty(page * size, size);
+	public List<EmailDTO> getFacultyEmails() {
+		return facultyDAO.getFacultyEmails();
 	}
 	
-	public Optional<FacultyDTO> getProfessor(int id) {
-		return facultyDAO.getProfessor(id);
+	public List<FacultyDTO> getFaculty(int page, int size, String department) {
+		return facultyDAO.getAllFaculty(page * size, size, department);
 	}
 	
-	public int addProfessor(FacultyDTO professor, String departmentAbreviation) {
-		return facultyDAO.insertProfessor(professor, departmentAbreviation);
+	public Optional<FacultyDTO> getProfessor(EmailDTO email) {
+		return facultyDAO.getProfessor(email);
 	}
 	
+	public int addProfessor(FacultyDTO professor, String department) {
+		return facultyDAO.insertProfessor(professor, department);
+	}
 }
