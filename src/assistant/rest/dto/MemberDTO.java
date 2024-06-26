@@ -3,8 +3,6 @@
  */
 package assistant.rest.dto;
 
-import java.util.Date;
-
 /**
  * @author Alfredo
  */
@@ -27,7 +25,6 @@ public class MemberDTO {
 	
 	// Verification status
 	private boolean verified;
-	private Date verificationDate;
 	
 	public MemberDTO() {
 
@@ -119,14 +116,6 @@ public class MemberDTO {
 
 	public void setVerified(boolean verified) {
 		this.verified = verified;
-	}
-
-	public Date getVerificationDate() {
-		return verificationDate;
-	}
-
-	public void setVerificationDate(Date verificationDate) {
-		this.verificationDate = verificationDate;
 	}
 	
 }

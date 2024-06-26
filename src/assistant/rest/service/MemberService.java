@@ -31,6 +31,16 @@ public class MemberService {
 	}
 	
 	/**
+	 * @param member
+	 * @return true if verification succeeded
+	 */
+	public boolean verifyMember(MemberDTO member) {
+		// If greater than zero, then it got
+		// verified and inserted successfully
+		return memberDAO.insertAndVerifyMember(member) > 0;
+	}
+	
+	/**
 	 * @param page
 	 * @param size
 	 * @param server
@@ -68,14 +78,33 @@ public class MemberService {
 		return memberDAO.getMemberTeam(email, server);
 	}
 	
+	/**
+	 * @param memberDTO
+	 * @param rolePosition
+	 * @param server
+	 * @param teamname
+	 * @return ID of the Member added
+	 */
 	public int addMember(MemberDTO memberDTO, MemberPosition rolePosition, long server, String teamname) {
 		return memberDAO.insertMember(memberDTO, rolePosition, server, teamname);
 	}
 	
+	/**
+	 * @param memberDTO
+	 * @param server
+	 * @param teamname
+	 * @return ID of the EO added
+	 */
 	public int addEOrientador(MemberDTO memberDTO, long server, String teamname) {
 		return memberDAO.insertMember(memberDTO, MemberPosition.ESTUDIANTE_ORIENTADOR, server, teamname);
 	}
 
+	/**
+	 * @param memberDTO
+	 * @param server
+	 * @param teamname
+	 * @return ID of the Prepa added
+	 */
 	public int addPrepa(MemberDTO memberDTO, long server, String teamname) {
 		return memberDAO.insertMember(memberDTO, MemberPosition.PREPA, server, teamname);
 	}

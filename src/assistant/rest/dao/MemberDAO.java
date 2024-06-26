@@ -37,8 +37,8 @@ public class MemberDAO {
 	public List<EmailDTO> getEmails(int offset, int limit, long server) {
 		final String SQL_SELECT =
 			"""
-			SELECT verid, email 
-				FROM verification
+			SELECT memid, email 
+				FROM member
 					INNER JOIN program         AS pro ON fprogid    = progid
 					INNER JOIN department      AS dep ON pro.fdepid = depid
 					INNER JOIN serverownership AS seo ON seo.fdepid = depid
@@ -46,7 +46,7 @@ public class MemberDAO {
 				WHERE
 					discserid = ? OR ? = -1
 			
-			ORDER BY verid
+			ORDER BY memid
 			""";
 		List<EmailDTO> emails = new ArrayList<>();
 		
@@ -58,7 +58,7 @@ public class MemberDAO {
 			ResultSet result = stmt.executeQuery();
 			while(result.next()) {
 				EmailDTO member = new EmailDTO();
-				member.setId(result.getInt("verid"));
+				member.setId(result.getInt("memid"));
 				member.setEmail(result.getString("email"));
 				emails.add(member);
 			}
@@ -79,7 +79,7 @@ public class MemberDAO {
 			            '-'          AS initial,
 			            '-'          AS sex,
 			            'orientador' AS type,
-			            fverid
+			            fmemid
 			        FROM orientador
 			        
 			    UNION ALL
@@ -89,26 +89,24 @@ public class MemberDAO {
 			            initial                 AS initial, 
 			            sex                     AS sex,
 			            'prepa'                 AS type, 
-			            fverid
+			            fmemid
 			        FROM prepa
 			)
-			SELECT  vr.verid,
+			SELECT  mb.fmemid,
 			        identifier,
 			        firstname,
 			        lastname,
 			        initial,
 			        sex,
-			        vr.email,
-			        vr.is_verified,
-			        vr.verified_date,
+			        mb.email,
 			        pr.name                              AS program_name,
 			        COALESCE(jm.username, 'No username') AS username,
 			        COALESCE(jm.funfact,  'No fun fact') AS funfact
 			    
 			    FROM all_people
-			        INNER JOIN verification    AS vr ON fverid     = verid
+			        INNER JOIN member          AS mb ON fmemid     = memid
 			        INNER JOIN program         AS pr ON vr.fprogid = progid
-			        LEFT JOIN  joinedmember    AS jm ON jm.fverid  = verid
+			        LEFT JOIN  joinedmember    AS jm ON jm.fmemid  = memid
 			        
 			        INNER JOIN department      AS dp ON dp.depid   = pr.fdepid 
 			        INNER JOIN serverownership AS so ON dp.depid   = so.fdepid
@@ -168,7 +166,6 @@ public class MemberDAO {
 				member.setUsername(result.getString("username"));
 
 				member.setVerified(result.getBoolean("is_verified"));
-				member.setVerificationDate(result.getDate("verified_date"));
 				
 				members.add(member);
 			}
@@ -246,7 +243,6 @@ public class MemberDAO {
 				member.setUsername(result.getString("username"));
 
 				member.setVerified(result.getBoolean("is_verified"));
-				member.setVerificationDate(new Date(result.getDate("verified_date").getTime()));
 				
 				found.set(true);
 			}
@@ -310,6 +306,15 @@ public class MemberDAO {
 		
 		Application.instance().getDatabaseConnection().establishConnection(rq);
 		return found.get() ? Optional.of(team) : Optional.empty();
+	}
+	
+	public int insertAndVerifyMember(MemberDTO member) {
+		final String SQL =
+			"""
+			
+			""";
+		
+		return 0;
 	}
 	
 	public int insertMember(MemberDTO member, MemberPosition positionRole, long server, String teamname) {
