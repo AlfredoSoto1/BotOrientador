@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -225,5 +226,14 @@ public class TeamDAO {
 		
 		Application.instance().getDatabaseConnection().establishConnection(rq);
 		return deleted.get() ? Optional.of(team) : Optional.empty();
+	}
+	
+	public Map<String, List<String>> getPrepaListFrom() {
+		final String SQL =
+			"""
+			
+			""";
+		
+		return null;
 	}
 }
