@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -72,16 +71,15 @@ public class FacultyController {
 		return ResponseEntity.ok(service.getFacultyEmails());
     }
 	
-    @PostMapping("/professor/{department}")
+    @PostMapping("/professor")
     public ResponseEntity<?> addProfessor(
-    		@PathVariable String department, 
-    		@RequestBody FacultyDTO professor,
+    		@RequestBody  FacultyDTO professor,
     		@RequestHeader("Authorization") String token) {
     	
 		if (TokenHolder.authenticateREST(token, tokenHolders))
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
 		
-    	int idResult = service.addProfessor(professor, department);
+    	int idResult = service.addProfessor(professor);
 		if(idResult > 0) {
 			return ResponseEntity.status(HttpStatus.CREATED).body(idResult);
 		} else {

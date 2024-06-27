@@ -38,7 +38,7 @@ public class FacultyService {
 		return facultyDAO.getProfessor(email);
 	}
 	
-	public int addProfessor(FacultyDTO professor, String department) {
-		return facultyDAO.insertProfessor(professor, department);
+	public int addProfessor(FacultyDTO professor) {
+		return facultyDAO.insertProfessor(professor);
 	}
 }

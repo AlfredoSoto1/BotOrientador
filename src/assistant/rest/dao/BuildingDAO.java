@@ -30,11 +30,11 @@ public class BuildingDAO {
 	public List<BuildingDTO> getAll(int offset, int limit) {
 		final String SQL = 
 			"""
-			select buildid, code, name, gpin
-				from building
-			order by buildid
-			offset ?
-			limit  ?;
+			SELECT buildid, code, name, gpin
+				FROM building
+			ORDER BY buildid
+			OFFSET ?
+			LIMIT  ?
 			""";
 		List<BuildingDTO> buildings = new ArrayList<>();
 		

@@ -129,10 +129,10 @@ public class MemberService {
 	/**
 	 * Deletes the members by group with the given list of verification IDs
 	 * 
-	 * @param memberVerificationIDs
+	 * @param memberIDs
 	 * @return number of rows deleted
 	 */
-	public int deleteMembers(List<Integer> memberVerificationIDs) {
-		return memberDAO.deleteMembers(memberVerificationIDs);
+	public int deleteMembers(List<Integer> memberIDs) {
+		return memberDAO.deleteMembers(memberIDs);
 	}
 }

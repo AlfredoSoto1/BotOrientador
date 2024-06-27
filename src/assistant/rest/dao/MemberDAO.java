@@ -7,7 +7,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -81,7 +80,7 @@ public class MemberDAO {
 			            'orientador' AS type,
 			            fmemid
 			        FROM orientador
-			        
+			    
 			    UNION ALL
 			    SELECT  prepaid                 AS identifier,
 			            fname                   AS firstname, 
@@ -91,45 +90,50 @@ public class MemberDAO {
 			            'prepa'                 AS type, 
 			            fmemid
 			        FROM prepa
+			),
+			people_with_verification AS (
+			    SELECT  mb.memid,
+			            identifier,
+			            firstname,
+			            lastname,
+			            initial,
+			            sex,
+			            mb.email,
+			            pr.name                              AS program_name,
+			            COALESCE(jm.username, 'No username') AS username,
+			            COALESCE(jm.funfact,  'No fun fact') AS funfact,
+			            CASE WHEN jm.jmid IS NULL THEN FALSE ELSE TRUE END AS is_verified,
+			            type,
+			            discserid
+			        FROM all_people
+			            INNER JOIN member          AS mb ON fmemid     = memid
+			            INNER JOIN program         AS pr ON mb.fprogid = progid
+			            LEFT  JOIN joinedmember    AS jm ON jm.fmemid  = memid
+			            
+			            INNER JOIN department      AS dp ON dp.depid   = pr.fdepid 
+			            INNER JOIN serverownership AS so ON dp.depid   = so.fdepid
 			)
-			SELECT  mb.fmemid,
-			        identifier,
-			        firstname,
-			        lastname,
-			        initial,
-			        sex,
-			        mb.email,
-			        pr.name                              AS program_name,
-			        COALESCE(jm.username, 'No username') AS username,
-			        COALESCE(jm.funfact,  'No fun fact') AS funfact
-			    
-			    FROM all_people
-			        INNER JOIN member          AS mb ON fmemid     = memid
-			        INNER JOIN program         AS pr ON vr.fprogid = progid
-			        LEFT JOIN  joinedmember    AS jm ON jm.fmemid  = memid
-			        
-			        INNER JOIN department      AS dp ON dp.depid   = pr.fdepid 
-			        INNER JOIN serverownership AS so ON dp.depid   = so.fdepid
-			    
+			SELECT *
+			    FROM people_with_verification
 			    WHERE
-				    (so.discserid = ? OR ? = -1) AND 
-				    (
-				        (? = 'EVERYONE')                                 OR 
-				        (? = 'ALL_PREPA'        AND type = 'prepa')      OR
-				        (? = 'ALL_ORIENTADOR'   AND type = 'orientador') OR
-				
-				        (? = 'ALL_VERIFIED'     AND is_verified = TRUE)  OR
-				        (? = 'ALL_NON_VERIFIED' AND is_verified = FALSE) OR
-				        
-				        (? = 'VERIFIED_PREPA'      AND is_verified = TRUE AND type = 'prepa')      OR
-				        (? = 'VERIFIED_ORIENTADOR' AND is_verified = TRUE AND type = 'orientador') OR
-				
-				        (? = 'NON_VERIFIED_PREPA'      AND is_verified = FALSE AND type = 'prepa')      OR
-				        (? = 'NON_VERIFIED_ORIENTADOR' AND is_verified = FALSE AND type = 'orientador')
-					)
-				ORDER BY vr.verid
-				OFFSET ?
-				LIMIT  ?
+			        (discserid = ? OR ? = -1) AND 
+			        (
+			            (? = 'EVERYONE')                                 OR 
+			            (? = 'ALL_PREPA'        AND type = 'prepa')      OR
+			            (? = 'ALL_ORIENTADOR'   AND type = 'orientador') OR
+			
+			            (? = 'ALL_VERIFIED'     AND is_verified = TRUE)  OR
+			            (? = 'ALL_NON_VERIFIED' AND is_verified = FALSE) OR
+			            
+			            (? = 'VERIFIED_PREPA'      AND is_verified = TRUE AND type = 'prepa')      OR
+			            (? = 'VERIFIED_ORIENTADOR' AND is_verified = TRUE AND type = 'orientador') OR
+			
+			            (? = 'NON_VERIFIED_PREPA'      AND is_verified = FALSE AND type = 'prepa')      OR
+			            (? = 'NON_VERIFIED_ORIENTADOR' AND is_verified = FALSE AND type = 'orientador')
+			        )
+			ORDER BY memid
+			OFFSET ?
+			LIMIT  ?
 			""";
 		List<MemberDTO> members = new ArrayList<>();
 		
@@ -152,7 +156,7 @@ public class MemberDAO {
 			ResultSet result = stmt.executeQuery();
 			while(result.next()) {
 				MemberDTO member = new MemberDTO();
-				member.setId(result.getInt("verid"));
+				member.setId(result.getInt("memid"));
 				member.setUserId(result.getInt("identifier"));
 				
 				member.setFirstname(result.getString("firstname"));
@@ -186,9 +190,9 @@ public class MemberDAO {
 			            '-'          AS initial,
 			            '-'          AS sex,
 			            'orientador' AS type,
-			            fverid
+			            fmemid
 			        FROM orientador
-			        
+			    
 			    UNION ALL
 			    SELECT  prepaid                 AS identifier,
 			            fname                   AS firstname, 
@@ -196,27 +200,33 @@ public class MemberDAO {
 			            initial                 AS initial, 
 			            sex                     AS sex,
 			            'prepa'                 AS type, 
-			            fverid
-			        from prepa
+			            fmemid
+			        FROM prepa
+			),
+			people_with_verification AS (
+			    SELECT  mb.memid,
+			            identifier,
+			            firstname,
+			            lastname,
+			            initial,
+			            sex,
+			            mb.email,
+			            pr.name                              AS program_name,
+			            COALESCE(jm.username, 'No username') AS username,
+			            COALESCE(jm.funfact,  'No fun fact') AS funfact,
+			            CASE WHEN jm.jmid IS NULL THEN FALSE ELSE TRUE END AS is_verified,
+			            type,
+			            discserid
+			        FROM all_people
+			            INNER JOIN member          AS mb ON fmemid     = memid
+			            INNER JOIN program         AS pr ON mb.fprogid = progid
+			            LEFT  JOIN joinedmember    AS jm ON jm.fmemid  = memid
+			            
+			            INNER JOIN department      AS dp ON dp.depid   = pr.fdepid 
+			            INNER JOIN serverownership AS so ON dp.depid   = so.fdepid
 			)
-			SELECT  verid,
-			        identifier,
-			        firstname,
-			        lastname,
-			        initial,
-			        sex,
-			        email,
-			        is_verified,
-			        verified_date,
-			        program.name                         AS program_name,
-			        COALESCE(jm.username, 'No username') AS username,
-			        COALESCE(jm.funfact,  'No fun fact') AS funfact
-			    
-			    FROM all_people
-			        INNER JOIN verification       ON fverid    = verid
-			        INNER JOIN program            ON fprogid   = progid
-			        LEFT  JOIN joinedmember AS jm ON jm.fverid = verid
-			    
+			SELECT *
+			    FROM people_with_verification
 			    WHERE
 				    email = ?
 			""";
@@ -229,7 +239,7 @@ public class MemberDAO {
 			
 			ResultSet result = stmt.executeQuery();
 			while(result.next()) {
-				member.setId(result.getInt("verid"));
+				member.setId(result.getInt("memid"));
 				member.setUserId(result.getInt("identifier"));
 				
 				member.setFirstname(result.getString("firstname"));
@@ -269,7 +279,7 @@ public class MemberDAO {
 			    
                 FROM team
 			        INNER JOIN assignedteam    AS ast ON team.teamid = ast.fteamid
-			        INNER JOIN verification    AS ver ON ver.verid   = ast.fverid
+			        INNER JOIN member          AS mem ON mem.memid   = ast.fmemid
 			        INNER JOIN discordrole     AS dir ON dir.droleid = team.fdroleid
 			        INNER JOIN serverownership AS seo ON seo.seoid   = dir.fseoid
 			    
@@ -331,7 +341,7 @@ public class MemberDAO {
 			    ?, -- Last Name
 			    ?, -- Initial
 			    ?  -- Sex
-			) AS verid;
+			) AS memid;
 			""";
 		AtomicInteger idResult = new AtomicInteger(-1);
 		
@@ -340,7 +350,7 @@ public class MemberDAO {
 			
 			try {
 				PreparedStatement stmt = connection.prepareStatement(SQL);
-				// Verification insertion fields
+				// Member insertion fields
 				stmt.setString(1, member.getProgram());
 				stmt.setString(2, member.getEmail());
 				stmt.setString(3, positionRole.getEffectiveName());
@@ -354,7 +364,7 @@ public class MemberDAO {
 				
 				ResultSet result = stmt.executeQuery();
 				while(result.next())
-					idResult.set(result.getInt("verid"));
+					idResult.set(result.getInt("memid"));
 				
 				result.close();
 				stmt.close();
@@ -371,7 +381,7 @@ public class MemberDAO {
 		return idResult.get();
 	}
 	
-	public int deleteMembers(List<Integer> memberVerificationIds) {
+	public int deleteMembers(List<Integer> memberIds) {
 		final String SQL_DELETE = 
 			"""
 			SELECT delete_member(?) AS has_deleted
@@ -383,11 +393,13 @@ public class MemberDAO {
 			PreparedStatement stmt = connection.prepareStatement(SQL_DELETE);
 			
 			try {
-				for(int verid : memberVerificationIds) {
-					stmt.setInt(1, verid);
+				for(int memid : memberIds) {
+					stmt.setInt(1, memid);
 					ResultSet result = stmt.executeQuery();
-					if (result.next())
-						deletedCount.incrementAndGet();
+					if (result.next()) {
+						if(result.getBoolean("has_deleted"))
+							deletedCount.incrementAndGet();
+					}
 					result.close();
 				}
 				
@@ -403,118 +415,3 @@ public class MemberDAO {
 		return deletedCount.get();
 	}
 }
-
-//CREATE OR REPLACE FUNCTION insert_member(
-//	    p_program_name TEXT,
-//	    p_email TEXT,
-//	    p_position_role TEXT,
-//	    p_discserid BIGINT,
-//	    p_team_name TEXT,
-//	    p_role_name TEXT,
-//	    p_firstname TEXT,
-//	    p_lastname TEXT,
-//	    p_initial TEXT,
-//	    p_sex TEXT
-//	) RETURNS INT LANGUAGE plpgsql AS $$
-//	DECLARE
-//	    var_progid INT;
-//	    var_verid  INT;
-//	    var_flname TEXT;
-//	    var_mlname TEXT;
-//	BEGIN
-//	    -- Step 1: Check for the program existence
-//	    SELECT progid INTO var_progid FROM program WHERE name = p_program_name;
-//
-//	    -- Check if var_progid is NULL, meaning program's name was not found
-//	    IF var_progid IS NULL THEN
-//	        RAISE EXCEPTION 'The program that you are looking for does not exist. Aborting transaction.';
-//	    END IF;
-//
-//	    -- Step 2: Insert into verification
-//	    INSERT INTO verification (email, fprogid) VALUES (p_email, var_progid)
-//	    RETURNING verid INTO var_verid;
-//
-//	    -- Step 3: Insert into assigned team
-//	    INSERT INTO assignedteam (fverid, fteamid)
-//	        SELECT var_verid, teamid
-//	            FROM team
-//	                INNER JOIN discordrole     ON fdroleid = droleid
-//	                INNER JOIN serverownership ON fseoid   = seoid
-//	            WHERE 
-//	                team.name = p_team_name AND discserid = p_discserid;
-//
-//	    -- Step 4: Insert into assigned role the position of the member
-//	    INSERT INTO assignedrole (fverid, fdroleid)
-//	        SELECT var_verid, droleid
-//	            FROM discordrole
-//	                INNER JOIN serverownership ON fseoid = seoid
-//	            WHERE
-//	                effectivename = p_position_role AND discserid = p_discserid;
-//
-//	    -- Step 5: Insert the advancement table
-//	    INSERT INTO advancement (name, fverid) VALUES('participation', var_verid);
-//
-//	    -- Split the last name
-//	    SELECT SPLIT_PART(p_lastname, ' ', 1) INTO var_flname;
-//	    SELECT SPLIT_PART(p_lastname, ' ', 2) INTO var_mlname;
-//
-//	    -- Step 6: Check if we want to insert an orientador or prepa
-//	    IF p_role_name = 'EstudianteOrientador' OR p_role_name = 'ConsejeroProfesional' OR p_role_name = 'EstudianteGraduado' THEN
-//	        INSERT INTO orientador (fname, lname, fverid)
-//	        VALUES (p_firstname, p_lastname, var_verid);
-//	    ELSIF p_role_name = 'Prepa' THEN
-//	        INSERT INTO prepa (fname, flname, mlname, initial, sex, fverid)
-//	        VALUES (p_firstname, var_flname, var_mlname, p_initial, p_sex, var_verid);
-//	    ELSE
-//	        RAISE NOTICE 'No conditions matched.';
-//	    END IF;
-//	    RETURN var_verid;
-//
-//	EXCEPTION
-//	    WHEN OTHERS THEN
-//	        -- Rollback the transaction on any error
-//	        RAISE NOTICE 'Transaction aborted: %', SQLERRM;
-//	        RETURN NULL; -- Exit the function on error and return NULL
-//	END;
-//	$$;
-
-
-
-
-
-//CREATE OR REPLACE FUNCTION delete_member(
-//	    p_verid INT
-//	) RETURNS BOOLEAN LANGUAGE plpgsql AS $$
-//	BEGIN
-//	    -- Step 1: Check if verid exists in verification
-//	    PERFORM 1 FROM verification WHERE verid = p_verid;
-//	    IF NOT FOUND THEN
-//	        RAISE EXCEPTION 'verid % does not exist in verification', p_verid;
-//	    END IF;
-//
-//	    -- Step 2: Delete from orientador or prepa if they exist
-//	    DELETE FROM orientador WHERE fverid = p_verid;
-//	    DELETE FROM prepa WHERE fverid = p_verid;
-//
-//	    -- Step 3: Delete from advancement
-//	    DELETE FROM advancement WHERE fverid = p_verid;
-//
-//	    -- Step 4: Delete from assigned team
-//	    DELETE FROM assignedteam WHERE fverid = p_verid;
-//
-//	    -- Step 5: Delete from assigned team
-//	    DELETE FROM assignedrole WHERE fverid = p_verid;
-//
-//	    -- Step 6: Delete from verification
-//	    DELETE FROM verification WHERE verid = p_verid;
-//
-//	    -- If everything went well, return true
-//	    RETURN TRUE;
-//
-//	EXCEPTION
-//	    WHEN OTHERS THEN
-//	        -- Handle exceptions and return false
-//	        RAISE NOTICE 'Transaction aborted: %', SQLERRM;
-//	        RETURN FALSE;
-//	END;
-//	$$;

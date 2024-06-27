@@ -211,7 +211,7 @@ public class FacultyDAO {
 		return found.get() ? Optional.of(professor) : Optional.empty();
 	}
 	
-	public int insertProfessor(FacultyDTO professor, String departmentAbbreviation) {
+	public int insertProfessor(FacultyDTO professor) {
 		final String SQL_INSERT_PROJECT =
 			"""
 			insert into project(name, description, fcontid) values (?, ?, ?)
@@ -256,7 +256,7 @@ public class FacultyDAO {
 				stmt_professor.setString(3, professor.getOffice());
 				stmt_professor.setString(4, professor.getDescription());
 				stmt_professor.setString(5, professor.getContact().getEmail());
-				stmt_professor.setString(6, departmentAbbreviation);
+				stmt_professor.setString(6, professor.getDepartment());
 				
 				ResultSet result = stmt_professor.executeQuery();
 				int contid = -1;
