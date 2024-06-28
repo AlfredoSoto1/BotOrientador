@@ -7,6 +7,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 import assistant.app.core.Application;
+import assistant.rest.service.MemberService;
+import assistant.rest.service.TeamService;
 
 /**
  * @author Alfredo
@@ -39,8 +41,15 @@ public class AssistantAppEntry extends Application {
 
 	@Override
 	public void onRestStart() {
-		// TODO Auto-generated method stub
+		MemberService memberService = super.getSpringContext().getBean(MemberService.class);
+		TeamService teamService = super.getSpringContext().getBean(TeamService.class);
 		
+		var students = memberService.loadStudentsFrom("assets/attendance/Copy of Admitidos INSO-CIIC 05 15 2024.xlsx");
+		
+		var teamsTable = teamService.getPrepaListFrom(students, 6, 30, 6);
+		
+		for(var team : teamsTable.entrySet())
+			teamService.exportStudentsTo(team.getValue(), "assets/attendance/CSE-Equipos/Equipo-" + team.getKey() + ".xlsx");
 	}
 
 	@Override

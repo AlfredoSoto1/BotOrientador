@@ -53,7 +53,11 @@ public abstract class Application {
 	}
 	
 	public DatabaseConnection getDatabaseConnection() {
-		 return databaseConnection;
+		return databaseConnection;
+	}
+	
+	public ConfigurableApplicationContext getSpringContext() {
+		return context;
 	}
 	
 	private void initialize(String[] args) {
