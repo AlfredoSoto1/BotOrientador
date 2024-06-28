@@ -51,19 +51,41 @@ public class DiscordService {
 		return dregistrationDAO.getEffectiveRoleNames();
 	}
 	
+	/**
+	 * @param page
+	 * @param size
+	 * @param server
+	 * @return List of discord roles from a server
+	 */
 	public List<DiscordRoleDTO> getAllRoles(int page, int size, long server) {
 		return dregistrationDAO.getAllRoles(page * size, size, server);
 	}
 	
+	/**
+	 * @param rolePosition
+	 * @param server
+	 * @return Discord role from an effective name position in a server
+	 */
 	public Optional<DiscordRoleDTO> getEffectiveRole(MemberPosition rolePosition, long server) {
 		return dregistrationDAO.getEffectivePositionRole(rolePosition, server);
 	}
-
+	
+	/**
+	 * Registers Discord server
+	 * @param discordServer
+	 * @return id of the server registered
+	 */
 	public int registerDiscordServer(DiscordServerDTO discordServer) {
 		return dregistrationDAO.insertDiscordServer(discordServer);
 	}
 	
+	/**
+	 * Registers Discord role
+	 * @param role
+	 * @return id of the role registered
+	 */
 	public int registerRole(DiscordRoleDTO role) {
 		return dregistrationDAO.insertRole(role);
 	}
+	
 }

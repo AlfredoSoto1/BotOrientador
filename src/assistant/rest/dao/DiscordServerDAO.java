@@ -83,7 +83,7 @@ public class DiscordServerDAO {
 			while(result.next()) {
 				DiscordServerDTO discordServer = new DiscordServerDTO();
 				discordServer.setId(result.getInt("seoid"));
-				discordServer.setServerid(result.getLong("discserid"));
+				discordServer.setServerId(result.getLong("discserid"));
 				discordServer.setLogChannelId(result.getLong("log_channel"));
 				discordServer.setJoinedAt(result.getString("joined_at"));
 				discordServer.setDepartment(result.getString("abreviation"));
@@ -123,7 +123,7 @@ public class DiscordServerDAO {
 			ResultSet result = stmt.executeQuery();
 			while(result.next()) {
 				discordServer.setId(result.getInt("seoid"));
-				discordServer.setServerid(result.getLong("discserid"));
+				discordServer.setServerId(result.getLong("discserid"));
 				discordServer.setLogChannelId(result.getLong("log_channel"));
 				discordServer.setJoinedAt(result.getString("joined_at"));
 				discordServer.setDepartment(result.getString("abreviation"));
@@ -245,7 +245,7 @@ public class DiscordServerDAO {
 			connection.setAutoCommit(false);
 			PreparedStatement stmt = connection.prepareStatement(SQL);
 			stmt.setString(1, discordServer.getDepartment());
-			stmt.setLong(2, discordServer.getServerid());
+			stmt.setLong(2, discordServer.getServerId());
 			stmt.setLong(3, discordServer.getLogChannelId());
 			
 			try {

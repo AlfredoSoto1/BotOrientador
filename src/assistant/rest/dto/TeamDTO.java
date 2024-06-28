@@ -11,6 +11,7 @@ public class TeamDTO {
 	private int id;
 	private String name;
 	private String orgname;
+	private String color;
 	private DiscordRoleDTO teamRole;
 	
 	public TeamDTO() {
@@ -39,6 +40,14 @@ public class TeamDTO {
 
 	public void setOrgname(String orgname) {
 		this.orgname = orgname;
+	}
+	
+	public String getColor() {
+		return color;
+	}
+
+	public void setColor(String color) {
+		this.color = color;
 	}
 
 	public DiscordRoleDTO getTeamRole() {

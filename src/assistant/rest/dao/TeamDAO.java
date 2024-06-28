@@ -33,6 +33,7 @@ public class TeamDAO {
 			"""
 			SELECT  teamid,
 			        fdroleid,
+			        team.color       AS color,
 			        team.name        AS team_name,
 			        team.orgname     AS orgname,
 			        dr.name          AS role_name,
@@ -65,6 +66,7 @@ public class TeamDAO {
 				team.setId(result.getInt("teamid"));
 				team.setName(result.getString("team_name"));
 				team.setOrgname(result.getString("orgname"));
+				team.setColor(result.getString("color"));
 				
 				DiscordRoleDTO role = new DiscordRoleDTO();
 				role.setId(result.getInt("fdroleid"));
@@ -89,8 +91,10 @@ public class TeamDAO {
 			"""
 			SELECT  teamid,
 			        fdroleid,
+			        team.color       AS color,
 			        team.name        AS team_name,
 			        team.orgname     AS orgname,
+			        team.color       AS color,
 			        dr.name          AS role_name,
 			        dr.effectivename AS effectivename,
 			        dr.longroleid    AS longroleid,
@@ -116,6 +120,7 @@ public class TeamDAO {
 				team.setId(result.getInt("teamid"));
 				team.setName(result.getString("team_name"));
 				team.setOrgname(result.getString("orgname"));
+				team.setColor(result.getString("color"));
 				
 				DiscordRoleDTO role = new DiscordRoleDTO();
 				role.setId(result.getInt("fdroleid"));
@@ -138,8 +143,8 @@ public class TeamDAO {
 	public int insertTeam(TeamDTO team) {
 		final String SQL = 
 			"""
-			INSERT INTO team (name, orgname, fdroleid)
-			    SELECT ?, ?, droleid
+			INSERT INTO team (name, orgname, color, fdroleid)
+			    SELECT ?, ?, ?, droleid
 		            FROM discordrole
 			            INNER JOIN serverownership ON fseoid = seoid
 			        WHERE
@@ -152,8 +157,9 @@ public class TeamDAO {
 			PreparedStatement stmt = connection.prepareStatement(SQL);
 			stmt.setString(1, team.getName());
 			stmt.setString(2, team.getOrgname());
-			stmt.setString(3, team.getTeamRole().getEffectivename());
-			stmt.setLong(4, team.getTeamRole().getServerid());
+			stmt.setString(3, team.getColor());
+			stmt.setString(4, team.getTeamRole().getEffectivename());
+			stmt.setLong(5, team.getTeamRole().getServerid());
 			
 			ResultSet result = stmt.executeQuery();
 			while(result.next())

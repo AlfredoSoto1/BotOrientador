@@ -3,6 +3,8 @@
  */
 package assistant.rest.dto;
 
+import assistant.discord.object.MemberProgram;
+
 /**
  * @author Alfredo
  */
@@ -14,13 +16,13 @@ public class StudentDTO {
 	private String sex;
 	
 	private String email;
-	private String program;
+	private MemberProgram program;
 	
 	public StudentDTO() {
 
 	}
 
-	public StudentDTO(String firstname, String lastname, String initial, String sex, String email, String program) {
+	public StudentDTO(String firstname, String lastname, String initial, String sex, String email, MemberProgram program) {
 		this.firstname = firstname;
 		this.lastname = lastname;
 		this.initial = initial;
@@ -37,7 +39,7 @@ public class StudentDTO {
                 ", initial='" + initial + '\'' +
                 ", sex='" + sex + '\'' +
                 ", email='" + email + '\'' +
-                ", program='" + program + '\'' +
+                ", program='" + program.getLiteral() + '\'' +
                 '}';
     }
 
@@ -81,11 +83,11 @@ public class StudentDTO {
 		this.email = email;
 	}
 
-	public String getProgram() {
+	public MemberProgram getProgram() {
 		return program;
 	}
 
-	public void setProgram(String program) {
+	public void setProgram(MemberProgram program) {
 		this.program = program;
 	}
 

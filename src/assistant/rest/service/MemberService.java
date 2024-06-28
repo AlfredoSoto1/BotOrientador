@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DateUtil;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import assistant.discord.object.MemberPosition;
+import assistant.discord.object.MemberProgram;
 import assistant.discord.object.MemberRetrievement;
 import assistant.rest.dao.MemberDAO;
 import assistant.rest.dto.EmailDTO;
@@ -146,6 +148,47 @@ public class MemberService {
 		return memberDAO.deleteMembers(memberIDs);
 	}
 	
+	/**
+	 * Converts from students to members
+	 * @param students
+	 * @return List of members
+	 */
+	public List<MemberDTO> toMember(List<StudentDTO> students) {
+		return students.stream().map(student -> {
+            MemberDTO member = new MemberDTO();
+            member.setFirstname(student.getFirstname());
+            member.setLastname(student.getLastname());
+            member.setInitial(student.getInitial());
+            member.setSex(student.getSex());
+            member.setEmail(student.getEmail());
+            member.setProgram(student.getProgram());
+            return member;
+        }).collect(Collectors.toList());
+	}
+	
+	/**
+     * Converts from members to students
+     * @param members List of MemberDTO objects
+     * @return List of StudentDTO objects
+     */
+    public List<StudentDTO> toStudent(List<MemberDTO> members) {
+        return members.stream().map(member -> {
+            StudentDTO student = new StudentDTO();
+            student.setFirstname(member.getFirstname());
+            student.setLastname(member.getLastname());
+            student.setInitial(member.getInitial());
+            student.setSex(member.getSex());
+            student.setEmail(member.getEmail());
+            student.setProgram(member.getProgram());
+            return student;
+        }).collect(Collectors.toList());
+    }
+    
+	/**
+	 * Loads students from excel
+	 * @param pathToExcel
+	 * @return List of students
+	 */
 	public List<StudentDTO> loadStudentsFrom(String pathToExcel) {
 		List<StudentDTO> students = new ArrayList<>();
 
@@ -156,9 +199,8 @@ public class MemberService {
 			Iterator<Row> rowIterator = sheet.iterator();
 
 			// Skip header row
-			if (rowIterator.hasNext()) {
+			if (rowIterator.hasNext())
 				rowIterator.next();
-			}
 
 			while (rowIterator.hasNext()) {
 				Row row = rowIterator.next();
@@ -170,10 +212,32 @@ public class MemberService {
                 String email     = getCellValue(row.getCell(6));
                 String sex       = getCellValue(row.getCell(9));
                 String program   = getCellValue(row.getCell(10));
+                
+                if (first_lastName.isBlank())
+                	// If no first last name is found, provide empty string character
+                	first_lastName = "_";
 
-				students.add(new StudentDTO(firstname, first_lastName + " " + second_lastName, initial, sex, email, program));
+                if (second_lastName.isBlank())
+                	// If no second last name is found, provide empty string character
+                	second_lastName = "_";
+                
+                if(initial.isBlank())
+                	// If no initial is found, provide empty string character
+                	initial = "_";
+                
+                if (sex.isBlank())
+                	// If no sex is implied, provide empty string character
+                	sex = "_";
+                
+                if(email.isBlank())
+                	// Check for the personal gmail account instead
+                	// This condition only gets triggered if and only if
+                	// the student doesn't have an institutional email given by mistake
+                	email = getCellValue(row.getCell(5));
+                
+                // Add the student DTO
+				students.add(new StudentDTO(firstname, first_lastName + " " + second_lastName, initial, sex, email, MemberProgram.asProgram(program)));
 			}
-
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

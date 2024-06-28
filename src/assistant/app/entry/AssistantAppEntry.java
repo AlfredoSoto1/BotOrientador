@@ -45,15 +45,15 @@ public class AssistantAppEntry extends Application {
 
 	@Override
 	public void onRestStart() {
-		MemberService memberService = super.getSpringContext().getBean(MemberService.class);
-		TeamService teamService = super.getSpringContext().getBean(TeamService.class);
-		
-		var students = memberService.loadStudentsFrom("assets/attendance/Copy of Admitidos INSO-CIIC 05 15 2024.xlsx");
-		
-		String program1 = "0509 - BACHELOR OF SCIENCE IN SOFTWARE ENGINEERING";
-		String program2 = "0508 - BACHELOR OF SCIENCE IN COMPUTER SCIENCES AND ENGINEERING";
-		
-		var teamsTable = teamService.getPrepaListFrom(program1, program2, students, 6, 30, 5);
+//		MemberService memberService = super.getSpringContext().getBean(MemberService.class);
+//		TeamService teamService = super.getSpringContext().getBean(TeamService.class);
+//		
+//		var students = memberService.loadStudentsFrom("assets/attendance/Copy of Admitidos INSO-CIIC 05 15 2024.xlsx");
+//		
+//		String program1 = "0509 - BACHELOR OF SCIENCE IN SOFTWARE ENGINEERING";
+//		String program2 = "0508 - BACHELOR OF SCIENCE IN COMPUTER SCIENCES AND ENGINEERING";
+//		
+//		var teamsTable = teamService.getPrepaListFrom(program1, program2, students, 6, 30, 5);
 		
 //		for(var team : teamsTable.entrySet())
 //			teamService.exportStudentsTo(team.getValue(), "assets/attendance/CSE-Equipos/Equipo-" + team.getKey() + ".xlsx");

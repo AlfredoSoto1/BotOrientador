@@ -19,6 +19,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import assistant.discord.object.MemberProgram;
 import assistant.rest.dao.TeamDAO;
 import assistant.rest.dto.StudentDTO;
 import assistant.rest.dto.TeamDTO;
@@ -91,7 +92,6 @@ public class TeamService {
 		return teamDAO.deleteTeam(teamname, server);
 	}
 	
-	
 	/**
 	 * @param program1
 	 * @param program2
@@ -101,24 +101,24 @@ public class TeamService {
 	 * @param femalesPerGroup
 	 * @return Map of team numbers containing student lists perfectly distributed
 	 */
-	public Map<Integer, List<StudentDTO>> getPrepaListFrom(String program1, String program2, List<StudentDTO> students, int teamCount, int groupSize, int femalesPerGroup) {
+	public Map<Integer, List<StudentDTO>> getPrepaListFrom(MemberProgram program1, MemberProgram program2, List<StudentDTO> students, int teamCount, int groupSize, int femalesPerGroup) {
 		
 		Map<Integer, List<StudentDTO>> resultTable = new HashMap<>();
 		
         List<StudentDTO> femalesInso = students.stream()
-                .filter(s -> "F".equals(s.getSex()) && program1.equals(s.getProgram()))
+                .filter(s -> "F".equals(s.getSex()) && program1 == s.getProgram())
                 .collect(Collectors.toList());
 
         List<StudentDTO> femalesCiic = students.stream()
-                .filter(s -> "F".equals(s.getSex()) && program2.equals(s.getProgram()))
+                .filter(s -> "F".equals(s.getSex()) && program2 == s.getProgram())
                 .collect(Collectors.toList());
 
         List<StudentDTO> malesInso = students.stream()
-                .filter(s -> !"F".equals(s.getSex()) && program1.equals(s.getProgram()))
+                .filter(s -> !"F".equals(s.getSex()) && program1 == s.getProgram())
                 .collect(Collectors.toList());
 
         List<StudentDTO> malesCiic = students.stream()
-                .filter(s -> !"F".equals(s.getSex()) && program2.equals(s.getProgram()))
+                .filter(s -> !"F".equals(s.getSex()) && program2 == s.getProgram())
                 .collect(Collectors.toList());
         
         for(int i = 0;i < teamCount;i++)
@@ -204,7 +204,7 @@ public class TeamService {
 			row.createCell(3).setCellValue(student.getInitial());
 			row.createCell(4).setCellValue(student.getEmail());
 			row.createCell(5).setCellValue(student.getSex());
-			row.createCell(6).setCellValue(student.getProgram());
+			row.createCell(6).setCellValue(student.getProgram().getLiteral());
 		}
 
 		// Write the workbook to a file
@@ -227,7 +227,7 @@ public class TeamService {
 	 * @param program2
 	 * @param teamsTable
 	 */
-	public void debugLogTeamDistribution(String program1, String program2, Map<Integer, List<StudentDTO>> teamsTable) {
+	public void debugLogTeamDistribution(MemberProgram program1, MemberProgram program2, Map<Integer, List<StudentDTO>> teamsTable) {
 		// Print teams for verification
 		int total = 0;
         for (Map.Entry<Integer, List<StudentDTO>> entry : teamsTable.entrySet()) {
@@ -237,11 +237,11 @@ public class TeamService {
             long femaleCount = team.stream().filter(s -> "F".equals(s.getSex())).count();
             long maleCount = team.stream().filter(s -> !"F".equals(s.getSex())).count();
 
-            long femalesInsoCount = team.stream().filter(s -> "F".equals(s.getSex()) && program1.equals(s.getProgram())).count();
-            long femalesCiicCount = team.stream().filter(s -> "F".equals(s.getSex()) && program2.equals(s.getProgram())).count();
+            long femalesInsoCount = team.stream().filter(s -> "F".equals(s.getSex()) && program1 == s.getProgram()).count();
+            long femalesCiicCount = team.stream().filter(s -> "F".equals(s.getSex()) && program2 == s.getProgram()).count();
 
-            long malesInsoCount = team.stream().filter(s -> !"F".equals(s.getSex()) && program1.equals(s.getProgram())).count();
-            long malesCiicCount = team.stream().filter(s -> !"F".equals(s.getSex()) && program2.equals(s.getProgram())).count();
+            long malesInsoCount = team.stream().filter(s -> !"F".equals(s.getSex()) && program1 == s.getProgram()).count();
+            long malesCiicCount = team.stream().filter(s -> !"F".equals(s.getSex()) && program2 == s.getProgram()).count();
 
             System.out.println("Team " + teamNumber + ":");
             System.out.println("Total students: " + team.size());

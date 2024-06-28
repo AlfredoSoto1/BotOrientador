@@ -9,7 +9,7 @@ package assistant.rest.dto;
 public class DiscordServerDTO {
 	
 	private int id;
-	private long serverid;
+	private long serverId;
 	private long logChannelId;
 	private String joinedAt;
 	private String department;
@@ -26,12 +26,12 @@ public class DiscordServerDTO {
 		this.id = id;
 	}
 
-	public long getServerid() {
-		return serverid;
+	public long getServerId() {
+		return serverId;
 	}
 
-	public void setServerid(long serverid) {
-		this.serverid = serverid;
+	public void setServerId(long serverid) {
+		this.serverId = serverid;
 	}
 
 	public long getLogChannelId() {

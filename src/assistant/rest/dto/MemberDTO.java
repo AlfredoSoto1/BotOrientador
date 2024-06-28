@@ -3,6 +3,8 @@
  */
 package assistant.rest.dto;
 
+import assistant.discord.object.MemberProgram;
+
 /**
  * @author Alfredo
  */
@@ -21,7 +23,7 @@ public class MemberDTO {
 	private String email;
 	private String username;
 	private String funfact;
-	private String program;
+	private MemberProgram program;
 	
 	// Verification status
 	private boolean verified;
@@ -86,11 +88,11 @@ public class MemberDTO {
 		this.email = email;
 	}
 
-	public String getProgram() {
+	public MemberProgram getProgram() {
 		return program;
 	}
 
-	public void setProgram(String program) {
+	public void setProgram(MemberProgram program) {
 		this.program = program;
 	}
 

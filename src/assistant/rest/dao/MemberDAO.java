@@ -17,6 +17,7 @@ import org.springframework.stereotype.Repository;
 import assistant.app.core.Application;
 import assistant.database.DatabaseConnection.RunnableSQL;
 import assistant.discord.object.MemberPosition;
+import assistant.discord.object.MemberProgram;
 import assistant.discord.object.MemberRetrievement;
 import assistant.rest.dto.DiscordRoleDTO;
 import assistant.rest.dto.EmailDTO;
@@ -165,7 +166,7 @@ public class MemberDAO {
 				member.setSex(result.getString("sex"));
 				
 				member.setEmail(result.getString("email"));
-				member.setProgram(result.getString("program_name"));
+				member.setProgram(MemberProgram.asProgram(result.getString("program_name")));
 				member.setFunfact(result.getString("funfact"));
 				member.setUsername(result.getString("username"));
 
@@ -248,7 +249,7 @@ public class MemberDAO {
 				member.setSex(result.getString("sex"));
 				
 				member.setEmail(result.getString("email"));
-				member.setProgram(result.getString("program_name"));
+				member.setProgram(MemberProgram.asProgram(result.getString("program_name")));
 				member.setFunfact(result.getString("funfact"));
 				member.setUsername(result.getString("username"));
 
@@ -351,7 +352,7 @@ public class MemberDAO {
 			try {
 				PreparedStatement stmt = connection.prepareStatement(SQL);
 				// Member insertion fields
-				stmt.setString(1, member.getProgram());
+				stmt.setString(1, member.getProgram().getLiteral());
 				stmt.setString(2, member.getEmail());
 				stmt.setString(3, positionRole.getEffectiveName());
 				stmt.setLong(4,   server);
