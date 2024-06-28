@@ -92,40 +92,89 @@ public class TeamService {
 	}
 	
 	
-	public Map<Integer, List<StudentDTO>> getPrepaListFrom(List<StudentDTO> students, int teamCount, int groupSize, int femalesPerGroup) {
+	/**
+	 * @param program1
+	 * @param program2
+	 * @param students
+	 * @param teamCount
+	 * @param groupSize
+	 * @param femalesPerGroup
+	 * @return Map of team numbers containing student lists perfectly distributed
+	 */
+	public Map<Integer, List<StudentDTO>> getPrepaListFrom(String program1, String program2, List<StudentDTO> students, int teamCount, int groupSize, int femalesPerGroup) {
 		
 		Map<Integer, List<StudentDTO>> resultTable = new HashMap<>();
 		
-		List<StudentDTO> females = students.stream()
-                .filter(s -> "F".equals(s.getSex()))
+        List<StudentDTO> femalesInso = students.stream()
+                .filter(s -> "F".equals(s.getSex()) && program1.equals(s.getProgram()))
                 .collect(Collectors.toList());
 
-        List<StudentDTO> males = students.stream()
-                .filter(s -> !"F".equals(s.getSex()))
+        List<StudentDTO> femalesCiic = students.stream()
+                .filter(s -> "F".equals(s.getSex()) && program2.equals(s.getProgram()))
+                .collect(Collectors.toList());
+
+        List<StudentDTO> malesInso = students.stream()
+                .filter(s -> !"F".equals(s.getSex()) && program1.equals(s.getProgram()))
+                .collect(Collectors.toList());
+
+        List<StudentDTO> malesCiic = students.stream()
+                .filter(s -> !"F".equals(s.getSex()) && program2.equals(s.getProgram()))
                 .collect(Collectors.toList());
         
         for(int i = 0;i < teamCount;i++)
         	resultTable.put(i, new ArrayList<>());
         
         // Distribute females into the teams
-        int femaleIndex = 0;
-        for (int i = 0; i < teamCount && femaleIndex < females.size(); i++) {
-            for (int j = 0; j < femalesPerGroup && femaleIndex < females.size(); j++) {
-                resultTable.get(i).add(females.get(femaleIndex++));
+        // Distribute females into the teams
+        int femaleInsoIndex = 0;
+        int femaleCiicIndex = 0;
+        for (int i = 0; i < teamCount; i++) {
+            for (int j = 0; j < femalesPerGroup / 2 && femaleInsoIndex < femalesInso.size(); j++) {
+                resultTable.get(i).add(femalesInso.get(femaleInsoIndex++));
+            }
+            for (int j = 0; j < femalesPerGroup / 2 && femaleCiicIndex < femalesCiic.size(); j++) {
+                resultTable.get(i).add(femalesCiic.get(femaleCiicIndex++));
             }
         }
         
         // Distribute males into the teams
-        int maleIndex = 0;
+        int malesPerGroup = groupSize - femalesPerGroup;
+        int maleInsoIndex = 0;
+        int maleCiicIndex = 0;
         for (int i = 0; i < teamCount; i++) {
-            while (resultTable.get(i).size() < groupSize && maleIndex < males.size()) {
-                resultTable.get(i).add(males.get(maleIndex++));
+            for (int j = 0; j < malesPerGroup / 2 && maleInsoIndex < malesInso.size(); j++) {
+                resultTable.get(i).add(malesInso.get(maleInsoIndex++));
+            }
+            for (int j = 0; j < malesPerGroup / 2 && maleCiicIndex < malesCiic.size(); j++) {
+                resultTable.get(i).add(malesCiic.get(maleCiicIndex++));
+            }
+        }
+        
+        // If there are remaining females or males, distribute them to balance
+        for (int i = 0; i < teamCount; i++) {
+            while (resultTable.get(i).size() < groupSize) {
+                if (femaleInsoIndex < femalesInso.size()) {
+                    resultTable.get(i).add(femalesInso.get(femaleInsoIndex++));
+                } else if (femaleCiicIndex < femalesCiic.size()) {
+                    resultTable.get(i).add(femalesCiic.get(femaleCiicIndex++));
+                } else if (maleInsoIndex < malesInso.size()) {
+                    resultTable.get(i).add(malesInso.get(maleInsoIndex++));
+                } else if (maleCiicIndex < malesCiic.size()) {
+                    resultTable.get(i).add(malesCiic.get(maleCiicIndex++));
+                } else {
+                    break;
+                }
             }
         }
         
         return resultTable;
 	}
 	
+	/**
+	 * Exports the student list to an excel
+	 * @param students
+	 * @param pathToExcel
+	 */
 	public void exportStudentsTo(List<StudentDTO> students, String pathToExcel) {
 		Workbook workbook = new XSSFWorkbook();
 		Sheet sheet = workbook.createSheet("Students");
@@ -170,5 +219,38 @@ public class TeamService {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	/**
+	 * Prints to the console the distribution of the teams
+	 * @param program1
+	 * @param program2
+	 * @param teamsTable
+	 */
+	public void debugLogTeamDistribution(String program1, String program2, Map<Integer, List<StudentDTO>> teamsTable) {
+		// Print teams for verification
+		int total = 0;
+        for (Map.Entry<Integer, List<StudentDTO>> entry : teamsTable.entrySet()) {
+            int teamNumber = entry.getKey();
+            List<StudentDTO> team = entry.getValue();
+
+            long femaleCount = team.stream().filter(s -> "F".equals(s.getSex())).count();
+            long maleCount = team.stream().filter(s -> !"F".equals(s.getSex())).count();
+
+            long femalesInsoCount = team.stream().filter(s -> "F".equals(s.getSex()) && program1.equals(s.getProgram())).count();
+            long femalesCiicCount = team.stream().filter(s -> "F".equals(s.getSex()) && program2.equals(s.getProgram())).count();
+
+            long malesInsoCount = team.stream().filter(s -> !"F".equals(s.getSex()) && program1.equals(s.getProgram())).count();
+            long malesCiicCount = team.stream().filter(s -> !"F".equals(s.getSex()) && program2.equals(s.getProgram())).count();
+
+            System.out.println("Team " + teamNumber + ":");
+            System.out.println("Total students: " + team.size());
+            System.out.println("Females: " + femaleCount + " (INSO: " + femalesInsoCount + ", CIIC: " + femalesCiicCount + ")");
+            System.out.println("Males: " + maleCount + " (INSO: " + malesInsoCount + ", CIIC: " + malesCiicCount + ")");
+            System.out.println();
+
+            total += team.size();
+        }
+        System.out.println("Total students processed in distribution: " + total);
 	}
 }

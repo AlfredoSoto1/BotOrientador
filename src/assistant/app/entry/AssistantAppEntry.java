@@ -3,10 +3,14 @@
  */
 package assistant.app.entry;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 import assistant.app.core.Application;
+import assistant.rest.dto.StudentDTO;
 import assistant.rest.service.MemberService;
 import assistant.rest.service.TeamService;
 
@@ -46,10 +50,13 @@ public class AssistantAppEntry extends Application {
 		
 		var students = memberService.loadStudentsFrom("assets/attendance/Copy of Admitidos INSO-CIIC 05 15 2024.xlsx");
 		
-		var teamsTable = teamService.getPrepaListFrom(students, 6, 30, 6);
+		String program1 = "0509 - BACHELOR OF SCIENCE IN SOFTWARE ENGINEERING";
+		String program2 = "0508 - BACHELOR OF SCIENCE IN COMPUTER SCIENCES AND ENGINEERING";
 		
-		for(var team : teamsTable.entrySet())
-			teamService.exportStudentsTo(team.getValue(), "assets/attendance/CSE-Equipos/Equipo-" + team.getKey() + ".xlsx");
+		var teamsTable = teamService.getPrepaListFrom(program1, program2, students, 6, 30, 5);
+		
+//		for(var team : teamsTable.entrySet())
+//			teamService.exportStudentsTo(team.getValue(), "assets/attendance/CSE-Equipos/Equipo-" + team.getKey() + ".xlsx");
 	}
 
 	@Override

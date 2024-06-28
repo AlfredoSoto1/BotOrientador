@@ -28,6 +28,18 @@ public class StudentDTO {
 		this.email = email;
 		this.program = program;
 	}
+	
+    @Override
+    public String toString() {
+        return "StudentDTO{" +
+                "firstname='" + firstname + '\'' +
+                ", lastname='" + lastname + '\'' +
+                ", initial='" + initial + '\'' +
+                ", sex='" + sex + '\'' +
+                ", email='" + email + '\'' +
+                ", program='" + program + '\'' +
+                '}';
+    }
 
 	public String getFirstname() {
 		return firstname;
