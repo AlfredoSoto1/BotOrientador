@@ -20,6 +20,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import assistant.discord.core.AsyncTaskQueue;
 import assistant.discord.object.MemberPosition;
 import assistant.discord.object.MemberProgram;
 import assistant.discord.object.MemberRetrievement;
@@ -36,6 +37,7 @@ import assistant.rest.dto.TeamDTO;
 public class MemberService {
 	
 	private final MemberDAO memberDAO;
+	private AsyncTaskQueue verificationQueue;
 	
 	@Autowired
 	public MemberService(MemberDAO memberDAO) {
@@ -43,13 +45,40 @@ public class MemberService {
 	}
 	
 	/**
+	 * 
+	 */
+	public void shutdownVerificationQueueService() {
+		verificationQueue.shutdown();
+	}
+	
+	public boolean verifyMember(MemberDTO member, long server, Runnable method) {
+//		// Do this asynchronously
+//		verificationQueue.addTask(() -> {
+//			try {
+//				// Try assigning the roles and appropriate nickname
+//				// to the member. Catch any exceptions that might happen during run-time.
+//				assignRoleAndChangeNickname(event.getHook(), event.getGuild(), event.getMember(), report.get());
+//			} catch (InterruptedException ie) {
+//				ie.printStackTrace();
+//			} catch (InsufficientPermissionException ipe) {
+//				super.feedbackDev("Insufficient permissions to assign role or change nickname: " + ipe.getMessage());
+//			}
+//			
+//			// Confirm and commit verification
+//			verificationDAO.confirmVerification(event.getGuild(), email, funfacts);
+//			
+//			// TODO Send welcome message through DMs
+//		});
+		
+		return false;
+	}
+	
+	/**
 	 * @param member
 	 * @return true if verification succeeded
 	 */
-	public boolean verifyMember(MemberDTO member) {
-		// If greater than zero, then it got
-		// verified and inserted successfully
-		return memberDAO.insertAndVerifyMember(member) > 0;
+	public boolean verifyMember(MemberDTO member, long server) {
+		return memberDAO.insertAndVerifyMember(member, server);
 	}
 	
 	/**
@@ -131,11 +160,8 @@ public class MemberService {
 	 * @param teamname
 	 * @return List of all the member IDs that got added
 	 */
-	public List<Integer> addMembers(List<MemberDTO> members, MemberPosition rolePosition, long server, String teamname) {
-		List<Integer> results = new ArrayList<>();
-		for(MemberDTO member : members)
-			results.add(memberDAO.insertMember(member, rolePosition, server, teamname));
-		return results;
+	public boolean addMembers(List<MemberDTO> members, MemberPosition rolePosition, long server, String teamname) {
+		return memberDAO.insertMemberGroup(members, rolePosition, server, teamname);
 	}
 	
 	/**

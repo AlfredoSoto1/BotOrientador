@@ -40,13 +40,24 @@ public class DatabaseConnection {
 	}
 	
 	/**
-	 * @return true if connection still active
-	 * @throws SQLException
+	 * @return Database direct connection
 	 */
-	public boolean isConnected() throws SQLException {
+	public Connection getConnection() {
+		return connection;
+	}
+	
+	/**
+	 * @return true if connection still active
+	 */
+	public boolean isConnected() {
 		if(connection == null)
 			return false;
-		return !connection.isClosed();
+		try {
+			return !connection.isClosed();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 	
 	/**
@@ -59,11 +70,9 @@ public class DatabaseConnection {
 		try {
 			// Connect to database
 			this.connect();
-			
 			// Join the connection and 
 			// do all cool stuff with database
 			queries.run(connection);
-			
 		} catch (SQLException e) {
 			// Print errors
 			e.printStackTrace();
@@ -87,7 +96,11 @@ public class DatabaseConnection {
 		}
 	}
 	
-	private void connect() throws SQLException {
+	/**
+	 * Connects directly to the database.
+	 * Must disconnect manually if used.
+	 */
+	public void connect() {
 		if(configuration == null)
 			throw new IllegalArgumentException("You must enter credentials in order to establish a connection!");
 		
@@ -105,10 +118,14 @@ public class DatabaseConnection {
 		}
 		
 		// Establish a new connection with driver from credentials
-		this.connection = DriverManager.getConnection(
-			configuration.getUrl(),      
-			configuration.getUsername(), 
-			configuration.getPassword()  
-		);
+		try {
+			this.connection = DriverManager.getConnection(
+				configuration.getUrl(),      
+				configuration.getUsername(), 
+				configuration.getPassword()  
+			);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 }

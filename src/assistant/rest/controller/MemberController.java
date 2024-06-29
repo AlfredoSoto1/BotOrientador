@@ -116,9 +116,8 @@ public class MemberController {
 		if (TokenHolder.authenticateREST(token, tokenHolders))
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
 		
-		int result = service.addMembers(members, position, server, teamname).size();
-		if(result > 0)
-			return ResponseEntity.status(HttpStatus.CREATED).body(result);
+		if(service.addMembers(members, position, server, teamname))
+			return ResponseEntity.status(HttpStatus.CREATED).body("Added all members");
 		
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to insert");
 	}	
@@ -138,4 +137,19 @@ public class MemberController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to delete");
 		}
     }
+    
+	@PostMapping("/verify")
+	public ResponseEntity<?> verifyMember(
+			@RequestBody(required = true)   MemberDTO member,
+			@RequestParam(required = true)  Long server,
+			@RequestHeader("Authorization") String token) {
+		
+		if (TokenHolder.authenticateREST(token, tokenHolders))
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
+		
+		if(service.verifyMember(member, server))
+			return ResponseEntity.status(HttpStatus.ACCEPTED).body("VERIFICATION SUCCESS");
+		
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to insert");
+	}
 }
