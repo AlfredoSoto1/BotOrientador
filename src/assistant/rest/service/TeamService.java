@@ -101,7 +101,7 @@ public class TeamService {
 	 * @param femalesPerGroup
 	 * @return Map of team numbers containing student lists perfectly distributed
 	 */
-	public Map<Integer, List<StudentDTO>> getPrepaListFrom(MemberProgram program1, MemberProgram program2, List<StudentDTO> students, int teamCount, int groupSize, int femalesPerGroup) {
+	public Map<Integer, List<StudentDTO>> getPrepaTeamDivisionFrom(MemberProgram program1, MemberProgram program2, List<StudentDTO> students, int teamCount, int groupSize, int femalesPerGroup) {
 		
 		Map<Integer, List<StudentDTO>> resultTable = new HashMap<>();
 		
@@ -181,30 +181,22 @@ public class TeamService {
 
 		// Create header row
 		Row headerRow = sheet.createRow(0);
-		headerRow.createCell(0).setCellValue("First Last Name");
-		headerRow.createCell(1).setCellValue("Second Last Name");
-		headerRow.createCell(2).setCellValue("First Name");
-		headerRow.createCell(3).setCellValue("Initial");
-		headerRow.createCell(4).setCellValue("Email");
-		headerRow.createCell(5).setCellValue("Sex");
-		headerRow.createCell(6).setCellValue("Program");
+		headerRow.createCell(0).setCellValue("First Name");
+		headerRow.createCell(1).setCellValue("Last Name");
+		headerRow.createCell(2).setCellValue("Initial");
+		headerRow.createCell(3).setCellValue("Email");
+		headerRow.createCell(4).setCellValue("Program");
 
 		// Populate sheet with student data
 		int rowNum = 1;
 		for (StudentDTO student : students) {
 			Row row = sheet.createRow(rowNum++);
 
-			String[] lastNameParts = student.getLastname().split(" ");
-			String firstLastName = lastNameParts.length > 0 ? lastNameParts[0] : "";
-			String secondLastName = lastNameParts.length > 1 ? lastNameParts[1] : "";
-
-			row.createCell(0).setCellValue(firstLastName); // First Last Name
-			row.createCell(1).setCellValue(secondLastName); // Second Last Name
-			row.createCell(2).setCellValue(student.getFirstname());
-			row.createCell(3).setCellValue(student.getInitial());
-			row.createCell(4).setCellValue(student.getEmail());
-			row.createCell(5).setCellValue(student.getSex());
-			row.createCell(6).setCellValue(student.getProgram().getLiteral());
+			row.createCell(0).setCellValue(student.getFirstname());
+			row.createCell(1).setCellValue(student.getLastname());
+			row.createCell(2).setCellValue(student.getInitial());
+			row.createCell(3).setCellValue(student.getEmail());
+			row.createCell(4).setCellValue(student.getProgram().getLiteral());
 		}
 
 		// Write the workbook to a file

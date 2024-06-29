@@ -6,6 +6,7 @@ package assistant.database;
 /**
  * @author Alfredo
  */
+@Deprecated
 public enum DatabaseEntity {
 	// Member entities
 	PREPA,

@@ -3,16 +3,12 @@
  */
 package assistant.app.entry;
 
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 import assistant.app.core.Application;
-import assistant.rest.dto.StudentDTO;
-import assistant.rest.service.MemberService;
-import assistant.rest.service.TeamService;
+import assistant.discord.object.MemberProgram;
+import assistant.rest.service.TeamGroupCreatorService;
 
 /**
  * @author Alfredo
@@ -45,18 +41,15 @@ public class AssistantAppEntry extends Application {
 
 	@Override
 	public void onRestStart() {
-//		MemberService memberService = super.getSpringContext().getBean(MemberService.class);
-//		TeamService teamService = super.getSpringContext().getBean(TeamService.class);
-//		
-//		var students = memberService.loadStudentsFrom("assets/attendance/Copy of Admitidos INSO-CIIC 05 15 2024.xlsx");
-//		
-//		String program1 = "0509 - BACHELOR OF SCIENCE IN SOFTWARE ENGINEERING";
-//		String program2 = "0508 - BACHELOR OF SCIENCE IN COMPUTER SCIENCES AND ENGINEERING";
-//		
-//		var teamsTable = teamService.getPrepaListFrom(program1, program2, students, 6, 30, 5);
+		// Obtain the service
+		TeamGroupCreatorService tmCreatorService = super.getSpringContext().getBean(TeamGroupCreatorService.class);
 		
-//		for(var team : teamsTable.entrySet())
-//			teamService.exportStudentsTo(team.getValue(), "assets/attendance/CSE-Equipos/Equipo-" + team.getKey() + ".xlsx");
+		tmCreatorService.distributeAndExportStudentsToTeams(
+			MemberProgram.INSO,
+			MemberProgram.CIIC,
+			1251583768863445142L,
+			"assets/attendance/Copy of Admitidos INSO-CIIC 05 15 2024.xlsx"
+		);
 	}
 
 	@Override
