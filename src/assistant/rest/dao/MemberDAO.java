@@ -320,10 +320,50 @@ public class MemberDAO {
 	}
 	
 	public int insertAndVerifyMember(MemberDTO member) {
-		final String SQL =
+		final String SQL_INSERT_JOINED_MEMBER =
 			"""
-			
+			INSERT INTO joinedmember(funfact, username, fmemid, fseoid)
+			    SELECT ?, ?, ?, seoid
+			        FROM serverownership
+			        WHERE 
+			            discserid = ?
+			RETURNING jmid
 			""";
+		final String SQL_INSERT_ADVANCEMENT =
+			"""
+			INSERT INTO advancement(name, fjmid)
+			    VALUES('attendance', ?)
+			""";
+		final String SQL_SELECT_MEMBER =
+			"""
+			SELECT memid FROM member WHERE email = ?
+			""";
+		
+		RunnableSQL rq = connection -> {
+			connection.setAutoCommit(false);
+			
+			PreparedStatement stmt_select_member = connection.prepareStatement(SQL_SELECT_MEMBER);
+			stmt_select_member.setString(1, member.getEmail());
+			
+			int memid = -1;
+			ResultSet result = stmt_select_member.executeQuery();
+			while(result.next())
+				memid = result.getInt("memid");
+			result.close();
+			stmt_select_member.close();
+			if(memid == -1)
+				return;
+			
+			PreparedStatement stmt_insert_joinedmember = connection.prepareStatement(SQL_INSERT_JOINED_MEMBER);
+			PreparedStatement stmt_insert_advancement  = connection.prepareStatement(SQL_INSERT_ADVANCEMENT);
+			stmt_insert_joinedmember.setString(1, member.getFunfact());
+			stmt_insert_joinedmember.setString(2, member.getUsername());
+			stmt_insert_joinedmember.setInt(3, memid);
+			connection.commit();
+			connection.setAutoCommit(true);
+		};
+		
+		Application.instance().getDatabaseConnection().establishConnection(rq);
 		
 		return 0;
 	}

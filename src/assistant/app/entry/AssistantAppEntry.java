@@ -15,9 +15,6 @@ import assistant.rest.service.TeamGroupCreatorService;
  * 
  * TODO: 
  * 
- * - Create WebApplication that can gather the necessary 
- *   data to insert into the database.
- *   
  * - finish the other commands that require data from db
  * 
  * - Complete the role selection display
@@ -41,16 +38,16 @@ public class AssistantAppEntry extends Application {
 
 	@Override
 	public void onRestStart() {
-		// Obtain the service
-		TeamGroupCreatorService tmCreatorService = super.getSpringContext().getBean(TeamGroupCreatorService.class);
-		
-		// Load the students to database and generate lists
-		tmCreatorService.distributeAndExportStudentsToTeams(
-			MemberProgram.INSO,
-			MemberProgram.CIIC,
-			1251583768863445142L,
-			"assets/attendance/Copy of Admitidos INSO-CIIC 05 15 2024.xlsx"
-		);
+//		// Obtain the service
+//		TeamGroupCreatorService tmCreatorService = super.getSpringContext().getBean(TeamGroupCreatorService.class);
+//		
+//		// Load the students to database and generate lists
+//		tmCreatorService.distributeAndExportStudentsToTeams(
+//			MemberProgram.INSO,
+//			MemberProgram.CIIC,
+//			1251583768863445142L,
+//			"assets/attendance/Copy of Admitidos INSO-CIIC 05 15 2024.xlsx"
+//		);
 	}
 
 	@Override
