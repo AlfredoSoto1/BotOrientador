@@ -44,6 +44,7 @@ public class AssistantAppEntry extends Application {
 		// Obtain the service
 		TeamGroupCreatorService tmCreatorService = super.getSpringContext().getBean(TeamGroupCreatorService.class);
 		
+		// Load the students to database and generate lists
 		tmCreatorService.distributeAndExportStudentsToTeams(
 			MemberProgram.INSO,
 			MemberProgram.CIIC,

@@ -6,6 +6,7 @@ package assistant.rest.service;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -176,6 +177,11 @@ public class TeamService {
 	 * @param pathToExcel
 	 */
 	public void exportStudentsTo(List<StudentDTO> students, String pathToExcel) {
+		
+		// Sort the students so that they appear by name
+		students.sort(Comparator.comparing(StudentDTO::getFirstname)
+                .thenComparing(StudentDTO::getLastname));
+		
 		Workbook workbook = new XSSFWorkbook();
 		Sheet sheet = workbook.createSheet("Students");
 
