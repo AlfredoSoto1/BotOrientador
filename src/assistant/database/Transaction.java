@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.MissingFormatArgumentException;
 import java.util.Optional;
 import java.util.Queue;
+import java.util.Stack;
+import java.util.function.Predicate;
 
 import assistant.app.core.Application;
 
@@ -23,19 +25,26 @@ public class Transaction implements AutoCloseable {
 	private DatabaseConnection connection;
 	
 	private List<TransactionError> errors;
-	private List<SubTransactionResult> results;
+	private Stack<SubTransactionResult> results;
 	
 	private Queue<PreparedStatement> statements;
 	private Queue<TransactionStatement> sqlTransactions;
 	
 	public Transaction() {
 		this.errors = new ArrayList<>();
-		this.results = new ArrayList<>();
+		this.results = new Stack<>();
 		this.statements = new LinkedList<>();
 		this.sqlTransactions = new LinkedList<>();
 		this.connection = Application.instance().getDatabaseConnection();
 		
 		this.connection.connect();
+	}
+	
+	/**
+	 * @return Last result from query
+	 */
+	public SubTransactionResult getLatestResult() {
+		return results.peek();
 	}
 	
 	/**
@@ -106,16 +115,53 @@ public class Transaction implements AutoCloseable {
 		TransactionStatement statement = sqlTransactions.poll();
 		
 		// Check for previous query results to fill parameters with
-		Optional<List<Object[]>> previousResults = getIfAnyLastRowResults(statement);
-		
+		Optional<SubTransactionResult> previousResults = getIfAnyLastRowResults(statement);
+
 		if (previousResults.isPresent()) {
-			for (var row : previousResults.get())
-				processExecution(type, pstmt, buildParameters(statement.parameters(), row));
+			for (int row = 0;row < previousResults.get().getRows().size();row++)
+				processExecution(type, pstmt, buildParameters(statement.parameters(), previousResults.get(), row));
 		} else {
 			processExecution(type, pstmt, statement.parameters());
 		}
 		
 		try {
+			pstmt.close();
+		} catch (SQLException e) {
+			errors.add(new TransactionError(e.getMessage()));
+		}
+		return this;
+	}
+	
+	/**
+	 * Execute SQL query from statement queue
+	 * @return Transaction
+	 */
+	public Transaction executeThen(TransactionStatementType type, Predicate<SubTransactionResult> processResult) {
+		// If there are errors, stop transaction here
+		if (!errors.isEmpty())
+			return this;
+		
+		// Obtain the statements required to execute the query
+		PreparedStatement pstmt = statements.poll();
+		TransactionStatement statement = sqlTransactions.poll();
+		
+		// Check for previous query results to fill parameters with
+		Optional<SubTransactionResult> previousResults = getIfAnyLastRowResults(statement);
+		
+		if (previousResults.isPresent()) {
+			for (int row = 0;row < previousResults.get().getRows().size();row++)
+				processExecution(type, pstmt, buildParameters(statement.parameters(), previousResults.get(), row));
+		} else {
+			processExecution(type, pstmt, statement.parameters());
+		}
+		
+		try {
+			if((type == TransactionStatementType.SELECT_QUERY ||
+					type == TransactionStatementType.MIXED_QUERY)  && !results.isEmpty()) {
+				if (!processResult.test(results.peek()))
+					throw new SQLException("Failed result filter test at: " + results.peek());
+			}
+
 			pstmt.close();
 		} catch (SQLException e) {
 			errors.add(new TransactionError(e.getMessage()));
@@ -171,8 +217,9 @@ public class Transaction implements AutoCloseable {
 		}
 	}
 	
-	private Optional<List<Object[]>> getIfAnyLastRowResults(TransactionStatement statement) {
-		List<Object[]> previousRowResults = null;
+	private Optional<SubTransactionResult> getIfAnyLastRowResults(TransactionStatement statement) {
+		SubTransactionResult previousResults = null;
+		Stack<SubTransactionResult> onHandSwapTransactions = new Stack<>();
 		
 		// Check all parameters, if one of them contains a result reference
 		// process it differently.
@@ -180,24 +227,44 @@ public class Transaction implements AutoCloseable {
 			if (!(obj instanceof SubTransactionResult.ResultReference reference))
 				continue;
 			
-			// Get the last result of the transaction and check if the
-			// current result reference contains a column from previous result
-			SubTransactionResult previousResult = results.getLast();
-			if (previousResult.contains(reference.getColumnName()))
-				previousRowResults = previousResult.getRows();
-			else
+			while (!results.empty()) {
+				// Get the last result of the transaction and check if the
+				// current result reference contains a column from previous result
+				SubTransactionResult latestResult = results.peek();
+				if (latestResult.contains(reference.getColumnName())) {
+					previousResults = latestResult;
+					// Stop looking since we found the latest column
+					break;
+				} else {
+					// Save the latest result in hand to later
+					// swap it back to the results stack
+					onHandSwapTransactions.add(results.pop());
+				}
+			}
+			
+			// Throw an exception if couldn't find the 
+			// column with its latest results
+			if (previousResults == null)
 				throw new MissingFormatArgumentException(
 						"Column is not present in previous transaction result: " + reference.getColumnName());
+			
+			// End iteration over result reference. This will only
+			// handle one and only one latest transaction column. (At the moment)
+			break;
 		}
-		return Optional.ofNullable(previousRowResults);
+		
+		// Swap all the transactions back to the original stack
+		while (!onHandSwapTransactions.empty())
+			results.add(onHandSwapTransactions.pop());
+		
+		return Optional.ofNullable(previousResults);
 	}
 	
-    private List<Object> buildParameters(List<?> parameters, Object[] row) {
+    private List<Object> buildParameters(List<?> parameters, SubTransactionResult latestResult, int row) {
         List<Object> params = new ArrayList<>();
         for (Object obj : parameters) {
             if (obj instanceof SubTransactionResult.ResultReference reference) {
-                SubTransactionResult previousResult = results.getLast();
-                params.add(row[previousResult.columnIndexOf(reference.getColumnName())]);
+            	params.add(latestResult.getResult(reference.getColumnName(), row));
             } else {
                 params.add(obj);
             }
@@ -207,6 +274,7 @@ public class Transaction implements AutoCloseable {
 	
 	private void processExecution(TransactionStatementType type, PreparedStatement pstmt, List<?> parameters) {
 		try {
+			// Set all the parameters before running the query
 			int position = 1;
 			for (Object parameter : parameters)
 				setParameter(pstmt, position++, parameter);
@@ -217,9 +285,8 @@ public class Transaction implements AutoCloseable {
 	            SubTransactionResult rowResult = new SubTransactionResult(result);
 
 	            // Save all results from query into table
-	            while (result.next()) {
+	            while (result.next())
 	                rowResult.addRow(result);
-	            }
 
 	            results.add(rowResult);
 	            result.close();
