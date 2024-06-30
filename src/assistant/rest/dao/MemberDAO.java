@@ -5,16 +5,15 @@ package assistant.rest.dao;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.stereotype.Repository;
 
 import assistant.app.core.Application;
+import assistant.database.BatchTransaction;
 import assistant.database.DatabaseConnection.RunnableSQL;
 import assistant.database.SubTransactionResult.ResultReference;
 import assistant.database.Transaction;
@@ -375,84 +374,105 @@ public class MemberDAO {
 		@SuppressWarnings("resource")
 		Transaction transaction = new Transaction();
 		
+		String firstLastName  = member.getLastname().split(" ")[0];
+		String secondLastName = member.getLastname().split(" ")[1];
+		
 		// Add all transaction parameter fields
 		transaction.submitSQL(
-				"""
-				SELECT progid FROM program WHERE name = ?;
-				""", 
-				List.of(member.getProgram().getLiteral()))
-			.submitSQL(
-				"""
-				INSERT INTO member (email, fprogid) VALUES (?, ?)
-				RETURNING memid;
-				""",
-				List.of(member.getEmail(), ResultReference.of("progid")))
-			.submitSQL(
-				"""
+			"""
+			WITH chosen_server AS (
+			    SELECT seoid FROM serverownership
+			        WHERE discserid = ?
+			    LIMIT 1
+			), 
+			chosen_program AS (
+			    SELECT progid FROM program 
+			        WHERE name = ?
+			    LIMIT 1
+			), 
+			new_member AS (
+			    INSERT INTO member (email, fprogid) 
+			        SELECT ?, progid FROM chosen_program
+			    RETURNING memid
+			), 
+			assigned_team AS (
 			    INSERT INTO assignedteam (fmemid, fteamid)
-			        SELECT ?, teamid
+			        SELECT (SELECT memid FROM new_member), teamid
 			            FROM team
 			                INNER JOIN discordrole     ON fdroleid = droleid
 			                INNER JOIN serverownership ON fseoid   = seoid
 			            WHERE 
-			                team.name = ? AND discserid = ?
-			    RETURNING atid;
-				""",
-				List.of(ResultReference.of("memid"), teamname, server))
-			.submitSQL(
-				"""
+			                team.name = ? AND fseoid = (SELECT seoid FROM chosen_server)
+			    RETURNING atid
+			), 
+			assigned_position_role AS (
 			    INSERT INTO assignedrole (fmemid, fdroleid)
-			        SELECT ?, droleid
+			        SELECT (SELECT memid FROM new_member), droleid
 			            FROM discordrole
 			                INNER JOIN serverownership ON fseoid = seoid
 			            WHERE
-			                effectivename = ? AND discserid = ?
-			    RETURNING arid;
-				""",
-				List.of(ResultReference.of("memid"), positionRole.getEffectiveName(), server))
-			.submitSQL(
-				"""
+			                effectivename = ? AND fseoid = (SELECT seoid FROM chosen_server)
+			    RETURNING arid
+			), 
+			assigned_program_role AS (
 			    INSERT INTO assignedrole (fmemid, fdroleid)
-			        SELECT ?, droleid
+			        SELECT (SELECT memid FROM new_member), droleid
 			            FROM discordrole
 			                INNER JOIN serverownership ON fseoid = seoid
 			            WHERE
-			                UPPER(effectivename) = UPPER(?) AND discserid = ?
-			    RETURNING arid;
-				""",
-				List.of(ResultReference.of("memid"), member.getProgram().getLiteral(), server));
-		
-		if(positionRole == MemberPosition.ESTUDIANTE_GRADUADO   ||
-		   positionRole == MemberPosition.CONSEJERO_PROFESIONAL ||
-		   positionRole == MemberPosition.ESTUDIANTE_ORIENTADOR) {
-			transaction.submitSQL(
-				"""
-				INSERT INTO orientador (fname, lname, fmemid)
-					VALUES (?, ?, ?)
-				RETURNING fmemid
-				""",
-				List.of(member.getFirstname(), member.getLastname(), ResultReference.of("memid")));
-		} else if (positionRole == MemberPosition.PREPA) {
-			String firstLastName  = member.getLastname().split(" ")[0];
-			String secondLastName = member.getLastname().split(" ")[1];
-			
-			transaction.submitSQL(
-				"""
-		        INSERT INTO prepa (fname, flname, mlname, initial, sex, fmemid)
-					VALUES (?, ?, ?, ?, ?, ?)
-				RETURNING fmemid
-				""",
-				List.of(member.getFirstname(), firstLastName, secondLastName, member.getInitial(), member.getSex(), ResultReference.of("memid")));
-		}
-		
+			                UPPER(effectivename) = UPPER(?) AND fseoid = (SELECT seoid FROM chosen_server)
+			    RETURNING arid
+			), 
+			insert_orientador AS (
+			    INSERT INTO orientador (fname, lname, fmemid)
+			        SELECT ?, ?, (SELECT memid FROM new_member)
+			            WHERE ? IN ('EstudianteGraduado', 'ConsejeroProfesional', 'EstudianteOrientador')
+			    RETURNING fmemid
+			), 
+			insert_prepa AS (
+			    INSERT INTO prepa (fname, flname, mlname, initial, sex, fmemid)
+			        SELECT ?, ?, ?, ?, ?, (SELECT memid FROM new_member)
+			            WHERE ? = 'Prepa'
+			    RETURNING fmemid
+			)
+			SELECT 
+			    (SELECT memid FROM new_member)   AS memid,
+			    (SELECT atid FROM assigned_team) AS atid,
+			    (SELECT arid FROM assigned_position_role) AS pos_arid,
+			    (SELECT arid FROM assigned_program_role)  AS pro_arid,
+			    COALESCE((SELECT fmemid FROM insert_orientador), 0) AS orientador_memid,
+			    COALESCE((SELECT fmemid FROM insert_prepa), 0)      AS prepa_memid;
+			""",
+			List.of(
+					server,
+					member.getProgram().getLiteral(),
+					member.getEmail(),
+					teamname,
+					positionRole.getEffectiveName(),
+					member.getProgram().getLiteral(),
+					
+					member.getFirstname(),
+					member.getLastname(),
+					positionRole.getEffectiveName(),
+					
+					member.getFirstname(), 
+					firstLastName, 
+					secondLastName, 
+					member.getInitial(), 
+					member.getSex(),
+					positionRole.getEffectiveName()));
+
 		// Prepare transaction and execute by parts
 		transaction.prepare()
-			.executeThen(TransactionStatementType.SELECT_QUERY, result -> result.getResult("progid", 0) != null)
-			.executeThen(TransactionStatementType.MIXED_QUERY,  result -> result.getResult("memid",  0) != null)
-			.executeThen(TransactionStatementType.MIXED_QUERY,  result -> result.getResult("atid",   0) != null)
-			.executeThen(TransactionStatementType.MIXED_QUERY,  result -> result.getResult("arid",   0) != null)
-			.executeThen(TransactionStatementType.MIXED_QUERY,  result -> result.getResult("arid",   0) != null)
-			.executeThen(TransactionStatementType.MIXED_QUERY,  result -> result.getResult("fmemid", 0) != null)
+			.executeThen(TransactionStatementType.MIXED_QUERY,
+				result -> {
+					return ((int)result.getResult("memid", 0) != 0) &&
+						   ((int)result.getResult("atid",  0) != 0) &&
+						   ((int)result.getResult("pos_arid", 0) != 0) &&
+						   ((int)result.getResult("pro_arid", 0) != 0) &&
+						   ((int)result.getResult("prepa_memid",      0) != 0 || positionRole != MemberPosition.PREPA) &&
+						   ((int)result.getResult("orientador_memid", 0) != 0 || positionRole == MemberPosition.PREPA);
+				})
 			.commit();
 		
 		// Close transaction
@@ -465,147 +485,178 @@ public class MemberDAO {
 		}
 		
 		if(transaction.isCompleted())
-			return (int)transaction.getLatestResult().getResult("fmemid", 0);
+			return (int)transaction.getLatestResult().getResult("memid", 0);
 		else
 			return -1;
 	}
-//	public int insertMember(MemberDTO member, MemberPosition positionRole, long server, String teamname) {
-//		final String SQL =
-//			"""
-//			SELECT insert_member(
-//				?, -- Program name
-//			    ?, -- Email
-//			    ?, -- Position role
-//			    ?, -- Server id
-//			    ?, -- Team name
-//			    ?, -- Role effective name
-//			    ?, -- First name
-//			    ?, -- Last Name
-//			    ?, -- Initial
-//			    ?  -- Sex
-//			) AS memid;
-//			""";
-//		AtomicInteger idResult = new AtomicInteger(-1);
-//		
-//		RunnableSQL rq = connection -> {
-//			connection.setAutoCommit(false);
-//			
-//			try {
-//				PreparedStatement stmt = connection.prepareStatement(SQL);
-//				// Member insertion fields
-//				stmt.setString(1, member.getProgram().getLiteral());
-//				stmt.setString(2, member.getEmail());
-//				stmt.setString(3, positionRole.getEffectiveName());
-//				stmt.setLong(4,   server);
-//				stmt.setString(5, teamname);
-//				stmt.setString(6, positionRole.getEffectiveName());
-//				stmt.setString(7, member.getFirstname());
-//				stmt.setString(8, member.getLastname());
-//				stmt.setString(9, member.getInitial());
-//				stmt.setString(10, member.getSex());
-//				
-//				ResultSet result = stmt.executeQuery();
-//				while(result.next())
-//					idResult.set(result.getInt("memid"));
-//				
-//				result.close();
-//				stmt.close();
-//				connection.commit();
-//			} catch(SQLException sqle) {
-//				sqle.printStackTrace();
-//				connection.rollback();
-//			} finally {
-//				connection.setAutoCommit(true);
-//			}
-//		};
-//		
-//		Application.instance().getDatabaseConnection().establishConnection(rq);
-//		return idResult.get();
-//	}
 	
 	public boolean insertMemberGroup(List<MemberDTO> members, MemberPosition positionRole, long server, String teamname) {
-		final String SQL =
-			"""
-			SELECT insert_member(
-				?, -- Program name
-			    ?, -- Email
-			    ?, -- Position role
-			    ?, -- Server id
-			    ?, -- Team name
-			    ?, -- Role effective name
-			    ?, -- First name
-			    ?, -- Last Name
-			    ?, -- Initial
-			    ?  -- Sex
-			) AS memid;
-			""";
-		AtomicBoolean success = new AtomicBoolean(false);
+		@SuppressWarnings("resource")
+		BatchTransaction transaction = new BatchTransaction();
 		
-		RunnableSQL rq = connection -> {
-			connection.setAutoCommit(false);
-			PreparedStatement stmt = connection.prepareStatement(SQL);
-			try {
-				for(MemberDTO member : members) {
-					// Member insertion fields
-					stmt.setString(1, member.getProgram().getLiteral());
-					stmt.setString(2, member.getEmail());
-					stmt.setString(3, positionRole.getEffectiveName());
-					stmt.setLong(4,   server);
-					stmt.setString(5, teamname);
-					stmt.setString(6, positionRole.getEffectiveName());
-					stmt.setString(7, member.getFirstname());
-					stmt.setString(8, member.getLastname());
-					stmt.setString(9, member.getInitial());
-					stmt.setString(10, member.getSex());
-					stmt.addBatch();
-				}
-				stmt.executeBatch();
-				stmt.close();
-				connection.commit();
-				success.set(true);
-			} catch(SQLException sqle) {
-				sqle.printStackTrace();
-				connection.rollback();
-			} finally {
-				connection.setAutoCommit(true);
-			}
-		};
+		transaction.loadBatch(members)
+			.batchSQL(
+				"""
+				WITH chosen_server AS (
+				    SELECT seoid FROM serverownership
+				        WHERE discserid = ?
+				    LIMIT 1
+				), 
+				chosen_program AS (
+				    SELECT progid FROM program 
+				        WHERE name = ?
+				    LIMIT 1
+				), 
+				new_member AS (
+				    INSERT INTO member (email, fprogid) 
+				        SELECT ?, progid FROM chosen_program
+				    RETURNING memid
+				), 
+				assigned_team AS (
+				    INSERT INTO assignedteam (fmemid, fteamid)
+				        SELECT (SELECT memid FROM new_member), teamid
+				            FROM team
+				                INNER JOIN discordrole     ON fdroleid = droleid
+				                INNER JOIN serverownership ON fseoid   = seoid
+				            WHERE 
+				                team.name = ? AND fseoid = (SELECT seoid FROM chosen_server)
+				    RETURNING atid
+				), 
+				assigned_position_role AS (
+				    INSERT INTO assignedrole (fmemid, fdroleid)
+				        SELECT (SELECT memid FROM new_member), droleid
+				            FROM discordrole
+				                INNER JOIN serverownership ON fseoid = seoid
+				            WHERE
+				                effectivename = ? AND fseoid = (SELECT seoid FROM chosen_server)
+				    RETURNING arid
+				), 
+				assigned_program_role AS (
+				    INSERT INTO assignedrole (fmemid, fdroleid)
+				        SELECT (SELECT memid FROM new_member), droleid
+				            FROM discordrole
+				                INNER JOIN serverownership ON fseoid = seoid
+				            WHERE
+				                UPPER(effectivename) = UPPER(?) AND fseoid = (SELECT seoid FROM chosen_server)
+				    RETURNING arid
+				), 
+				insert_orientador AS (
+				    INSERT INTO orientador (fname, lname, fmemid)
+				        SELECT ?, ?, (SELECT memid FROM new_member)
+				            WHERE ? IN ('EstudianteGraduado', 'ConsejeroProfesional', 'EstudianteOrientador')
+				    RETURNING fmemid
+				), 
+				insert_prepa AS (
+				    INSERT INTO prepa (fname, flname, mlname, initial, sex, fmemid)
+				        SELECT ?, ?, ?, ?, ?, (SELECT memid FROM new_member)
+				            WHERE ? = 'Prepa'
+				    RETURNING fmemid
+				)
+				SELECT 
+				    (SELECT memid FROM new_member)   AS memid,
+				    (SELECT atid FROM assigned_team) AS atid,
+				    (SELECT arid FROM assigned_position_role) AS pos_arid,
+				    (SELECT arid FROM assigned_program_role)  AS pro_arid,
+				    COALESCE((SELECT fmemid FROM insert_orientador), 0) AS orientador_memid,
+				    COALESCE((SELECT fmemid FROM insert_prepa), 0)      AS prepa_memid;
+				""",
+				(MemberDTO member) -> {
+					String[] lastNameParts = member.getLastname().split(" ");
+				    String firstLastName = lastNameParts.length > 1 ? lastNameParts[0] : member.getLastname();
+				    String secondLastName = lastNameParts.length > 1 ? lastNameParts[1] : "_";
+					return List.of(
+							server,
+							member.getProgram().getLiteral(),
+							member.getEmail(),
+							teamname,
+							positionRole.getEffectiveName(),
+							member.getProgram().getLiteral(),
+							
+							member.getFirstname(),
+							member.getLastname(),
+							positionRole.getEffectiveName(),
+							
+							member.getFirstname(), 
+							firstLastName, 
+							secondLastName, 
+							member.getInitial(), 
+							member.getSex(),
+							positionRole.getEffectiveName());
+				});
 		
-		Application.instance().getDatabaseConnection().establishConnection(rq);
-		return success.get();
+		
+		// Prepare transaction and execute by parts
+		transaction.prepare()
+			.executeThen(TransactionStatementType.UPDATE_QUERY)
+			.commit();
+		
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		
+		return transaction.isCompleted();
 	}
 	
-	public int deleteMembers(List<Integer> memberIds) {
-		final String SQL_DELETE = 
-			"""
-			SELECT delete_member(?) AS has_deleted
-			""";
-		AtomicInteger deletedCount = new AtomicInteger(0);
+	public boolean deleteMembers(List<Integer> memberIds) {
+		@SuppressWarnings("resource")
+		BatchTransaction transaction = new BatchTransaction();
 		
-		RunnableSQL rq = connection -> {
-			connection.setAutoCommit(false);
-			PreparedStatement stmt = connection.prepareStatement(SQL_DELETE);
-			
-			try {
-				for(int memid : memberIds) {
-					stmt.setInt(1, memid);
-					ResultSet result = stmt.executeQuery();
-					if (result.next()) {
-						if(result.getBoolean("has_deleted"))
-							deletedCount.incrementAndGet();
-					}
-					result.close();
-				}
-				
-				connection.commit();
-			} catch(SQLException sqle) {
-				connection.rollback();
-			} finally {
-				stmt.close();
-				connection.setAutoCommit(true);
-			}
-		};
-		Application.instance().getDatabaseConnection().establishConnection(rq);
-		return deletedCount.get();
+		transaction.loadBatch(memberIds)
+			.batchSQL(
+				"""
+				WITH select_member AS (
+					SELECT memid FROM member WHERE memid = ? LIMIT 1
+				),
+				delete_orientador AS (
+				    DELETE FROM orientador 
+					    WHERE fmemid = (SELECT memid FROM select_member)
+				    RETURNING fmemid
+				), 
+				delete_prepa AS (
+				    DELETE FROM prepa 
+					    WHERE fmemid = (SELECT memid FROM select_member)
+				    RETURNING fmemid
+				), 
+				delete_assignedteam AS (
+				    DELETE FROM assignedteam 
+					    WHERE fmemid = (SELECT memid FROM select_member)
+				    RETURNING fmemid
+				), 
+				delete_assignedrole AS (
+				    DELETE FROM assignedrole 
+					    WHERE fmemid = (SELECT memid FROM select_member)
+				    RETURNING fmemid
+				), 
+				delete_joinedmember AS (
+				    DELETE FROM joinedmember 
+					    WHERE fmemid = (SELECT memid FROM select_member)
+				    RETURNING fmemid
+				)
+				DELETE FROM member 
+					WHERE memid = (SELECT memid FROM select_member)
+			    RETURNING memid;
+				""",
+				(Integer memberid) -> List.of(memberid));
+		
+		// Prepare transaction and execute by parts
+		transaction.prepare()
+			.executeThen(TransactionStatementType.UPDATE_QUERY)
+			.commit();
+		
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		
+		return transaction.isCompleted();
 	}
 }

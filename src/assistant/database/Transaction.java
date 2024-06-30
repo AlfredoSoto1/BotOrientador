@@ -68,6 +68,9 @@ public class Transaction implements AutoCloseable {
 	 * @return Transaction
 	 */
 	public Transaction submitSQL(String SQL, List<?> parameters) {
+		if(!errors.isEmpty())
+			return this;
+		
 		sqlTransactions.add(new TransactionStatement(SQL, parameters));
 		return this;
 	}
@@ -79,6 +82,9 @@ public class Transaction implements AutoCloseable {
 	 * @return Transaction
 	 */
 	public Transaction prepare() {
+		if(!errors.isEmpty())
+			return this;
+		
 		// Disables auto commit, meaning transaction starts here
 		try {
 			connection.getConnection().setAutoCommit(false);
@@ -156,12 +162,14 @@ public class Transaction implements AutoCloseable {
 		}
 		
 		try {
+			// Check for the type of transaction that we are doing
+			// This is to test the results to confirm if transaction should continue
 			if((type == TransactionStatementType.SELECT_QUERY ||
-					type == TransactionStatementType.MIXED_QUERY)  && !results.isEmpty()) {
+				type == TransactionStatementType.MIXED_QUERY) && !results.isEmpty()) {
 				if (!processResult.test(results.peek()))
 					throw new SQLException("Failed result filter test at: " + results.peek());
 			}
-
+			
 			pstmt.close();
 		} catch (SQLException e) {
 			errors.add(new TransactionError(e.getMessage()));
@@ -211,6 +219,9 @@ public class Transaction implements AutoCloseable {
 	 */
 	public void forceClose() {
 		try {
+			// Cancel any transaction that was not completed
+			if(!connection.getConnection().getAutoCommit())
+				cancelTransaction();
 			close();
 		} catch (Exception e) {
 			errors.add(new TransactionError(e.getMessage()));
@@ -291,7 +302,7 @@ public class Transaction implements AutoCloseable {
 	            results.add(rowResult);
 	            result.close();
 	        } else if (type == TransactionStatementType.UPDATE_QUERY) {
-	            pstmt.executeUpdate();
+	        	pstmt.executeUpdate();
 	        }
 
 		} catch (SQLException e) {
@@ -299,7 +310,7 @@ public class Transaction implements AutoCloseable {
 			cancelTransaction();
 		}
 	}
-	
+
 	private void setParameter(PreparedStatement pstmt, int position, Object obj) throws SQLException {
         if (obj instanceof String string) {
             pstmt.setString(position, string);

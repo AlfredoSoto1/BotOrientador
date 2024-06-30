@@ -170,7 +170,7 @@ public class MemberService {
 	 * @param memberIDs
 	 * @return number of rows deleted
 	 */
-	public int deleteMembers(List<Integer> memberIDs) {
+	public boolean deleteMembers(List<Integer> memberIDs) {
 		return memberDAO.deleteMembers(memberIDs);
 	}
 	

@@ -130,9 +130,8 @@ public class MemberController {
 		if (TokenHolder.authenticateREST(token, tokenHolders))
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
     	
-    	int result = service.deleteMembers(memberVerificationIDs);
-		if(result > 0) {
-			return ResponseEntity.status(HttpStatus.ACCEPTED).body(result);
+		if(service.deleteMembers(memberVerificationIDs)) {
+			return ResponseEntity.status(HttpStatus.ACCEPTED).body("SUCCESS ON DELETION");
 		} else {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to delete");
 		}
