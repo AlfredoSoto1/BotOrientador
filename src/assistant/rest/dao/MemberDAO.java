@@ -468,7 +468,7 @@ public class MemberDAO {
 		
 		transaction.loadBatch(members)
 			.batchSQL(
-				"""
+			"""
 			WITH chosen_server AS (
 			    SELECT seoid FROM serverownership
 			        WHERE discserid = ?
@@ -532,29 +532,29 @@ public class MemberDAO {
 			    COALESCE((SELECT fmemid FROM insert_orientador), 0)        AS orientador_memid,
 			    COALESCE((SELECT fmemid FROM insert_prepa),      0)        AS prepa_memid;
 				""",
-				(MemberDTO member) -> {
-					String[] lastNameParts = member.getLastname().split(" ");
-				    String firstLastName = lastNameParts.length > 1 ? lastNameParts[0] : member.getLastname();
-				    String secondLastName = lastNameParts.length > 1 ? lastNameParts[1] : "_";
-					return List.of(
-							server,
-							member.getProgram().getLiteral(),
-							member.getEmail(),
-							teamname,
-							Replacement.of(positionRole.getEffectiveNamePositions()),
-							member.getProgram().getLiteral(),
-							
-							member.getFirstname(),
-							member.getLastname(),
-							positionRole.getEffectiveName(),
-							
-							member.getFirstname(), 
-							firstLastName, 
-							secondLastName, 
-							member.getInitial(), 
-							member.getSex(),
-							positionRole.getEffectiveName());
-				});
+			(MemberDTO member) -> {
+				String[] lastNameParts = member.getLastname().split(" ");
+			    String firstLastName = lastNameParts.length > 1 ? lastNameParts[0] : member.getLastname();
+			    String secondLastName = lastNameParts.length > 1 ? lastNameParts[1] : "_";
+				return List.of(
+						server,
+						member.getProgram().getLiteral(),
+						member.getEmail(),
+						teamname,
+						Replacement.of(positionRole.getEffectiveNamePositions()),
+						member.getProgram().getLiteral(),
+						
+						member.getFirstname(),
+						member.getLastname(),
+						positionRole.getEffectiveName(),
+						
+						member.getFirstname(), 
+						firstLastName, 
+						secondLastName, 
+						member.getInitial(), 
+						member.getSex(),
+						positionRole.getEffectiveName());
+			});
 		
 		
 		// Prepare transaction and execute by parts
