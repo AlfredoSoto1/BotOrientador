@@ -3,17 +3,11 @@
  */
 package assistant.rest.dao;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.stereotype.Repository;
 
-import assistant.app.core.Application;
 import assistant.database.BatchTransaction;
-import assistant.database.DatabaseConnection.RunnableSQL;
 import assistant.database.SubTransactionResult;
 import assistant.database.SubTransactionResult.Replacement;
 import assistant.database.SubTransactionResult.ResultReference;
@@ -22,9 +16,7 @@ import assistant.database.TransactionError;
 import assistant.database.TransactionStatementType;
 import assistant.discord.object.MemberPosition;
 import assistant.discord.object.MemberRetrievement;
-import assistant.rest.dto.DiscordRoleDTO;
 import assistant.rest.dto.MemberDTO;
-import assistant.rest.dto.TeamDTO;
 
 /**
  * @author Alfredo
@@ -240,8 +232,11 @@ public class MemberDAO {
 		return transaction.getLatestResult();
 	}
 	
-	public Optional<TeamDTO> getMemberTeam(String email, long server) {
-		final String SQL =
+	public SubTransactionResult queryMemberTeam(String email, long server) {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
 			"""
 			SELECT  teamid            AS teamid,
 			        team.name         AS team_name,
@@ -260,37 +255,22 @@ public class MemberDAO {
 			    
                 WHERE
 			        email = ? AND seo.discserid = ?
-			""";
-		AtomicBoolean found = new AtomicBoolean(false);
-		TeamDTO team = new TeamDTO();
+			""", List.of(email, server));
 		
-		RunnableSQL rq = connection -> {
-			PreparedStatement stmt = connection.prepareStatement(SQL);
-			stmt.setString(1, email);
-			stmt.setLong(2, server);
-			
-			ResultSet result = stmt.executeQuery();
-			while(result.next()) {
-				team.setId(result.getInt("teamid"));
-				team.setName(result.getString("team_name"));
-				team.setOrgname(result.getString("team_orgname"));
-				
-				DiscordRoleDTO role = new DiscordRoleDTO();
-				role.setId(result.getInt("droleid"));
-				role.setRoleid(result.getLong("longroleid"));
-				role.setServerid(result.getLong("discserid"));
-				role.setName(result.getString("role_name"));
-				role.setEffectivename(result.getString("effectivename"));
-				team.setTeamRole(role);
-				
-				found.set(true);
-			}
-			result.close();
-			stmt.close();
-		};
+		transaction.prepare()
+			.executeThen(TransactionStatementType.SELECT_QUERY)
+			.commit();
 		
-		Application.instance().getDatabaseConnection().establishConnection(rq);
-		return found.get() ? Optional.of(team) : Optional.empty();
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		
+		return transaction.getLatestResult();
 	}
 	
 	public boolean insertAndVerifyMember(MemberDTO member, long server) {

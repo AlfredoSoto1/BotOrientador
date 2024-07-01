@@ -26,6 +26,7 @@ import assistant.discord.object.MemberPosition;
 import assistant.discord.object.MemberProgram;
 import assistant.discord.object.MemberRetrievement;
 import assistant.rest.dao.MemberDAO;
+import assistant.rest.dto.DiscordRoleDTO;
 import assistant.rest.dto.EmailDTO;
 import assistant.rest.dto.MemberDTO;
 import assistant.rest.dto.StudentDTO;
@@ -175,7 +176,26 @@ public class MemberService {
 	 * @return Team of the member that has the given email
 	 */
 	public Optional<TeamDTO> getMemberTeam(String email, long server) {
-		return memberDAO.getMemberTeam(email, server);
+		SubTransactionResult result = memberDAO.queryMemberTeam(email, server);
+		
+		if(result.isEmpty())
+			return Optional.empty();
+		
+		// Map all the results from DAO to DTO
+		TeamDTO team = new TeamDTO();
+		team.setId(result.getValue("teamid", 0));
+		team.setName(result.getValue("team_name", 0));
+		team.setOrgname(result.getValue("team_orgname", 0));
+		
+		DiscordRoleDTO role = new DiscordRoleDTO();
+		role.setId(result.getValue("droleid", 0));
+		role.setRoleid(result.getValue("longroleid", 0));
+		role.setServerid(result.getValue("discserid", 0));
+		role.setName(result.getValue("role_name", 0));
+		role.setEffectivename(result.getValue("effectivename", 0));
+		team.setTeamRole(role);
+		
+		return Optional.of(team);
 	}
 	
 	/**
