@@ -3,8 +3,12 @@
  */
 package assistant.database;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Function;
+
+import assistant.database.SubTransactionResult.Replacement;
 
 /**
  * @author Alfredo
@@ -12,7 +16,7 @@ import java.util.function.Function;
 public class TransactionStatement {
 	
 	private String SQL;
-	private List<?> parameters;
+	private List<Object> parameters;
 	private Function<?, List<?>> batchedParameters;
 	
 	/**
@@ -22,7 +26,20 @@ public class TransactionStatement {
 	 */
 	public TransactionStatement(String SQL, List<?> parameters) {
 		this.SQL = SQL;
-		this.parameters = parameters;
+		this.parameters = new ArrayList<>();
+		
+		List<String> tempReplacements = new LinkedList<>();
+        for (Object param : parameters) {
+            if (param instanceof Replacement replacement) {
+            	tempReplacements.add(replacement.getReplacement());
+                for (var value : replacement.getValues())
+                	this.parameters.add(value);
+            } else {
+            	this.parameters.add(param);
+            }
+        }
+        
+        this.SQL = String.format(SQL, tempReplacements.toArray());
 	}
 	
 	/**

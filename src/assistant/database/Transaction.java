@@ -44,6 +44,8 @@ public class Transaction implements AutoCloseable {
 	 * @return Last result from query
 	 */
 	public SubTransactionResult getLatestResult() {
+		if(results.isEmpty())
+			return new SubTransactionResult();
 		return results.peek();
 	}
 	
@@ -275,14 +277,14 @@ public class Transaction implements AutoCloseable {
         List<Object> params = new ArrayList<>();
         for (Object obj : parameters) {
             if (obj instanceof SubTransactionResult.ResultReference reference) {
-            	params.add(latestResult.getResult(reference.getColumnName(), row));
+            	params.add(latestResult.getValue(reference.getColumnName(), row));
             } else {
                 params.add(obj);
             }
         }
         return params;
     }
-	
+    
 	private void processExecution(TransactionStatementType type, PreparedStatement pstmt, List<?> parameters) {
 		try {
 			// Set all the parameters before running the query

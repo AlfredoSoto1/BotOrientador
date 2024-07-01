@@ -20,6 +20,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import assistant.database.SubTransactionResult;
 import assistant.discord.core.AsyncTaskQueue;
 import assistant.discord.object.MemberPosition;
 import assistant.discord.object.MemberProgram;
@@ -88,7 +89,18 @@ public class MemberService {
 	 * @return List of DTO containing all emails of members
 	 */
 	public List<EmailDTO> getEmails(int page, int size, long server) {
-		return memberDAO.getEmails(page * size, size, server);
+		// Obtain the results and pass them to the DTO list
+		List<EmailDTO> emails = new ArrayList<>();
+		SubTransactionResult result = memberDAO.queryEmails(page * size, size, server);
+		
+		// Map all the results from DAO to DTO
+		for (int i = 0; i < result.rowCount(); i++) {
+            EmailDTO emailDTO = new EmailDTO();
+            emailDTO.setId((int)result.getValue("memid", i));
+            emailDTO.setEmail((String) result.getValue("email", i));
+			emails.add(emailDTO);
+		}
+		return emails;
 	}
 	
 	/**
@@ -99,7 +111,32 @@ public class MemberService {
 	 * @return List of DTO containing all members
 	 */
 	public List<MemberDTO> getAllMembers(int page, int size, MemberRetrievement retrievement, long server) {
-		return memberDAO.getMembers(page * size, size, retrievement, server);
+		
+		// Obtain the results and pass them to the DTO list
+		List<MemberDTO> members = new ArrayList<>();
+		SubTransactionResult result = memberDAO.queryAllMembers(page * size, size, retrievement, server);
+		
+		// Map all the results from DAO to DTO
+		for (int i = 0; i < result.rowCount(); i++) {
+			MemberDTO member = new MemberDTO();
+			member.setId(result.getValue("memid", i));
+			member.setUserId(result.getValue("identifier", i));
+			
+			member.setFirstname(result.getValue("firstname", i));
+			member.setLastname(result.getValue("lastname", i));
+			member.setInitial(result.getValue("initial", i));
+			member.setSex(result.getValue("sex", i));
+			
+			member.setEmail(result.getValue("email", i));
+			member.setProgram(MemberProgram.asProgram(result.getValue("program_name", i)));
+			member.setFunfact(result.getValue("funfact", i));
+			member.setUsername(result.getValue("username", i));
+
+			member.setVerified(result.getValue("is_verified", i));
+			
+			members.add(member);
+		}
+		return members;
 	}
 	
 	/**
@@ -108,7 +145,29 @@ public class MemberService {
 	 * @return Member that matches the given email
 	 */
 	public Optional<MemberDTO> getMember(String email) {
-		return memberDAO.getMember(email);
+		SubTransactionResult result = memberDAO.queryMember(email);
+		
+		if(result.isEmpty())
+			return Optional.empty();
+		
+		// Map all the results from DAO to DTO
+		MemberDTO member = new MemberDTO();
+		member.setId(result.getValue("memid", 0));
+		member.setUserId(result.getValue("identifier", 0));
+		
+		member.setFirstname(result.getValue("firstname", 0));
+		member.setLastname(result.getValue("lastname", 0));
+		member.setInitial(result.getValue("initial", 0));
+		member.setSex(result.getValue("sex", 0));
+		
+		member.setEmail(result.getValue("email", 0));
+		member.setProgram(MemberProgram.asProgram(result.getValue("program_name", 0)));
+		member.setFunfact(result.getValue("funfact", 0));
+		member.setUsername(result.getValue("username", 0));
+
+		member.setVerified(result.getValue("is_verified", 0));
+		
+		return Optional.of(member);
 	}
 
 	/**

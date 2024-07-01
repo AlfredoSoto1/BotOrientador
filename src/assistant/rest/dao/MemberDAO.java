@@ -5,7 +5,6 @@ package assistant.rest.dao;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -15,15 +14,15 @@ import org.springframework.stereotype.Repository;
 import assistant.app.core.Application;
 import assistant.database.BatchTransaction;
 import assistant.database.DatabaseConnection.RunnableSQL;
+import assistant.database.SubTransactionResult;
+import assistant.database.SubTransactionResult.Replacement;
 import assistant.database.SubTransactionResult.ResultReference;
 import assistant.database.Transaction;
 import assistant.database.TransactionError;
 import assistant.database.TransactionStatementType;
 import assistant.discord.object.MemberPosition;
-import assistant.discord.object.MemberProgram;
 import assistant.discord.object.MemberRetrievement;
 import assistant.rest.dto.DiscordRoleDTO;
-import assistant.rest.dto.EmailDTO;
 import assistant.rest.dto.MemberDTO;
 import assistant.rest.dto.TeamDTO;
 
@@ -37,8 +36,11 @@ public class MemberDAO {
 		
 	}
 	
-	public List<EmailDTO> getEmails(int offset, int limit, long server) {
-		final String SQL_SELECT =
+	public SubTransactionResult queryEmails(int offset, int limit, long server) {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
 			"""
 			SELECT memid, email 
 				FROM member
@@ -50,30 +52,31 @@ public class MemberDAO {
 					discserid = ? OR ? = -1
 			
 			ORDER BY memid
-			""";
-		List<EmailDTO> emails = new ArrayList<>();
+			OFFSET ?
+			LIMIT  ?
+			""", List.of(server, server, offset, limit));
 		
-		RunnableSQL rq = connection -> {
-			PreparedStatement stmt = connection.prepareStatement(SQL_SELECT);
-			stmt.setLong(1, server);
-			stmt.setLong(2, server);
-			
-			ResultSet result = stmt.executeQuery();
-			while(result.next()) {
-				EmailDTO member = new EmailDTO();
-				member.setId(result.getInt("memid"));
-				member.setEmail(result.getString("email"));
-				emails.add(member);
-			}
-			result.close();
-			stmt.close();
-		};
-		Application.instance().getDatabaseConnection().establishConnection(rq);
-		return emails;
+		transaction.prepare()
+			.executeThen(TransactionStatementType.SELECT_QUERY)
+			.commit();
+		
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		
+		return transaction.getLatestResult();
 	}
 	
-	public List<MemberDTO> getMembers(int offset, int limit, MemberRetrievement retrievement, long server) {
-		final String SQL_SELECT =
+	public SubTransactionResult queryAllMembers(int offset, int limit, MemberRetrievement retrievement, long server) {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
 			"""
 			WITH all_people AS (
 			    SELECT  orid         AS identifier,
@@ -138,54 +141,40 @@ public class MemberDAO {
 			ORDER BY memid
 			OFFSET ?
 			LIMIT  ?
-			""";
-		List<MemberDTO> members = new ArrayList<>();
+			""", List.of(
+					server, server,
+					retrievement.name(),
+					retrievement.name(),
+					retrievement.name(),
+					retrievement.name(),
+					retrievement.name(),
+					retrievement.name(),
+					retrievement.name(),
+					retrievement.name(),
+					retrievement.name(),
+					offset, limit));
 		
-		RunnableSQL rq = connection -> {
-			PreparedStatement stmt = connection.prepareStatement(SQL_SELECT);
-			stmt.setLong(1, server);
-			stmt.setLong(2, server);
-			stmt.setString(3, retrievement.name());
-			stmt.setString(4, retrievement.name());
-			stmt.setString(5, retrievement.name());
-			stmt.setString(6, retrievement.name());
-			stmt.setString(7, retrievement.name());
-			stmt.setString(8, retrievement.name());
-			stmt.setString(9, retrievement.name());
-			stmt.setString(10, retrievement.name());
-			stmt.setString(11, retrievement.name());
-			stmt.setInt(12, offset);
-			stmt.setInt(13, limit);
-			
-			ResultSet result = stmt.executeQuery();
-			while(result.next()) {
-				MemberDTO member = new MemberDTO();
-				member.setId(result.getInt("memid"));
-				member.setUserId(result.getInt("identifier"));
-				
-				member.setFirstname(result.getString("firstname"));
-				member.setLastname(result.getString("lastname"));
-				member.setInitial(result.getString("initial"));
-				member.setSex(result.getString("sex"));
-				
-				member.setEmail(result.getString("email"));
-				member.setProgram(MemberProgram.asProgram(result.getString("program_name")));
-				member.setFunfact(result.getString("funfact"));
-				member.setUsername(result.getString("username"));
-
-				member.setVerified(result.getBoolean("is_verified"));
-				
-				members.add(member);
-			}
-			result.close();
-			stmt.close();
-		};
-		Application.instance().getDatabaseConnection().establishConnection(rq);
-		return members;
+		transaction.prepare()
+			.executeThen(TransactionStatementType.SELECT_QUERY)
+			.commit();
+		
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		
+		return transaction.getLatestResult();
 	}
 	
-	public Optional<MemberDTO> getMember(String email) {
-		final String SQL_SELECT =
+	public SubTransactionResult queryMember(String email) {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
 			"""
 			WITH all_people AS (
 			    SELECT  orid         AS identifier,
@@ -233,40 +222,22 @@ public class MemberDAO {
 			    FROM people_with_verification
 			    WHERE
 				    email = ?
-			""";
-		AtomicBoolean found = new AtomicBoolean(false);
-		MemberDTO member = new MemberDTO();
+			""", List.of(email));
 		
-		RunnableSQL rq = connection -> {
-			PreparedStatement stmt = connection.prepareStatement(SQL_SELECT);
-			stmt.setString(1, email);
-			
-			ResultSet result = stmt.executeQuery();
-			while(result.next()) {
-				member.setId(result.getInt("memid"));
-				member.setUserId(result.getInt("identifier"));
-				
-				member.setFirstname(result.getString("firstname"));
-				member.setLastname(result.getString("lastname"));
-				member.setInitial(result.getString("initial"));
-				member.setSex(result.getString("sex"));
-				
-				member.setEmail(result.getString("email"));
-				member.setProgram(MemberProgram.asProgram(result.getString("program_name")));
-				member.setFunfact(result.getString("funfact"));
-				member.setUsername(result.getString("username"));
-
-				member.setVerified(result.getBoolean("is_verified"));
-				
-				found.set(true);
-			}
-			
-			result.close();
-			stmt.close();
-		};
+		transaction.prepare()
+			.executeThen(TransactionStatementType.SELECT_QUERY)
+			.commit();
 		
-		Application.instance().getDatabaseConnection().establishConnection(rq);
-		return found.get() ? Optional.of(member) : Optional.empty();
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		
+		return transaction.getLatestResult();
 	}
 	
 	public Optional<TeamDTO> getMemberTeam(String email, long server) {
@@ -374,8 +345,9 @@ public class MemberDAO {
 		@SuppressWarnings("resource")
 		Transaction transaction = new Transaction();
 		
-		String firstLastName  = member.getLastname().split(" ")[0];
-		String secondLastName = member.getLastname().split(" ")[1];
+		String[] lastNameParts = member.getLastname().split(" ");
+	    String firstLastName = lastNameParts.length > 1 ? lastNameParts[0] : member.getLastname();
+	    String secondLastName = lastNameParts.length > 1 ? lastNameParts[1] : "_";
 		
 		// Add all transaction parameter fields
 		transaction.submitSQL(
@@ -411,7 +383,7 @@ public class MemberDAO {
 			            FROM discordrole
 			                INNER JOIN serverownership ON fseoid = seoid
 			            WHERE
-			                effectivename = ? AND fseoid = (SELECT seoid FROM chosen_server)
+			                effectivename IN (%s) AND fseoid = (SELECT seoid FROM chosen_server)
 			    RETURNING arid
 			), 
 			assigned_program_role AS (
@@ -426,7 +398,7 @@ public class MemberDAO {
 			insert_orientador AS (
 			    INSERT INTO orientador (fname, lname, fmemid)
 			        SELECT ?, ?, (SELECT memid FROM new_member)
-			            WHERE ? IN ('EstudianteGraduado', 'ConsejeroProfesional', 'EstudianteOrientador')
+			            WHERE ? != 'Prepa'
 			    RETURNING fmemid
 			), 
 			insert_prepa AS (
@@ -436,19 +408,19 @@ public class MemberDAO {
 			    RETURNING fmemid
 			)
 			SELECT 
-			    (SELECT memid FROM new_member)   AS memid,
-			    (SELECT atid FROM assigned_team) AS atid,
-			    (SELECT arid FROM assigned_position_role) AS pos_arid,
-			    (SELECT arid FROM assigned_program_role)  AS pro_arid,
-			    COALESCE((SELECT fmemid FROM insert_orientador), 0) AS orientador_memid,
-			    COALESCE((SELECT fmemid FROM insert_prepa), 0)      AS prepa_memid;
+			    (SELECT memid FROM new_member)                             AS memid,
+			    (SELECT arid FROM assigned_program_role)                   AS pro_arid,
+			    (SELECT DISTINCT arid FROM assigned_position_role LIMIT 1) AS pos_arid,
+			    COALESCE((SELECT atid FROM assigned_team),       0)        AS atid,
+			    COALESCE((SELECT fmemid FROM insert_orientador), 0)        AS orientador_memid,
+			    COALESCE((SELECT fmemid FROM insert_prepa),      0)        AS prepa_memid;
 			""",
 			List.of(
 					server,
 					member.getProgram().getLiteral(),
 					member.getEmail(),
 					teamname,
-					positionRole.getEffectiveName(),
+					Replacement.of(positionRole.getEffectiveNamePositions()),
 					member.getProgram().getLiteral(),
 					
 					member.getFirstname(),
@@ -466,12 +438,12 @@ public class MemberDAO {
 		transaction.prepare()
 			.executeThen(TransactionStatementType.MIXED_QUERY,
 				result -> {
-					return ((int)result.getResult("memid", 0) != 0) &&
-						   ((int)result.getResult("atid",  0) != 0) &&
-						   ((int)result.getResult("pos_arid", 0) != 0) &&
-						   ((int)result.getResult("pro_arid", 0) != 0) &&
-						   ((int)result.getResult("prepa_memid",      0) != 0 || positionRole != MemberPosition.PREPA) &&
-						   ((int)result.getResult("orientador_memid", 0) != 0 || positionRole == MemberPosition.PREPA);
+					return ((int)result.getValue("memid", 0) != 0) &&
+//						   ((int)result.getValue("atid",  0) != 0) &&
+						   ((int)result.getValue("pos_arid", 0) != 0) &&
+						   ((int)result.getValue("pro_arid", 0) != 0) &&
+						   ((int)result.getValue("prepa_memid",      0) != 0 || positionRole != MemberPosition.PREPA) &&
+						   ((int)result.getValue("orientador_memid", 0) != 0 || positionRole == MemberPosition.PREPA);
 				})
 			.commit();
 		
@@ -485,7 +457,7 @@ public class MemberDAO {
 		}
 		
 		if(transaction.isCompleted())
-			return (int)transaction.getLatestResult().getResult("memid", 0);
+			return (int)transaction.getLatestResult().getValue("memid", 0);
 		else
 			return -1;
 	}
@@ -497,68 +469,68 @@ public class MemberDAO {
 		transaction.loadBatch(members)
 			.batchSQL(
 				"""
-				WITH chosen_server AS (
-				    SELECT seoid FROM serverownership
-				        WHERE discserid = ?
-				    LIMIT 1
-				), 
-				chosen_program AS (
-				    SELECT progid FROM program 
-				        WHERE name = ?
-				    LIMIT 1
-				), 
-				new_member AS (
-				    INSERT INTO member (email, fprogid) 
-				        SELECT ?, progid FROM chosen_program
-				    RETURNING memid
-				), 
-				assigned_team AS (
-				    INSERT INTO assignedteam (fmemid, fteamid)
-				        SELECT (SELECT memid FROM new_member), teamid
-				            FROM team
-				                INNER JOIN discordrole     ON fdroleid = droleid
-				                INNER JOIN serverownership ON fseoid   = seoid
-				            WHERE 
-				                team.name = ? AND fseoid = (SELECT seoid FROM chosen_server)
-				    RETURNING atid
-				), 
-				assigned_position_role AS (
-				    INSERT INTO assignedrole (fmemid, fdroleid)
-				        SELECT (SELECT memid FROM new_member), droleid
-				            FROM discordrole
-				                INNER JOIN serverownership ON fseoid = seoid
-				            WHERE
-				                effectivename = ? AND fseoid = (SELECT seoid FROM chosen_server)
-				    RETURNING arid
-				), 
-				assigned_program_role AS (
-				    INSERT INTO assignedrole (fmemid, fdroleid)
-				        SELECT (SELECT memid FROM new_member), droleid
-				            FROM discordrole
-				                INNER JOIN serverownership ON fseoid = seoid
-				            WHERE
-				                UPPER(effectivename) = UPPER(?) AND fseoid = (SELECT seoid FROM chosen_server)
-				    RETURNING arid
-				), 
-				insert_orientador AS (
-				    INSERT INTO orientador (fname, lname, fmemid)
-				        SELECT ?, ?, (SELECT memid FROM new_member)
-				            WHERE ? IN ('EstudianteGraduado', 'ConsejeroProfesional', 'EstudianteOrientador')
-				    RETURNING fmemid
-				), 
-				insert_prepa AS (
-				    INSERT INTO prepa (fname, flname, mlname, initial, sex, fmemid)
-				        SELECT ?, ?, ?, ?, ?, (SELECT memid FROM new_member)
-				            WHERE ? = 'Prepa'
-				    RETURNING fmemid
-				)
-				SELECT 
-				    (SELECT memid FROM new_member)   AS memid,
-				    (SELECT atid FROM assigned_team) AS atid,
-				    (SELECT arid FROM assigned_position_role) AS pos_arid,
-				    (SELECT arid FROM assigned_program_role)  AS pro_arid,
-				    COALESCE((SELECT fmemid FROM insert_orientador), 0) AS orientador_memid,
-				    COALESCE((SELECT fmemid FROM insert_prepa), 0)      AS prepa_memid;
+			WITH chosen_server AS (
+			    SELECT seoid FROM serverownership
+			        WHERE discserid = ?
+			    LIMIT 1
+			), 
+			chosen_program AS (
+			    SELECT progid FROM program 
+			        WHERE name = ?
+			    LIMIT 1
+			), 
+			new_member AS (
+			    INSERT INTO member (email, fprogid) 
+			        SELECT ?, progid FROM chosen_program
+			    RETURNING memid
+			), 
+			assigned_team AS (
+			    INSERT INTO assignedteam (fmemid, fteamid)
+			        SELECT (SELECT memid FROM new_member), teamid
+			            FROM team
+			                INNER JOIN discordrole     ON fdroleid = droleid
+			                INNER JOIN serverownership ON fseoid   = seoid
+			            WHERE 
+			                team.name = ? AND fseoid = (SELECT seoid FROM chosen_server)
+			    RETURNING atid
+			), 
+			assigned_position_role AS (
+			    INSERT INTO assignedrole (fmemid, fdroleid)
+			        SELECT (SELECT memid FROM new_member), droleid
+			            FROM discordrole
+			                INNER JOIN serverownership ON fseoid = seoid
+			            WHERE
+			                effectivename IN (%s) AND fseoid = (SELECT seoid FROM chosen_server)
+			    RETURNING arid
+			), 
+			assigned_program_role AS (
+			    INSERT INTO assignedrole (fmemid, fdroleid)
+			        SELECT (SELECT memid FROM new_member), droleid
+			            FROM discordrole
+			                INNER JOIN serverownership ON fseoid = seoid
+			            WHERE
+			                UPPER(effectivename) = UPPER(?) AND fseoid = (SELECT seoid FROM chosen_server)
+			    RETURNING arid
+			), 
+			insert_orientador AS (
+			    INSERT INTO orientador (fname, lname, fmemid)
+			        SELECT ?, ?, (SELECT memid FROM new_member)
+			            WHERE ? != 'Prepa'
+			    RETURNING fmemid
+			), 
+			insert_prepa AS (
+			    INSERT INTO prepa (fname, flname, mlname, initial, sex, fmemid)
+			        SELECT ?, ?, ?, ?, ?, (SELECT memid FROM new_member)
+			            WHERE ? = 'Prepa'
+			    RETURNING fmemid
+			)
+			SELECT 
+			    (SELECT memid FROM new_member)                             AS memid,
+			    (SELECT arid FROM assigned_program_role)                   AS pro_arid,
+			    (SELECT DISTINCT arid FROM assigned_position_role LIMIT 1) AS pos_arid,
+			    COALESCE((SELECT atid FROM assigned_team),       0)        AS atid,
+			    COALESCE((SELECT fmemid FROM insert_orientador), 0)        AS orientador_memid,
+			    COALESCE((SELECT fmemid FROM insert_prepa),      0)        AS prepa_memid;
 				""",
 				(MemberDTO member) -> {
 					String[] lastNameParts = member.getLastname().split(" ");
@@ -569,7 +541,7 @@ public class MemberDAO {
 							member.getProgram().getLiteral(),
 							member.getEmail(),
 							teamname,
-							positionRole.getEffectiveName(),
+							Replacement.of(positionRole.getEffectiveNamePositions()),
 							member.getProgram().getLiteral(),
 							
 							member.getFirstname(),

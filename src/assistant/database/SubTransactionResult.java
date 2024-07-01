@@ -24,14 +24,31 @@ public class SubTransactionResult {
      * @throws SQLException
      */
     public SubTransactionResult(ResultSet result) throws SQLException {
-    	this.rows = new ArrayList<>();
-    	this.columnNames = new ArrayList<>();
-    	
+    	this();
     	ResultSetMetaData metaData = result.getMetaData();
 		int columnCount = metaData.getColumnCount();
 
 		for (int i = 1; i <= columnCount; i++)
             columnNames.add(metaData.getColumnName(i));
+    }
+    
+    /**
+     * Prepare a default constructor for default results
+     */
+    protected SubTransactionResult() {
+    	this.rows = new ArrayList<>();
+    	this.columnNames = new ArrayList<>();
+    }
+    
+    public boolean isEmpty() {
+    	return rows.isEmpty();
+    }
+    
+    /**
+     * @return number of rows
+     */
+    public int rowCount() {
+    	return rows.size();
     }
     
     /**
@@ -81,11 +98,12 @@ public class SubTransactionResult {
      * @param rowIndex
      * @return Object from table result
      */
-    public Object getResult(String columnName, int rowIndex) {
+    @SuppressWarnings("unchecked")
+	public <T> T getValue(String columnName, int rowIndex) {
     	if (rows.isEmpty())
     		return null;
         int columnIndex = columnNames.indexOf(columnName);
-        return columnIndex >= 0 ? rows.get(rowIndex)[columnIndex] : null;
+        return columnIndex >= 0 ? (T) rows.get(rowIndex)[columnIndex] : null;
     }
     
 	private Object getColumnValue(ResultSet result, int columnType, String columnName) throws SQLException {
@@ -127,6 +145,38 @@ public class SubTransactionResult {
         
         public static ResultReference of(String columnName) {
         	return new ResultReference(columnName);
+        }
+    }
+	
+	/**
+	 * @author Alfredo
+	 */
+	public static class Replacement<T> {
+        private final T[] values;
+
+        public Replacement(T[] values) {
+            this.values = values;
+        }
+        
+        public T[] getValues() {
+        	return values;
+        }
+
+    	public String getReplacement() {
+    		if (values.length < 1)
+    			throw new IllegalArgumentException("Invalid count for placeholders: " + values.length);
+
+    		StringBuilder sb = new StringBuilder();
+    		for (int i = 0; i < values.length - 1; i++)
+    			sb.append("?, ");
+    		sb.append("?");
+
+    		return sb.toString();
+    	}
+        
+        @SafeVarargs
+		public static <E> Replacement<E> of(E... values) {
+        	return new Replacement<>(values);
         }
     }
 }
