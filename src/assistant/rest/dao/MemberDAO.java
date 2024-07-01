@@ -273,8 +273,7 @@ public class MemberDAO {
 		return transaction.getLatestResult();
 	}
 	
-	public boolean insertAndVerifyMember(MemberDTO member, long server) {
-		
+	public SubTransactionResult insertAndVerifyMember(MemberDTO member, long server) {
 		@SuppressWarnings("resource")
 		Transaction transaction = new Transaction();
 		
@@ -317,7 +316,7 @@ public class MemberDAO {
 			System.err.println("==============================");
 		}
 		
-		return transaction.isCompleted();
+		return transaction.getLatestResult();
 	}
 	
 	public int insertMember(MemberDTO member, MemberPosition positionRole, long server, String teamname) {

@@ -7,12 +7,15 @@ import java.awt.Color;
 import java.util.List;
 import java.util.Optional;
 
+import assistant.app.core.Application;
 import assistant.discord.core.AsyncTaskQueue;
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
 import assistant.discord.object.MemberRole;
 import assistant.rest.dao.VerificationDAO;
 import assistant.rest.dto.VerificationReport;
+import assistant.rest.service.MemberService;
+import assistant.rest.service.TeamGroupCreatorService;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -38,16 +41,15 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	
 	private static final String COMMAND_LABEL = "channel";
 	
-	private VerificationDAO verificationDAO;
-	private AsyncTaskQueue verificationQueue;
+	private MemberService service;
 	
 	private boolean isGlobal;
 	private Modal verifyPrompt;
 	private Button verifyButton;
 	
 	public VerificationCmd() {
-		this.verificationDAO = new VerificationDAO();
-		this.verificationQueue = new AsyncTaskQueue();
+		// Obtain member service from Spring
+		this.service = Application.instance().getSpringContext().getBean(MemberService.class);
 		
 		// Create an Email field to be displayed inside the modal
 		TextInput email = TextInput.create("email-id", "Email", TextInputStyle.SHORT)
@@ -81,7 +83,7 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	
 	@Override
 	public void onDispose() {
-		verificationQueue.shutdown();
+		service.shutdownVerificationQueueService();
 	} 
 	
 	@Override
@@ -234,6 +236,7 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	        	.setEphemeral(true).queue();
         	return;
         }
+        
         
         // Do this asynchronously
         verificationQueue.addTask(() -> {

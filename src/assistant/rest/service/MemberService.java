@@ -80,7 +80,10 @@ public class MemberService {
 	 * @return true if verification succeeded
 	 */
 	public boolean verifyMember(MemberDTO member, long server) {
-		return memberDAO.insertAndVerifyMember(member, server);
+		SubTransactionResult result =  memberDAO.insertAndVerifyMember(member, server);
+		
+		
+		return false;
 	}
 	
 	/**
