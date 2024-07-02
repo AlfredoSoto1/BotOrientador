@@ -3,7 +3,6 @@
  */
 package assistant.command.moderation;
 
-import java.awt.Color;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,11 +12,11 @@ import assistant.app.core.Logger.LogFeedback;
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
 import assistant.discord.object.MemberPosition;
+import assistant.embeds.moderation.VerificationEmbed;
 import assistant.rest.dto.DiscordRoleDTO;
 import assistant.rest.dto.MemberDTO;
 import assistant.rest.dto.TeamDTO;
 import assistant.rest.service.MemberService;
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
@@ -48,8 +47,10 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	private Button verifyButton;
 	
 	private MemberService service;
+	private VerificationEmbed verificationEmbed;
 	
 	public VerificationCmd() {
+		this.verificationEmbed = new VerificationEmbed();
 		this.service = Application.instance().getSpringContext().getBean(MemberService.class);
 		
 		// Create an Email field to be displayed inside the modal
@@ -134,71 +135,17 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 		// Check if the channel is in server
 		if (textChannel.isPresent()) {
 			event.reply("Verification embed sent to: " + textChannel.get().getName()).setEphemeral(true).queue();
-			sendVerificationEmbed(textChannel.get());
+			
+			// Mentioned Roles in embedded message
+			Optional<Role> modRole = super.getEffectiveRole(MemberPosition.MODERATOR, textChannel.get().getGuild());
+			Optional<Role> bdeRole = super.getEffectiveRole(MemberPosition.BOT_DEVELOPER, textChannel.get().getGuild());
+			
+			textChannel.get().sendMessageEmbeds(verificationEmbed.buildVerificationPrompt(modRole.get(), bdeRole.get()))
+				.setActionRow(verifyButton)
+				.queue();
 		}
 		else
 			event.reply("Channel not found").setEphemeral(true).queue();
-	}
-	
-	private void sendVerificationEmbed(TextChannel textChannel) {
-		
-		/*
-		 * Embedded messages
-		 */
-		String verification_title = 
-			"""
-		    **¡Bienvenido al servidor!** :wave:
-		    """;
-		String verification_description = 
-			"""
-		    Para poder acceder a todas las áreas del servidor y participar en las conversaciones, necesitamos verificar que eres un estudiante de nuevo ingreso. 
-		    Este proceso nos ayuda a mantener un ambiente seguro y exclusivo para los estudiantes.
-		    """;
-		String verification_step_title =
-			"""
-			 **Pasos para la verificación:**
-			""";
-		String verification_step_description_1 =
-			"""
-			1. **Presiona el botón "Verify"**:
-			Al presionar el botón de verificación que se encuentra abajo, iniciarás el proceso de verificación.
-			
-			2. **Provee tu correo institucional**:
-			Se te pedirá que ingreses tu correo electrónico institucional (el que termina en __@upr.edu__). 
-			Este correo es utilizado únicamente para confirmar tu identidad como estudiante.
-			""";
-		
-		String verification_problem_title =
-			"""
-			**¿Problemas con la verificación?**
-			""";
-		String verification_problem_description =
-			"""
-			- Asegúrate de haber ingresado correctamente tu correo institucional.
-			- Si aún tienes problemas, comunícate con un %s o %s para obtener ayuda.
-			
-			¡Gracias por unirte y esperamos que disfrutes tu tiempo en el servidor! :blush:
-			""";
-
-		// Mentioned Roles in embedded message
-		Optional<Role> modRole = super.getEffectiveRole(MemberPosition.MODERATOR, textChannel.getGuild());
-		Optional<Role> bdeRole = super.getEffectiveRole(MemberPosition.BOT_DEVELOPER, textChannel.getGuild());
-		
-		verification_problem_description = String.format(verification_problem_description, bdeRole.get().getAsMention(), modRole.get().getAsMention());
-		
-		EmbedBuilder embedBuider = new EmbedBuilder();
-
-		embedBuider.setColor(new Color(40, 130, 138));
-		embedBuider.setTitle(verification_title);
-		embedBuider.setDescription(verification_description);
-		
-		embedBuider.addField(verification_step_title, verification_step_description_1, false);
-		embedBuider.addBlankField(false);
-		embedBuider.addField(verification_problem_title, verification_problem_description, false);
-		
-		textChannel.sendMessageEmbeds(embedBuider.build())
-			.setActionRow(verifyButton)
-			.queue();
 	}
 	
 	private void onVerificationEvent(ButtonInteractionEvent event) {
@@ -207,7 +154,6 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	}
 	
 	private void onModalVerificationRespond(ModalInteractionEvent event) {
-		
         // Respond to the user (ephemeral response)
         event.reply("Gracias por unirte al server, en cualquier momento recibiras tus roles.").setEphemeral(true).queue();
         
@@ -280,10 +226,9 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 		}
 
     	// From the user, open a private channel to send DMs
-    	PrivateChannel privateChannel = event.getMember().getUser().openPrivateChannel().complete();
-    	
-    	// Send welcome message through DMs
-    	privateChannel.sendMessage("It works").queue();
+    	event.getMember().getUser().openPrivateChannel().queue(
+    		// Send welcome message through DMs
+    		privateChannel -> privateChannel.sendMessage("It works").queue());
 	}
 	
 	private void applyRoles(InteractionHook hook, Guild server, Member member, String email) {
