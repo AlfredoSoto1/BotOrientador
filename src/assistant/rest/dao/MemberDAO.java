@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 import assistant.database.BatchTransaction;
 import assistant.database.SubTransactionResult;
 import assistant.database.SubTransactionResult.Replacement;
-import assistant.database.SubTransactionResult.ResultReference;
 import assistant.database.Transaction;
 import assistant.database.TransactionError;
 import assistant.database.TransactionStatementType;
@@ -273,38 +272,72 @@ public class MemberDAO {
 		return transaction.getLatestResult();
 	}
 	
+	public SubTransactionResult queryMemberRoles(String email, long server) {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
+			"""
+			SELECT  droleid           AS droleid,
+			        longroleid        AS longroleid,
+			        discserid         AS discserid,
+			        dir.name          AS role_name,
+			        dir.effectivename AS effectivename
+			    FROM member
+			        INNER JOIN assignedrole    AS asr ON asr.fmemid = memid
+			        INNER JOIN discordrole     AS dir ON dir.droleid = asr.fdroleid
+			        INNER JOIN serverownership AS seo ON seo.seoid   = dir.fseoid
+			    
+			    WHERE
+			        email = ? AND discserid = ?
+			""", List.of(email, server));
+		
+		transaction.prepare()
+			.executeThen(TransactionStatementType.SELECT_QUERY)
+			.commit();
+		
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		
+		return transaction.getLatestResult();
+	}
+	
 	public SubTransactionResult insertAndVerifyMember(MemberDTO member, long server) {
 		@SuppressWarnings("resource")
 		Transaction transaction = new Transaction();
 		
 		// Add all transaction parameter fields
 		transaction.submitSQL(
-				"""
-				SELECT memid FROM member WHERE email = ?
-				""", 
-				List.of(member.getEmail()))
-			.submitSQL(
-				"""
-				INSERT INTO joinedmember(funfact, username, fmemid, fseoid, member_since)
-				    SELECT ?, ?, ?, seoid, CURRENT_TIMESTAMP
-				        FROM serverownership
-				        WHERE 
-				            discserid = ?
-				RETURNING jmid
-				""", 
-				List.of(member.getFunfact(), member.getUsername(), ResultReference.of("memid"), server))
-			.submitSQL(
-				"""
-				INSERT INTO advancement(name, fjmid)
-				    VALUES('attendance', ?)
-				""", 
-				List.of(ResultReference.of("jmid")));
+			"""
+			WITH selected_member AS (
+			    SELECT memid FROM member WHERE email = ? LIMIT 1
+			),
+			join_member AS (
+			    INSERT INTO joinedmember(funfact, username, fmemid, fseoid, member_since)
+			        SELECT ?, ?, (SELECT memid FROM selected_member), seoid, CURRENT_TIMESTAMP
+			            FROM serverownership
+			            WHERE 
+			                discserid = ?
+			    RETURNING jmid
+			),
+			set_advancement AS (
+			    INSERT INTO advancement(name, fjmid)
+			        SELECT 'participation', jmid FROM join_member
+			    RETURNING fjmid as jmid
+			)
+			SELECT jmid FROM set_advancement
+			""", 
+			List.of(member.getEmail(), member.getFunfact(), member.getUsername(), server));
 		
 		// Prepare transaction and execute by parts
 		transaction.prepare()
-			.executeThen(TransactionStatementType.SELECT_QUERY)
 			.executeThen(TransactionStatementType.MIXED_QUERY)
-			.executeThen(TransactionStatementType.UPDATE_QUERY)
 			.commit();
 		
 		// Close transaction

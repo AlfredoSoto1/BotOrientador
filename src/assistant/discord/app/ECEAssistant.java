@@ -28,6 +28,7 @@ import assistant.command.information.UprmMapCmd;
 import assistant.command.links.LinksCmd;
 import assistant.command.links.MadeWebCmd;
 import assistant.command.moderation.AssistantCmd;
+import assistant.command.moderation.VerificationCmd;
 import assistant.discord.core.ListenerAdapterManager;
 import assistant.discord.interaction.InteractionModel;
 
@@ -129,7 +130,7 @@ public class ECEAssistant extends BotApplication {
 //		interactions.add(faculty);
 //		interactions.add(projects);
 //		interactions.add(eoInfo);
-		interactions.add(findBuilding);
+//		interactions.add(findBuilding);
 //		interactions.add(organizations);
 	}
 	
@@ -195,7 +196,7 @@ public class ECEAssistant extends BotApplication {
 		 */
 //		interactions.add(new LoginCmd());
 		interactions.add(new AssistantCmd(this));
-//		interactions.add(new VerificationCmd());
+		interactions.add(new VerificationCmd());
 //		interactions.add(new ServerRegistrationCmd());
 //		interactions.add(new RoleSelectionCmd());
 //		interactions.add(new GamesCmd());

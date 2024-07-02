@@ -50,7 +50,7 @@ public class AppConfiguration {
 	
 	@Bean
 	public TokenHolder createBotToken() {
-		return new TokenHolder(TokenType.DISCORD_TOKEN, "");
+		return new TokenHolder(TokenType.DISCORD_TOKEN, botToken);
 	}
 
 	@Bean

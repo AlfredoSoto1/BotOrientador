@@ -7,6 +7,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import assistant.app.entry.AssistantAppEntry;
+import assistant.app.settings.TokenHolder;
 import assistant.database.DatabaseConnection;
 import assistant.database.DatabaseCredentials;
 import assistant.discord.app.ECEAssistant;
@@ -67,7 +68,7 @@ public abstract class Application {
 		databaseConnection = new DatabaseConnection(context.getBean("createDatabaseCredentials", DatabaseCredentials.class));
 		// Create new Assistant bot
 		// TODO: you have to automate this to support multiple bots
-//		assistant = new ECEAssistant(new BotConfiguration());
+		assistant = new ECEAssistant(context.getBean("createBotToken", TokenHolder.class));
 		
 		System.out.println("[Application] Initialized");
 		// Handle start of the application for customization
@@ -78,7 +79,7 @@ public abstract class Application {
 		System.out.println("[Application] Started");
 		
 		// Start the bot
-//		assistant.start();
+		assistant.start();
 
 		System.out.println("[Application] Bot ended");
 		
@@ -90,8 +91,8 @@ public abstract class Application {
 		System.out.println("[Application] Shutting down");
 		
 		// Disconnect the database and exit the spring application
-//		databaseConnection.disconnect();
-//		SpringApplication.exit(context);
+		databaseConnection.disconnect();
+		SpringApplication.exit(context);
 
 		System.out.println("[Application] Ended");
 	}

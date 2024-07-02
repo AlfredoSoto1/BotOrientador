@@ -87,6 +87,18 @@ public class MemberController {
 		return ResponseEntity.of(service.getMemberTeam(email.getEmail(), server));
 	}
 	
+	@GetMapping("/roles")
+	public ResponseEntity<?> getMemberRoles(
+			@RequestBody(required = true)   EmailDTO email,
+			@RequestParam(required = true)  Long server,
+			@RequestHeader("Authorization") String token) {
+		
+		if (TokenHolder.authenticateREST(token, tokenHolders))
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
+		
+		return ResponseEntity.ok(service.getMemberRoles(email.getEmail(), server));
+	}
+	
 	@PostMapping
 	public ResponseEntity<?> addMember(
 			@RequestBody(required = true)   MemberDTO member,
@@ -146,7 +158,7 @@ public class MemberController {
 		if (TokenHolder.authenticateREST(token, tokenHolders))
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
 		
-		if(service.verifyMember(member, server))
+		if(service.stampMemberPresence(member, server))
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body("VERIFICATION SUCCESS");
 		
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to insert");

@@ -32,7 +32,7 @@ public class TokenHolder {
 	}
 	
 	public static JDABuilder buildJDAFromToken(Class<?> botApp, TokenHolder botToken) {
-		if(botApp == BotApplication.class && botToken.type == TokenType.DISCORD_TOKEN)
+		if(BotApplication.class.isAssignableFrom(botApp) && botToken.type == TokenType.DISCORD_TOKEN)
 			return JDABuilder.createDefault(botToken.token);
 		return null;
 	}

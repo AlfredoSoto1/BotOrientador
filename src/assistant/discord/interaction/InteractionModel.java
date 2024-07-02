@@ -5,9 +5,12 @@ package assistant.discord.interaction;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
-import assistant.discord.object.MemberRole;
-import assistant.rest.dao.InteractionModelDAO;
+import assistant.app.core.Application;
+import assistant.discord.object.MemberPosition;
+import assistant.rest.dto.DiscordRoleDTO;
+import assistant.rest.service.DiscordService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -25,26 +28,26 @@ public abstract class InteractionModel {
 	private Map<String, ButtonActionEvent> buttonEvents;
 	private Map<String, SelectMenuActionEvent> selectMenuEvents;
 	
-	/**
-	 * This should be protected so that all sub classes
-	 * of this interaction model can access the default CRUD operations
-	 */
-	protected InteractionModelDAO interactionModelDAO;
+	private DiscordService service;
 	
 	protected InteractionModel() {
 		this.modalEvents = new HashMap<>();
 		this.buttonEvents = new HashMap<>();
 		this.selectMenuEvents = new HashMap<>();
-		this.interactionModelDAO = new InteractionModelDAO();
+		
+		this.service = Application.instance().getSpringContext().getBean(DiscordService.class);
 	}
 	
-	public void onInit(ReadyEvent event) {
-		
-	}
+	/**
+	 * On initiation
+	 * @param event
+	 */
+	public void onInit(ReadyEvent event) {}
 	
-	public void onDispose() {
-		
-	}
+	/**
+	 * On disposal
+	 */
+	public void onDispose() {}
 	
 	public Map<String, ButtonActionEvent> getRegisteredButtons() {
 		return buttonEvents;
@@ -95,21 +98,32 @@ public abstract class InteractionModel {
 	}
 	
 	protected boolean validateCommandUse(SlashCommandInteractionEvent event) {
-		// Obtain the required role to allow member to continue
-		Role requiredRole = interactionModelDAO.getServerMemberRole(event.getGuild(), MemberRole.BOT_DEVELOPER);
 		
-		// If the role is not found, force the required role to be administrator
-		if (requiredRole == null)
-			requiredRole = event.getGuild().getRolesByName("administrator", true).get(0);
+		// Obtain the administrator and developer role for further authentication
+		Role administratorRole = event.getGuild().getRolesByName("administrator", true).get(0);
+		Optional<Role> developerRole = this.getEffectiveRole(MemberPosition.BOT_DEVELOPER, event.getGuild());
 		
 		// Validate if the member has the required role to continue
-		boolean hasRole = event.getMember().getRoles().contains(requiredRole);
+		boolean hasRole = event.getMember().getRoles().contains(administratorRole);
+		
+		// Update flag to contain the developer role if present in database
+		if(developerRole.isPresent())
+			hasRole = hasRole || event.getMember().getRoles().contains(developerRole.get());
 		
 		// If it doesn't meet role criteria, send a message
 		if(!hasRole)
 			event.reply("You dont have the permissions to run this command").setEphemeral(true).queue();
 		
 		return hasRole;
+	}
+	
+	protected Optional<Role> getEffectiveRole(MemberPosition position, Guild server) {
+		// Obtain the required role to allow member to continue
+		Optional<DiscordRoleDTO> drole = service.getEffectiveRole(position, server.getIdLong());
+		
+		if (drole.isEmpty())
+			return Optional.empty();
+		return Optional.ofNullable(server.getRoleById(drole.get().getRoleid()));
 	}
 
 	protected Button registerButton(ButtonActionEvent action, Button nativeButton) {
@@ -143,9 +157,5 @@ public abstract class InteractionModel {
 		// Return the native modal. This gives the ability
 		// to still work on the button right after being registered.
 		return nativeSelectMenu;
-	}
-	
-	public void feedbackDev(String feedback, Object... parameters) {
-		
 	}
 }

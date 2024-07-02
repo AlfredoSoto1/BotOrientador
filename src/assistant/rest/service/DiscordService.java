@@ -9,6 +9,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import assistant.database.SubTransactionResult;
 import assistant.discord.object.MemberPosition;
 import assistant.rest.dao.DiscordServerDAO;
 import assistant.rest.dto.DiscordRoleDTO;
@@ -67,7 +68,21 @@ public class DiscordService {
 	 * @return Discord role from an effective name position in a server
 	 */
 	public Optional<DiscordRoleDTO> getEffectiveRole(MemberPosition rolePosition, long server) {
-		return dregistrationDAO.getEffectivePositionRole(rolePosition, server);
+		// Get the effective role position role from
+		// access object's transaction result
+		SubTransactionResult result = dregistrationDAO.getEffectivePositionRole(rolePosition, server);
+		
+		if(result.isEmpty())
+			return Optional.empty();
+		
+		DiscordRoleDTO role = new DiscordRoleDTO();
+		role.setId(result.getValue("droleid", 0));
+		role.setName(result.getValue("name", 0));
+		role.setEffectivename(result.getValue("effectivename", 0));
+		role.setRoleid(result.getValue("longroleid", 0));
+		role.setServerid(result.getValue("discserid", 0));
+		
+		return Optional.of(role);
 	}
 	
 	/**

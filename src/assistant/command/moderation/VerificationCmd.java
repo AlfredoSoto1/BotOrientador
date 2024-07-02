@@ -8,23 +8,25 @@ import java.util.List;
 import java.util.Optional;
 
 import assistant.app.core.Application;
-import assistant.discord.core.AsyncTaskQueue;
+import assistant.app.core.Logger;
+import assistant.app.core.Logger.LogFeedback;
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
-import assistant.discord.object.MemberRole;
-import assistant.rest.dao.VerificationDAO;
-import assistant.rest.dto.VerificationReport;
+import assistant.discord.object.MemberPosition;
+import assistant.rest.dto.DiscordRoleDTO;
+import assistant.rest.dto.MemberDTO;
+import assistant.rest.dto.TeamDTO;
 import assistant.rest.service.MemberService;
-import assistant.rest.service.TeamGroupCreatorService;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
+import net.dv8tion.jda.api.exceptions.HierarchyException;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -41,14 +43,13 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	
 	private static final String COMMAND_LABEL = "channel";
 	
-	private MemberService service;
-	
 	private boolean isGlobal;
 	private Modal verifyPrompt;
 	private Button verifyButton;
 	
+	private MemberService service;
+	
 	public VerificationCmd() {
-		// Obtain member service from Spring
 		this.service = Application.instance().getSpringContext().getBean(MemberService.class);
 		
 		// Create an Email field to be displayed inside the modal
@@ -141,10 +142,6 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	
 	private void sendVerificationEmbed(TextChannel textChannel) {
 		
-		// Mentioned Roles in embedded message
-		Role modRole = textChannel.getGuild().getRolesByName("Moderator", true).get(0);
-		Role bdeRole = textChannel.getGuild().getRolesByName("BotDeveloper", true).get(0);
-		
 		/*
 		 * Embedded messages
 		 */
@@ -183,7 +180,11 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 			¡Gracias por unirte y esperamos que disfrutes tu tiempo en el servidor! :blush:
 			""";
 
-		verification_problem_description = String.format(verification_problem_description, bdeRole.getAsMention(), modRole.getAsMention());
+		// Mentioned Roles in embedded message
+		Optional<Role> modRole = super.getEffectiveRole(MemberPosition.MODERATOR, textChannel.getGuild());
+		Optional<Role> bdeRole = super.getEffectiveRole(MemberPosition.BOT_DEVELOPER, textChannel.getGuild());
+		
+		verification_problem_description = String.format(verification_problem_description, bdeRole.get().getAsMention(), modRole.get().getAsMention());
 		
 		EmbedBuilder embedBuider = new EmbedBuilder();
 
@@ -207,21 +208,35 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	
 	private void onModalVerificationRespond(ModalInteractionEvent event) {
 		
-		// Obtain the roles of the EOs in charge of Discord
-		Role modRole = super.interactionModelDAO.getServerMemberRole(event.getGuild(), MemberRole.MODERATOR);
-		Role bdeRole = super.interactionModelDAO.getServerMemberRole(event.getGuild(), MemberRole.BOT_DEVELOPER);
-		
         // Respond to the user (ephemeral response)
         event.reply("Gracias por unirte al server, en cualquier momento recibiras tus roles.").setEphemeral(true).queue();
         
-        // Retrieve the values entered by the user
+        // Do this asynchronously
+        service.queueVerificationTask(event, this::verifyUser);
+    }
+	
+	private void verifyUser(ModalInteractionEvent event) {
+		
+		// Retrieve the values entered by the user
         String email = event.getValue("email-id").getAsString();
         String funfacts = event.getValue("funfact-id").getAsString();
+		
+		// Obtain the roles of the EOs in charge of Discord
+		Optional<Role> modRole = super.getEffectiveRole(MemberPosition.MODERATOR, event.getGuild());
+		Optional<Role> bdeRole = super.getEffectiveRole(MemberPosition.BOT_DEVELOPER, event.getGuild());
+		
+		// Check if the roles exists in database
+		if (modRole.isEmpty() || bdeRole.isEmpty()) {
+			event.reply("No se puede asignar los roles, contacta a un bot developer").setEphemeral(true).queue();
+			Logger.instance().logFile(LogFeedback.ERROR, "Failed looking for effective roles in database");
+			return;
+		}
+		
+        // Obtain member from database
+        Optional<MemberDTO> memberDTO = service.getMember(email);
         
-        // Obtain verification report from database
-        Optional<VerificationReport> report = verificationDAO.getUserReport(event.getGuild(), email);
-        
-        if (!report.isPresent()) {
+        // Safety check if the member doesn't exist in database
+        if (!memberDTO.isPresent()) {
         	String hookMessage = 
     			"""
     			Hmm parece que el email que entraste *__%s__* no está en nuestra base de datos :confused:
@@ -230,92 +245,95 @@ public class VerificationCmd extends InteractionModel implements CommandI {
     			Asegurate que estas usando **__@upr.edu__** ya que se necesita el email institucional para poder ser verificado.
     			""";
         	
-        	// Reply user with a hook message
+        	// Reply user privately
         	event.getHook()
-	        	.sendMessageFormat(hookMessage, email, bdeRole.getAsMention(), modRole.getAsMention())
+	        	.sendMessageFormat(hookMessage, email, bdeRole.get().getAsMention(), modRole.get().getAsMention())
 	        	.setEphemeral(true).queue();
+        	
+        	Logger.instance().logFile(LogFeedback.INFO, "Failed looking for user: %s", event.getMember().getEffectiveName());
         	return;
         }
-        
-        
-        // Do this asynchronously
-        verificationQueue.addTask(() -> {
-        	try {
-        		// Try assigning the roles and appropriate nickname
-        		// to the member. Catch any exceptions that might happen during run-time.
-        		assignRoleAndChangeNickname(event.getHook(), event.getGuild(), event.getMember(), report.get());
-        	} catch (InterruptedException ie) {
-        		ie.printStackTrace();
-        	} catch (InsufficientPermissionException ipe) {
-        		super.feedbackDev("Insufficient permissions to assign role or change nickname: " + ipe.getMessage());
-        	}
-
-        	// Confirm and commit verification
-        	verificationDAO.confirmVerification(event.getGuild(), email, funfacts);
-
-        	// TODO Send welcome message through DMs
-        });
-    }
-	
-	private void assignRoleAndChangeNickname(InteractionHook hook, Guild server, Member member, VerificationReport report) throws InterruptedException, InsufficientPermissionException {
-		int tryCount = 0;
-		boolean failedRoleAssignment = true;
-		boolean failedNicknameAssignment = true;
 		
-		// Set the roles of the member.
-	    // This will get called every second if
-	    // the roles to be assigned to the member 
-	    // are not fully applied.
-	    while (failedRoleAssignment && tryCount < 5) {
-	    	failedRoleAssignment = setRoles(server, member, report.getEmail());
-	    	tryCount++;
-	    	Thread.sleep(100);
-	    }
-	    
-	    // reset the try count
-	    tryCount = 0;
-	    
-	    // Set the nickname of the member.
-	    // This will get called every second if
-	    // the nickname fails to be assigned to the member.
-	    while (failedNicknameAssignment && tryCount < 5) {
-	    	failedNicknameAssignment = setNickname(server, member, report);
-	    	tryCount++;
-	    	Thread.sleep(100);
-	    }
-	    
-	    if (failedRoleAssignment)
-	    	hook.sendMessage("No se pudo otorgar los roles, por favor notifique a un Bot developer").setEphemeral(true).queue();
+        
+        // Update the member to later submit the member presence
+        memberDTO.ifPresent(member -> {
+        	// Set the funfacts and the username
+        	member.setFunfact(funfacts);
+        	member.setUsername(event.getMember().getEffectiveName());
+        });
+        
+        
+		// Check member verification
+		if(memberDTO.get().isVerified()) {
+			// Set the roles and nickname of the member.
+			applyTeam(event.getHook(), event.getGuild(), event.getMember(), memberDTO.get().getEmail());
+			applyRoles(event.getHook(), event.getGuild(), event.getMember(), memberDTO.get().getEmail());
+			applyNickname(event.getHook(), event.getGuild(), event.getMember(), memberDTO.get());
+		} else {
+			// Stamp the presence of the member and assign the roles
+			service.stampMemberPresence(memberDTO.get(), event.getGuild().getIdLong());
+			
+			// Set the roles and nickname of the member.
+			applyTeam(event.getHook(), event.getGuild(), event.getMember(), memberDTO.get().getEmail());
+			applyRoles(event.getHook(), event.getGuild(), event.getMember(), memberDTO.get().getEmail());
+			applyNickname(event.getHook(), event.getGuild(), event.getMember(), memberDTO.get());
+		}
 
-	    if (failedNicknameAssignment)
-	    	hook.sendMessage("No se pudo otorgar el nickname, por favor notifique a un Bot developer").setEphemeral(true).queue();
+    	// From the user, open a private channel to send DMs
+    	PrivateChannel privateChannel = event.getMember().getUser().openPrivateChannel().complete();
+    	
+    	// Send welcome message through DMs
+    	privateChannel.sendMessage("It works").queue();
 	}
 	
-	private boolean setRoles(Guild server, Member member, String email) {
+	private void applyRoles(InteractionHook hook, Guild server, Member member, String email) {
 		// Obtain the roles that the user has associated to the email
-		List<Long> classificationRoles = verificationDAO.getServerUserRoles(server, email);
+		List<DiscordRoleDTO> classificationRoles = service.getMemberRoles(email, server.getIdLong());
 		
 		// Set the roles to the member
-		for (Long role_id : classificationRoles) {
-			Role role = server.getRoleById(role_id);
+		for (DiscordRoleDTO roleDTO : classificationRoles) {
+			Role role = server.getRoleById(roleDTO.getRoleid());
 			
-			server.addRoleToMember(member, role).queue(
-				roleSuccess -> super.feedbackDev(String.format("Given Role [%s] to [%s]", role.getName(), member.getEffectiveName())),
-				roleError   -> super.feedbackDev("Failed to add role: " + roleError.getMessage()));
+			try {
+				server.addRoleToMember(member, role).queue(
+					success -> Logger.instance().logFile(LogFeedback.SUCCESS, "Given Role [%s] to [%s]", role.getName(), member.getEffectiveName()));
+			} catch (HierarchyException he) {
+				hook.sendMessage("No se pudo otorgar los roles, por favor notifique a un Bot developer").setEphemeral(true).queue();
+				Logger.instance().logFile(LogFeedback.WARNING, "Failed to add role: %s to member %s", he.getMessage(), member.getEffectiveName());
+			}
 		}
-		
-		// Returns true if the roles assigned to the member is not the same as the ones to be assigned
-		return member.getRoles().size() != classificationRoles.size();
 	}
 	
-	private boolean setNickname(Guild server, Member member, VerificationReport report) {
-		String nickname = report.getFullname();
-    	
-		server.modifyNickname(member, nickname).queue(
-			nicknameSuccess -> super.feedbackDev("Successfully changed nickname from [%s] to [%s]", member.getEffectiveName(), nickname),
-			nicknameError   -> super.feedbackDev("Failed to change nickname: %s", nicknameError.getMessage()));
+	private void applyTeam(InteractionHook hook, Guild server, Member member, String email) {
+		// Obtain the team that the user has associated to the email
+		Optional<TeamDTO> team = service.getMemberTeam(email, server.getIdLong());
 		
-		// Returns true if the member doesn't have an assigned nickname
-		return !Optional.ofNullable(member.getNickname()).isPresent();
+		if(team.isEmpty()) {
+			hook.sendMessage("No se pudo otorgar el equipo, por favor notifique a un Bot developer").setEphemeral(true).queue();
+			Logger.instance().logFile(LogFeedback.ERROR, "Failed to get team role for: %s", member.getEffectiveName());
+			return;
+		}
+		
+		Role role = server.getRoleById(team.get().getTeamRole().getRoleid());
+		
+		try {
+			server.addRoleToMember(member, role).queue(
+					success -> Logger.instance().logFile(LogFeedback.SUCCESS, "Given Role [%s] to [%s]", role.getName(), member.getEffectiveName()));
+		} catch (HierarchyException he) {
+			hook.sendMessage("No se pudo otorgar los roles, por favor notifique a un Bot developer").setEphemeral(true).queue();
+			Logger.instance().logFile(LogFeedback.WARNING, "Failed to add role: %s to member %s", he.getMessage(), member.getEffectiveName());
+		}
+	}
+	
+	private void applyNickname(InteractionHook hook, Guild server, Member member, MemberDTO memberDTO) {
+		String nickname = memberDTO.getFirstname() + " " + memberDTO.getInitial() + " " + memberDTO.getLastname();
+    	
+		try {
+			server.modifyNickname(member, nickname).queue(
+				success -> Logger.instance().logFile(LogFeedback.SUCCESS, "Successfully changed nickname from [%s] to [%s]", member.getEffectiveName(), nickname));
+		} catch (HierarchyException he) {
+			hook.sendMessage("No se pudo otorgar el nickname, por favor notifique a un Bot developer").setEphemeral(true).queue();
+			Logger.instance().logFile(LogFeedback.WARNING, "Failed to change nickname: %s", he.getMessage());
+		}
 	}
 }

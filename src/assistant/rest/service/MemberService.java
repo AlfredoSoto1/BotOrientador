@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.Cell;
@@ -44,6 +45,7 @@ public class MemberService {
 	@Autowired
 	public MemberService(MemberDAO memberDAO) {
 		this.memberDAO = memberDAO;
+		this.verificationQueue = new AsyncTaskQueue();
 	}
 	
 	/**
@@ -53,37 +55,12 @@ public class MemberService {
 		verificationQueue.shutdown();
 	}
 	
-	public boolean verifyMember(MemberDTO member, long server, Runnable method) {
-//		// Do this asynchronously
-//		verificationQueue.addTask(() -> {
-//			try {
-//				// Try assigning the roles and appropriate nickname
-//				// to the member. Catch any exceptions that might happen during run-time.
-//				assignRoleAndChangeNickname(event.getHook(), event.getGuild(), event.getMember(), report.get());
-//			} catch (InterruptedException ie) {
-//				ie.printStackTrace();
-//			} catch (InsufficientPermissionException ipe) {
-//				super.feedbackDev("Insufficient permissions to assign role or change nickname: " + ipe.getMessage());
-//			}
-//			
-//			// Confirm and commit verification
-//			verificationDAO.confirmVerification(event.getGuild(), email, funfacts);
-//			
-//			// TODO Send welcome message through DMs
-//		});
-		
-		return false;
+	public <T> void queueVerificationTask(T t, Consumer<T> runTask) {
+		verificationQueue.addTask(() -> runTask.accept(t));
 	}
 	
-	/**
-	 * @param member
-	 * @return true if verification succeeded
-	 */
-	public boolean verifyMember(MemberDTO member, long server) {
-		SubTransactionResult result =  memberDAO.insertAndVerifyMember(member, server);
-		
-		
-		return false;
+	public boolean stampMemberPresence(MemberDTO member, long server) {
+		return !memberDAO.insertAndVerifyMember(member, server).isEmpty();
 	}
 	
 	/**
@@ -199,6 +176,29 @@ public class MemberService {
 		team.setTeamRole(role);
 		
 		return Optional.of(team);
+	}
+	
+	/**
+	 * @param email
+	 * @return Team of the member that has the given email
+	 */
+	public List<DiscordRoleDTO> getMemberRoles(String email, long server) {
+		
+		List<DiscordRoleDTO> roles = new ArrayList<>();
+		SubTransactionResult result = memberDAO.queryMemberRoles(email, server);
+		
+		// Map all the results from DAO to DTO
+		for (int i = 0; i < result.rowCount(); i++) {
+			DiscordRoleDTO role = new DiscordRoleDTO();
+			role.setId(result.getValue("droleid", i));
+			role.setRoleid(result.getValue("longroleid", i));
+			role.setServerid(result.getValue("discserid", i));
+			role.setName(result.getValue("role_name", i));
+			role.setEffectivename(result.getValue("effectivename", i));
+			
+			roles.add(role);
+		}
+		return roles;
 	}
 	
 	/**
@@ -323,19 +323,19 @@ public class MemberService {
                 
                 if (first_lastName.isBlank())
                 	// If no first last name is found, provide empty string character
-                	first_lastName = "_";
+                	first_lastName = "-";
 
                 if (second_lastName.isBlank())
                 	// If no second last name is found, provide empty string character
-                	second_lastName = "_";
+                	second_lastName = "-";
                 
                 if(initial.isBlank())
                 	// If no initial is found, provide empty string character
-                	initial = "_";
+                	initial = "-";
                 
                 if (sex.isBlank())
                 	// If no sex is implied, provide empty string character
-                	sex = "_";
+                	sex = "-";
                 
                 if(email.isBlank())
                 	// Check for the personal gmail account instead

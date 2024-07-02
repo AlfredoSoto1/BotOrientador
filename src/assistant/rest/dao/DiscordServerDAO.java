@@ -16,7 +16,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.stereotype.Repository;
 
 import assistant.app.core.Application;
+import assistant.database.Transaction;
+import assistant.database.TransactionError;
+import assistant.database.TransactionStatementType;
 import assistant.database.DatabaseConnection.RunnableSQL;
+import assistant.database.SubTransactionResult;
 import assistant.discord.object.MemberPosition;
 import assistant.rest.dto.DiscordRoleDTO;
 import assistant.rest.dto.DiscordServerDTO;
@@ -184,8 +188,11 @@ public class DiscordServerDAO {
 		return roles;
 	}
 	
-	public Optional<DiscordRoleDTO> getEffectivePositionRole(MemberPosition rolePosition, long server) {
-		final String SQL = 
+	public SubTransactionResult getEffectivePositionRole(MemberPosition rolePosition, long server) {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
 			"""
 			SELECT  droleid,
 					name,
@@ -198,31 +205,22 @@ public class DiscordServerDAO {
 				
 				WHERE
 					effectivename = ? AND discserid = ?
-			""";
-		AtomicBoolean found = new AtomicBoolean(false);
-		DiscordRoleDTO role = new DiscordRoleDTO();
+			""", List.of(rolePosition.getEffectiveName(), server));
 		
-		RunnableSQL rq = connection -> {
-			PreparedStatement stmt = connection.prepareStatement(SQL);
-			stmt.setString(1, rolePosition.getEffectiveName());
-			stmt.setLong(2, server);
-			
-			ResultSet result = stmt.executeQuery();
-			while(result.next()) {
-				role.setId(result.getInt("droleid"));
-				role.setName(result.getString("name"));
-				role.setEffectivename(result.getString("effectivename"));
-				role.setRoleid(result.getLong("longroleid"));
-				role.setServerid(result.getLong("discserid"));
-				
-				found.set(true);
-			}
-			result.close();
-			stmt.close();
-		};
+		transaction.prepare()
+			.executeThen(TransactionStatementType.SELECT_QUERY)
+			.commit();
 		
-		Application.instance().getDatabaseConnection().establishConnection(rq);
-		return found.get() ? Optional.of(role) : Optional.empty();
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		
+		return transaction.getLatestResult();
 	}
 	
 	public int insertDiscordServer(DiscordServerDTO discordServer) {
