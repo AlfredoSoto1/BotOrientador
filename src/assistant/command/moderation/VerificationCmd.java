@@ -228,6 +228,7 @@ public class VerificationCmd extends InteractionModel implements CommandI {
     	event.getMember().getUser().openPrivateChannel().queue(
     		// Send welcome message through DMs
     		privateChannel -> privateChannel.sendMessage("It works").queue());
+    	// TODO
 	}
 	
 	private void applyRoles(InteractionHook hook, Guild server, Member member, String email) {

@@ -5,6 +5,8 @@ package assistant.command.moderation;
 
 import assistant.discord.interaction.InteractionModel;
 import assistant.discord.interaction.MessengerI;
+import assistant.embeds.moderation.VerificationEmbed;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
@@ -13,19 +15,26 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
  */
 public class WelcomeMessenger extends InteractionModel implements MessengerI {
 
+	private VerificationEmbed embed;
+	
 	public WelcomeMessenger() {
-		// TODO Auto-generated constructor stub
+		this.embed = new VerificationEmbed();
 	}
 	
 	@Override
 	public void memberJoin(GuildMemberJoinEvent event) {
-		// TODO Auto-generated method stub
+		Guild server = event.getGuild();
 		
+		event.getMember()
+		.getUser().openPrivateChannel().queue(
+				privateChannel -> {
+					privateChannel.sendMessageEmbeds(embed.buildServerBanner()).queue();
+					privateChannel.sendMessageEmbeds(embed.buildWelcomePrompt(server)).queue();
+				});
 	}
 
 	@Override
 	public void messageReceived(MessageReceivedEvent event) {
-		// TODO Auto-generated method stub
 		
 	}
 }

@@ -5,7 +5,7 @@
 # using the attendance software integrated in the services package
 
 assets/attendance/
-assistant/
+assistant/logs
 
 # Ignore the credentials json file
 # If you plan to test the application, you have to setup

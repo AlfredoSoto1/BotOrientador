@@ -26,7 +26,7 @@ public class AssistantAppEntry extends Application {
 	
 	public static void main(String[] args) {
 		// Create a new assistant application to start running
-		Application.run(new AssistantAppEntry(), args, DebugConfiguration.BOT_DISABLED);
+		Application.run(new AssistantAppEntry(), args, DebugConfiguration.BOT_ENABLED);
     }
 
 	@Override
