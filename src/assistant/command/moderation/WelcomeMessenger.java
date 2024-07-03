@@ -23,6 +23,7 @@ public class WelcomeMessenger extends InteractionModel implements MessengerI {
 	
 	@Override
 	public void memberJoin(GuildMemberJoinEvent event) {
+		// TODO do a query which reads from database which department is from to do custom message
 		Guild server = event.getGuild();
 		
 		event.getMember()
