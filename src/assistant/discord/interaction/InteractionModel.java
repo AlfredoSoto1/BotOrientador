@@ -10,6 +10,7 @@ import java.util.Optional;
 import assistant.app.core.Application;
 import assistant.discord.object.MemberPosition;
 import assistant.rest.dto.DiscordRoleDTO;
+import assistant.rest.dto.DiscordServerDTO;
 import assistant.rest.service.DiscordService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
@@ -124,6 +125,10 @@ public abstract class InteractionModel {
 		if (drole.isEmpty())
 			return Optional.empty();
 		return Optional.ofNullable(server.getRoleById(drole.get().getRoleid()));
+	}
+	
+	protected DiscordServerDTO getServerOwnerInfo(long server) {
+		return service.getRegisteredDiscordServer(server).get();
 	}
 
 	protected Button registerButton(ButtonActionEvent action, Button nativeButton) {

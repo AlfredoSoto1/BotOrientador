@@ -13,6 +13,7 @@ public class DiscordServerDTO {
 	private long logChannelId;
 	private String joinedAt;
 	private String department;
+	private String color;
 	
 	public DiscordServerDTO() {
 
@@ -56,5 +57,13 @@ public class DiscordServerDTO {
 
 	public void setDepartment(String department) {
 		this.department = department;
+	}
+
+	public String getColor() {
+		return color;
+	}
+
+	public void setColor(String color) {
+		this.color = color;
 	}
 }

@@ -33,12 +33,4 @@ public interface WelcomeMessages {
 		Empieza escribiendo ``/help``, para poderte dar una lista de todos los comandos
 		que conozco para poderte ayudar!!
 		""";
-	
-	public static final String PRESENTATION_MESSAGE_EOS = 
-		"""
-		Bienvenido @Member.UserName al TeamMade Discord Server 2023. 
-		Recuerda, avisar a los Bot Developers de cualquier problema con el bot.
-		De tener alguna idea respecto al bot o del server como tal, puedes decirle
-		a los Administradores o a los Bot Developers!!
-		""";
 }

@@ -3,6 +3,7 @@
  */
 package assistant.rest.service;
 
+import java.io.File;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,6 +29,10 @@ public class DiscordService {
 		this.dregistrationDAO = dregistrationDAO;
 	}
 	
+	public File findFromAssets(String path) {
+		return new File(path);
+	}
+	
 	/**
 	 * @param page
 	 * @param size
@@ -41,8 +46,23 @@ public class DiscordService {
 	 * @param id
 	 * @return Registered Discord Server
 	 */
-	public Optional<DiscordServerDTO> getRegisteredDiscordServer(int id) {
-		return dregistrationDAO.getRegisteredDiscordServer(id);
+	public Optional<DiscordServerDTO> getRegisteredDiscordServer(long server) {
+		
+		SubTransactionResult result = dregistrationDAO.getRegisteredDiscordServer(server);
+		
+		if(result.isEmpty())
+			return Optional.empty();
+		
+		// Map all the results from DAO to DTO
+		DiscordServerDTO discordServer = new DiscordServerDTO();
+		discordServer.setId(result.getValue("seoid", 0));
+		discordServer.setServerId(result.getValue("discserid", 0));
+		discordServer.setLogChannelId(result.getValue("log_channel", 0));
+		discordServer.setJoinedAt(result.getValue("joined_at", 0).toString());
+		discordServer.setDepartment(result.getValue("abreviation", 0));
+		discordServer.setColor(result.getValue("color", 0));
+		
+		return Optional.of(discordServer);
 	}
 	
 	/**

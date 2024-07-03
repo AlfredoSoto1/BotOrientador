@@ -15,8 +15,6 @@ import net.dv8tion.jda.api.entities.Role;
  */
 public class VerificationEmbed {
 	
-	private static final String WELCOME_BANNER = "https://cdn.discordapp.com/attachments/1243407696867102720/1257918621036969984/Welcome_Banner.png?ex=66862782&is=6684d602&hm=469fd47652e2e2b93de63497d14c192edc6327f45464731d0342173b33c07f75&";
-	
 	public VerificationEmbed() {
 		
 	}
@@ -49,19 +47,21 @@ public class VerificationEmbed {
 			.build();
 	}
 	
-	public MessageEmbed buildServerBanner() {
-		return new EmbedBuilder().setColor(new Color(40, 130, 138)).setImage(WELCOME_BANNER).build();
+	public MessageEmbed buildServerBanner(String imageUrl, Color color) {
+		return new EmbedBuilder().setColor(color).setImage(imageUrl).build();
 	}
 	
-	public MessageEmbed buildWelcomePrompt(Guild server) {
-		return new EmbedBuilder().setColor(new Color(40, 130, 138))
+	public MessageEmbed buildWelcomePrompt(Guild server, String department, Color color) {
+		String organization = "ECE".equalsIgnoreCase(department) ? "TEAM-MADE" : "INSO/CIIC";
+		
+		return new EmbedBuilder().setColor(color)
 			.setTitle(String.format(
 				"""
 				Bienvenido al %s**COLEGIO**%s, y al Discord de **%s**:tada::tada::raised_hands_tone3: 
 				""", 
 				server.getEmojisByName("Huella", true).get(0).getAsMention(), 
 				server.getEmojisByName("Huella", true).get(0).getAsMention(),
-				"TEAM-MADE"))
+				organization))
 			.setDescription(String.format(
 				"""
 				Para poder acceder al servidor es necesario que te verifiques. Para esto,

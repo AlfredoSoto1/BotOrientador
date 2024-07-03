@@ -9,18 +9,16 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.stereotype.Repository;
 
 import assistant.app.core.Application;
+import assistant.database.DatabaseConnection.RunnableSQL;
+import assistant.database.SubTransactionResult;
 import assistant.database.Transaction;
 import assistant.database.TransactionError;
 import assistant.database.TransactionStatementType;
-import assistant.database.DatabaseConnection.RunnableSQL;
-import assistant.database.SubTransactionResult;
 import assistant.discord.object.MemberPosition;
 import assistant.rest.dto.DiscordRoleDTO;
 import assistant.rest.dto.DiscordServerDTO;
@@ -67,7 +65,8 @@ public class DiscordServerDAO {
 					discserid,
 					log_channel,
 					joined_at,
-					abreviation
+					abreviation,
+					color
 				
 				FROM serverownership
 					INNER JOIN department ON fdepid = depid
@@ -91,6 +90,7 @@ public class DiscordServerDAO {
 				discordServer.setLogChannelId(result.getLong("log_channel"));
 				discordServer.setJoinedAt(result.getString("joined_at"));
 				discordServer.setDepartment(result.getString("abreviation"));
+				discordServer.setColor(result.getString("color"));
 				
 				discordServers.add(discordServer);
 			}
@@ -102,44 +102,40 @@ public class DiscordServerDAO {
 		return discordServers;
 	}
 	
-	public Optional<DiscordServerDTO> getRegisteredDiscordServer(int id) {
-		final String SQL = 
+	public SubTransactionResult getRegisteredDiscordServer(long server) {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
 			"""
 			SELECT  seoid,
 					discserid,
 					log_channel,
 					joined_at,
-					abreviation
+					abreviation,
+					color
 				
 				FROM serverownership
 					INNER JOIN department ON fdepid = depid
 				
 				WHERE
-					seoid = ?
-			""";
-		AtomicBoolean found = new AtomicBoolean(false);
-		DiscordServerDTO discordServer = new DiscordServerDTO();
+					discserid = ?
+			""", List.of(server));
 		
-		RunnableSQL rq = connection -> {
-			PreparedStatement stmt = connection.prepareStatement(SQL);
-			stmt.setInt(1, id);
-			
-			ResultSet result = stmt.executeQuery();
-			while(result.next()) {
-				discordServer.setId(result.getInt("seoid"));
-				discordServer.setServerId(result.getLong("discserid"));
-				discordServer.setLogChannelId(result.getLong("log_channel"));
-				discordServer.setJoinedAt(result.getString("joined_at"));
-				discordServer.setDepartment(result.getString("abreviation"));
-				
-				found.set(true);
-			}
-			result.close();
-			stmt.close();
-		};
+		transaction.prepare()
+			.executeThen(TransactionStatementType.SELECT_QUERY)
+			.commit();
 		
-		Application.instance().getDatabaseConnection().establishConnection(rq);
-		return found.get() ? Optional.of(discordServer) : Optional.empty();
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		
+		return transaction.getLatestResult();
 	}
 	
 	public List<DiscordRoleDTO> getAllRoles(int offset, int limit, long server) {
@@ -232,8 +228,8 @@ public class DiscordServerDAO {
 					WHERE abreviation = ? 
 				LIMIT 1
 			)
-			INSERT INTO serverownership (discserid, log_channel, fdepid)
-			    SELECT ?, ?, department_selected.depid
+			INSERT INTO serverownership (color, discserid, log_channel, fdepid)
+			    SELECT ?, ?, ?, department_selected.depid
 				    FROM department_selected
 			RETURNING seoid
 			""";
@@ -243,8 +239,9 @@ public class DiscordServerDAO {
 			connection.setAutoCommit(false);
 			PreparedStatement stmt = connection.prepareStatement(SQL);
 			stmt.setString(1, discordServer.getDepartment());
-			stmt.setLong(2, discordServer.getServerId());
-			stmt.setLong(3, discordServer.getLogChannelId());
+			stmt.setString(2, discordServer.getColor());
+			stmt.setLong(3, discordServer.getServerId());
+			stmt.setLong(4, discordServer.getLogChannelId());
 			
 			try {
 				ResultSet result = stmt.executeQuery();
