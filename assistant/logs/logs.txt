@@ -8,3 +8,8 @@
 [2024-07-02 00:31:14] [SUCCESS]  Given Role [ICOM] to [Robert - Ortiz Leon]
 [2024-07-02 00:31:14] [SUCCESS]  Given Role [Moderator] to [Robert - Ortiz Leon]
 [2024-07-02 00:31:15] [SUCCESS]  Given Role [EstudianteOrientador] to [Robert - Ortiz Leon]
+[2024-07-02 14:16:32] [ERROR]    Failed to get team role for: 💖𝓐𝓵𝓶𝓪💖
+[2024-07-02 14:16:32] [SUCCESS]  Given Role [INSO] to [Alma - Piñeiro Calero]
+[2024-07-02 14:16:32] [SUCCESS]  Successfully changed nickname from [Alma - Piñeiro Calero] to [Alma - Piñeiro Calero]
+[2024-07-02 14:16:32] [SUCCESS]  Given Role [Staff] to [Alma - Piñeiro Calero]
+[2024-07-02 14:16:32] [SUCCESS]  Given Role [EstudianteOrientador] to [Alma - Piñeiro Calero]

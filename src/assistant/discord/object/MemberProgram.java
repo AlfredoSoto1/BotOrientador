@@ -47,9 +47,9 @@ public enum MemberProgram {
 			return INSO;
 		if(program.equalsIgnoreCase("0508 - BACHELOR OF SCIENCE IN COMPUTER SCIENCES AND ENGINEERING"))
 			return CIIC;
-		if(program.equalsIgnoreCase("BACHELOR OF SCIENCES IN ELECTRICAL ENGINEERING"))
+		if(program.equalsIgnoreCase("0502 - BACHELOR OF SCIENCES IN ELECTRICAL ENGINEERING"))
 			return INEL;
-		if(program.equalsIgnoreCase("BACHELOR OF SCIENCES IN COMPUTER ENGINEERING"))
+		if(program.equalsIgnoreCase("0507 - BACHELOR OF SCIENCES IN COMPUTER ENGINEERING"))
 			return ICOM;
 		return null;
 	}	

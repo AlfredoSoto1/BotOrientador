@@ -369,54 +369,81 @@ public class MemberDAO {
 			        WHERE discserid = ?
 			    LIMIT 1
 			), 
+			member_info AS (
+			    SELECT  ? AS fname,
+			            ? AS flname,
+			            ? AS mlname,
+			            ? AS initial,
+			            ? AS sex,
+			            ? AS email,
+			            ? AS teamname,
+			            ? AS program_name,
+			            ? AS target_user,
+			            (SELECT seoid FROM chosen_server) AS seoid
+			),
 			chosen_program AS (
-			    SELECT progid FROM program 
-			        WHERE name = ?
+			    SELECT progid 
+			        FROM program, member_info AS mi 
+			        WHERE name = mi.program_name
 			    LIMIT 1
-			), 
+			),
 			new_member AS (
 			    INSERT INTO member (email, fprogid) 
-			        SELECT ?, progid FROM chosen_program
+			        SELECT (SELECT email FROM member_info), progid 
+			            FROM chosen_program
 			    RETURNING memid
 			), 
 			assigned_team AS (
 			    INSERT INTO assignedteam (fmemid, fteamid)
 			        SELECT (SELECT memid FROM new_member), teamid
 			            FROM team
-			                INNER JOIN discordrole     ON fdroleid = droleid
-			                INNER JOIN serverownership ON fseoid   = seoid
+			                INNER JOIN discordrole ON fdroleid = droleid
+			                INNER JOIN member_info ON fseoid = seoid
 			            WHERE 
-			                team.name = ? AND fseoid = (SELECT seoid FROM chosen_server)
+			                team.name = teamname AND
+			                fseoid    = seoid
 			    RETURNING atid
 			), 
 			assigned_position_role AS (
 			    INSERT INTO assignedrole (fmemid, fdroleid)
 			        SELECT (SELECT memid FROM new_member), droleid
 			            FROM discordrole
-			                INNER JOIN serverownership ON fseoid = seoid
+			                INNER JOIN member_info ON fseoid = seoid
 			            WHERE
-			                effectivename IN (%s) AND fseoid = (SELECT seoid FROM chosen_server)
+			                effectivename IN (%s) AND
+			                fseoid = seoid
 			    RETURNING arid
 			), 
 			assigned_program_role AS (
 			    INSERT INTO assignedrole (fmemid, fdroleid)
 			        SELECT (SELECT memid FROM new_member), droleid
 			            FROM discordrole
-			                INNER JOIN serverownership ON fseoid = seoid
+			                INNER JOIN member_info ON fseoid = seoid
 			            WHERE
-			                UPPER(effectivename) = UPPER(?) AND fseoid = (SELECT seoid FROM chosen_server)
+			                fseoid = seoid AND
+			                effectivename = program_name
 			    RETURNING arid
 			), 
 			insert_orientador AS (
 			    INSERT INTO orientador (fname, lname, fmemid)
-			        SELECT ?, ?, (SELECT memid FROM new_member)
-			            WHERE ? != 'Prepa'
+			        SELECT  fname,
+			                flname || ' ' || mlname,
+			                (SELECT memid FROM new_member)
+			            FROM member_info
+			            WHERE 
+			                target_user != 'Prepa'
 			    RETURNING fmemid
 			), 
 			insert_prepa AS (
 			    INSERT INTO prepa (fname, flname, mlname, initial, sex, fmemid)
-			        SELECT ?, ?, ?, ?, ?, (SELECT memid FROM new_member)
-			            WHERE ? = 'Prepa'
+			        SELECT  fname,
+			                flname,
+			                mlname,
+			                initial,
+			                sex,
+			                (SELECT memid FROM new_member)
+			            FROM member_info
+			            WHERE target_user = 'Prepa'
 			    RETURNING fmemid
 			)
 			SELECT 
@@ -428,23 +455,17 @@ public class MemberDAO {
 			    COALESCE((SELECT fmemid FROM insert_prepa),      0)        AS prepa_memid;
 			""",
 			List.of(
-					server,
-					member.getProgram().getLiteral(),
-					member.getEmail(),
-					teamname,
-					Replacement.of(positionRole.getEffectiveNamePositions()),
-					member.getProgram().getLiteral(),
-					
-					member.getFirstname(),
-					member.getLastname(),
-					positionRole.getEffectiveName(),
-					
-					member.getFirstname(), 
-					firstLastName, 
-					secondLastName, 
-					member.getInitial(), 
-					member.getSex(),
-					positionRole.getEffectiveName()));
+				server,
+				member.getFirstname(),
+				firstLastName, 
+				secondLastName, 
+				member.getInitial(), 
+				member.getSex(),
+				member.getEmail(),
+				teamname,
+				member.getProgram().getLiteral(),
+				positionRole.getEffectiveName(),
+				Replacement.of(positionRole.getEffectiveNamePositions())));
 
 		// Prepare transaction and execute by parts
 		transaction.prepare()
@@ -486,54 +507,81 @@ public class MemberDAO {
 			        WHERE discserid = ?
 			    LIMIT 1
 			), 
+			member_info AS (
+			    SELECT  ? AS fname,
+			            ? AS flname,
+			            ? AS mlname,
+			            ? AS initial,
+			            ? AS sex,
+			            ? AS email,
+			            ? AS teamname,
+			            ? AS program_name,
+			            ? AS target_user,
+			            (SELECT seoid FROM chosen_server) AS seoid
+			),
 			chosen_program AS (
-			    SELECT progid FROM program 
-			        WHERE name = ?
+			    SELECT progid 
+			        FROM program, member_info AS mi 
+			        WHERE name = mi.program_name
 			    LIMIT 1
-			), 
+			),
 			new_member AS (
 			    INSERT INTO member (email, fprogid) 
-			        SELECT ?, progid FROM chosen_program
+			        SELECT (SELECT email FROM member_info), progid 
+			            FROM chosen_program
 			    RETURNING memid
 			), 
 			assigned_team AS (
 			    INSERT INTO assignedteam (fmemid, fteamid)
 			        SELECT (SELECT memid FROM new_member), teamid
 			            FROM team
-			                INNER JOIN discordrole     ON fdroleid = droleid
-			                INNER JOIN serverownership ON fseoid   = seoid
+			                INNER JOIN discordrole ON fdroleid = droleid
+			                INNER JOIN member_info ON fseoid = seoid
 			            WHERE 
-			                team.name = ? AND fseoid = (SELECT seoid FROM chosen_server)
+			                team.name = teamname AND
+			                fseoid    = seoid
 			    RETURNING atid
 			), 
 			assigned_position_role AS (
 			    INSERT INTO assignedrole (fmemid, fdroleid)
 			        SELECT (SELECT memid FROM new_member), droleid
 			            FROM discordrole
-			                INNER JOIN serverownership ON fseoid = seoid
+			                INNER JOIN member_info ON fseoid = seoid
 			            WHERE
-			                effectivename IN (%s) AND fseoid = (SELECT seoid FROM chosen_server)
+			                effectivename IN (%s) AND
+			                fseoid = seoid
 			    RETURNING arid
 			), 
 			assigned_program_role AS (
 			    INSERT INTO assignedrole (fmemid, fdroleid)
 			        SELECT (SELECT memid FROM new_member), droleid
 			            FROM discordrole
-			                INNER JOIN serverownership ON fseoid = seoid
+			                INNER JOIN member_info ON fseoid = seoid
 			            WHERE
-			                UPPER(effectivename) = UPPER(?) AND fseoid = (SELECT seoid FROM chosen_server)
+			                fseoid = seoid AND
+			                effectivename = program_name
 			    RETURNING arid
 			), 
 			insert_orientador AS (
 			    INSERT INTO orientador (fname, lname, fmemid)
-			        SELECT ?, ?, (SELECT memid FROM new_member)
-			            WHERE ? != 'Prepa'
+			        SELECT  fname,
+			                flname || ' ' || mlname,
+			                (SELECT memid FROM new_member)
+			            FROM member_info
+			            WHERE 
+			                target_user != 'Prepa'
 			    RETURNING fmemid
 			), 
 			insert_prepa AS (
 			    INSERT INTO prepa (fname, flname, mlname, initial, sex, fmemid)
-			        SELECT ?, ?, ?, ?, ?, (SELECT memid FROM new_member)
-			            WHERE ? = 'Prepa'
+			        SELECT  fname,
+			                flname,
+			                mlname,
+			                initial,
+			                sex,
+			                (SELECT memid FROM new_member)
+			            FROM member_info
+			            WHERE target_user = 'Prepa'
 			    RETURNING fmemid
 			)
 			SELECT 
@@ -547,27 +595,20 @@ public class MemberDAO {
 			(MemberDTO member) -> {
 				String[] lastNameParts = member.getLastname().split(" ");
 			    String firstLastName = lastNameParts.length > 1 ? lastNameParts[0] : member.getLastname();
-			    String secondLastName = lastNameParts.length > 1 ? lastNameParts[1] : "_";
+			    String secondLastName = lastNameParts.length > 1 ? lastNameParts[1] : "";
 				return List.of(
 						server,
-						member.getProgram().getLiteral(),
-						member.getEmail(),
-						teamname,
-						Replacement.of(positionRole.getEffectiveNamePositions()),
-						member.getProgram().getLiteral(),
-						
 						member.getFirstname(),
-						member.getLastname(),
-						positionRole.getEffectiveName(),
-						
-						member.getFirstname(), 
 						firstLastName, 
 						secondLastName, 
 						member.getInitial(), 
 						member.getSex(),
-						positionRole.getEffectiveName());
+						member.getEmail(),
+						teamname,
+						member.getProgram().getLiteral(),
+						positionRole.getEffectiveName(),
+						Replacement.of(positionRole.getEffectiveNamePositions()));
 			});
-		
 		
 		// Prepare transaction and execute by parts
 		transaction.prepare()

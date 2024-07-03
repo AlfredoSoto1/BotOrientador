@@ -3,6 +3,8 @@
  */
 package assistant.rest.dto;
 
+import java.util.Objects;
+
 import assistant.discord.object.MemberProgram;
 
 /**
@@ -42,6 +44,20 @@ public class StudentDTO {
                 ", program='" + program.getLiteral() + '\'' +
                 '}';
     }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        StudentDTO that = (StudentDTO) o;
+        return email.equals(that.email);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(email);
+    }
+
 
 	public String getFirstname() {
 		return firstname;

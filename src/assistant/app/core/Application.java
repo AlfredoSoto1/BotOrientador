@@ -20,6 +20,8 @@ public abstract class Application {
 	
 	private static Application singleton;
 	
+	private DebugConfiguration configuration;
+	
 	private ECEAssistant assistant;
 	private DatabaseConnection databaseConnection;
 	private ConfigurableApplicationContext context;
@@ -44,10 +46,11 @@ public abstract class Application {
 	 * 
 	 * @param application
 	 */
-	public static void run(Application application, String[] args) {
+	public static void run(Application application, String[] args, DebugConfiguration configuration) {
 		if(Application.singleton != null)
 			throw new RuntimeException("Application already exists");
 		Application.singleton = application;
+		Application.singleton.configuration = configuration;
 
 		// Initialize application
 		Application.singleton.initialize(args);
@@ -64,36 +67,42 @@ public abstract class Application {
 	private void initialize(String[] args) {
 		// Create new spring application
 		context = SpringApplication.run(AssistantAppEntry.class, args);
+		
 		// Create a new database connection
 		databaseConnection = new DatabaseConnection(context.getBean("createDatabaseCredentials", DatabaseCredentials.class));
-		// Create new Assistant bot
-		// TODO: you have to automate this to support multiple bots
-		assistant = new ECEAssistant(context.getBean("createBotToken", TokenHolder.class));
 		
+		// TODO: you have to automate this to support multiple bots
+		if (configuration == DebugConfiguration.BOT_ENABLED)
+			assistant = new ECEAssistant(context.getBean("createBotToken", TokenHolder.class));
+		
+		onStart();
+		onShutdown();
+	}
+	
+	private void onStart() {
 		System.out.println("[Application] Initialized");
-		// Handle start of the application for customization
 		onRestStart();
 		onDatabaseStart();
-		onBotStart();
-
-		System.out.println("[Application] Started");
 		
-		// Start the bot
-		assistant.start();
-
+		if (configuration == DebugConfiguration.BOT_ENABLED) {
+			onBotStart();
+			System.out.println("[Application] Started");
+			assistant.start();
+		}
+	}
+	
+	private void onShutdown() {
+		if (configuration != DebugConfiguration.BOT_ENABLED)
+			return;
 		System.out.println("[Application] Bot ended");
-		
-		// Shutdown everything
 		onBotShutdown();
 		onDatabaseShutdown();
 		onRestShutdown();
-
 		System.out.println("[Application] Shutting down");
 		
 		// Disconnect the database and exit the spring application
 		databaseConnection.disconnect();
 		SpringApplication.exit(context);
-
 		System.out.println("[Application] Ended");
 	}
 }

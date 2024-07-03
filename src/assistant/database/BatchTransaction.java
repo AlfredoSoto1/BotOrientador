@@ -80,10 +80,11 @@ public class BatchTransaction implements AutoCloseable {
 	 * @param batchedParameters
 	 * @return BatchTransaction
 	 */
+	@SuppressWarnings("unchecked")
 	public <T> BatchTransaction batchSQL(String SQL, Function<T, List<?>> batchedParameters) {
 		if(!errors.isEmpty())
 			return this;
-		sqlTransactions.add(new TransactionStatement(SQL, batchedParameters));
+		sqlTransactions.add(new TransactionStatement(SQL, (List<T>) batches.peek(), batchedParameters));
 		return this;
 	}
 	
@@ -137,7 +138,7 @@ public class BatchTransaction implements AutoCloseable {
 		// Process one batch at the time
 		// Batches for this transaction implementation do NOT
 		// depend on the result of the previous batch like a normal transaction
-		processBatchExecution(type, pstmt, batch, statement.batchedParameters());
+		processBatchExecution(type, pstmt, batch, statement);
 		
 		try {
 			pstmt.close();
@@ -198,12 +199,12 @@ public class BatchTransaction implements AutoCloseable {
 		}
 	}
 	
-	private <T> void processBatchExecution(TransactionStatementType type, PreparedStatement pstmt, List<T> batch, Function<T, List<?>> batchedParameters) {
+	private <T> void processBatchExecution(TransactionStatementType type, PreparedStatement pstmt, List<T> batch, TransactionStatement statement) {
 		try {
 			// Set all the parameters before running the query
-			for(T element : batch) {
+			for(T batchElement : batch) {
 				int position = 1;
-				for (Object parameter : batchedParameters.apply(element))
+				for (Object parameter : statement.batchedParameters(batchElement))
 					setParameter(pstmt, position++, parameter);
 				pstmt.addBatch();
 			}

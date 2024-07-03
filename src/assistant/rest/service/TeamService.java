@@ -3,20 +3,15 @@
  */
 package assistant.rest.service;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.stream.Collectors;
 
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -103,152 +98,72 @@ public class TeamService {
 	 * @return Map of team numbers containing student lists perfectly distributed
 	 */
 	public Map<Integer, List<StudentDTO>> getPrepaTeamDivisionFrom(MemberProgram program1, MemberProgram program2, List<StudentDTO> students, int teamCount, int groupSize, int femalesPerGroup) {
-		
 		Map<Integer, List<StudentDTO>> resultTable = new HashMap<>();
 		
-        List<StudentDTO> femalesInso = students.stream()
+        Queue<StudentDTO> femalesInso = new LinkedList<>(students.stream()
                 .filter(s -> "F".equals(s.getSex()) && program1 == s.getProgram())
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
 
-        List<StudentDTO> femalesCiic = students.stream()
+        Queue<StudentDTO> femalesCiic = new LinkedList<>(students.stream()
                 .filter(s -> "F".equals(s.getSex()) && program2 == s.getProgram())
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
 
-        List<StudentDTO> malesInso = students.stream()
+        Queue<StudentDTO> malesInso = new LinkedList<>(students.stream()
                 .filter(s -> !"F".equals(s.getSex()) && program1 == s.getProgram())
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
 
-        List<StudentDTO> malesCiic = students.stream()
+        Queue<StudentDTO> malesCiic = new LinkedList<>(students.stream()
                 .filter(s -> !"F".equals(s.getSex()) && program2 == s.getProgram())
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
         
         for(int i = 0;i < teamCount;i++)
         	resultTable.put(i, new ArrayList<>());
         
+        System.out.println();
+        
         // Distribute females into the teams
-        // Distribute females into the teams
-        int femaleInsoIndex = 0;
-        int femaleCiicIndex = 0;
         for (int i = 0; i < teamCount; i++) {
-            for (int j = 0; j < femalesPerGroup / 2 && femaleInsoIndex < femalesInso.size(); j++) {
-                resultTable.get(i).add(femalesInso.get(femaleInsoIndex++));
+            for (int j = 0; j < femalesPerGroup / 2 && !femalesInso.isEmpty(); j++) {
+                resultTable.get(i).add(femalesInso.poll());
             }
-            for (int j = 0; j < femalesPerGroup / 2 && femaleCiicIndex < femalesCiic.size(); j++) {
-                resultTable.get(i).add(femalesCiic.get(femaleCiicIndex++));
+            for (int j = 0; j < femalesPerGroup / 2 && !femalesCiic.isEmpty(); j++) {
+                resultTable.get(i).add(femalesCiic.poll());
             }
+            
+            // Fill up to max
+            while(!femalesInso.isEmpty() && resultTable.get(i).size() < femalesPerGroup)
+            	resultTable.get(i).add(femalesInso.poll());
+            
+            while(!femalesCiic.isEmpty() && resultTable.get(i).size() < femalesPerGroup)
+            	resultTable.get(i).add(femalesCiic.poll());
+            
+            // Fill if less than max
+            while(!femalesInso.isEmpty() && (femalesCiic.size() + femalesInso.size()) < femalesPerGroup)
+            	resultTable.get(i).add(femalesInso.poll());
+            
+            while(!femalesCiic.isEmpty() && (femalesCiic.size() + femalesInso.size()) < femalesPerGroup)
+            	resultTable.get(i).add(femalesCiic.poll());
         }
         
         // Distribute males into the teams
-        int malesPerGroup = groupSize - femalesPerGroup;
-        int maleInsoIndex = 0;
-        int maleCiicIndex = 0;
         for (int i = 0; i < teamCount; i++) {
-            for (int j = 0; j < malesPerGroup / 2 && maleInsoIndex < malesInso.size(); j++) {
-                resultTable.get(i).add(malesInso.get(maleInsoIndex++));
+        	int malesPerGroup = groupSize - resultTable.get(i).size();
+        	
+        	for (int j = 0; j < malesPerGroup / 2 && !malesInso.isEmpty(); j++) {
+                resultTable.get(i).add(malesInso.poll());
             }
-            for (int j = 0; j < malesPerGroup / 2 && maleCiicIndex < malesCiic.size(); j++) {
-                resultTable.get(i).add(malesCiic.get(maleCiicIndex++));
+            for (int j = 0; j < malesPerGroup / 2 && !malesCiic.isEmpty(); j++) {
+                resultTable.get(i).add(malesCiic.poll());
             }
+            
+            // Fill up to max
+            while(!malesInso.isEmpty() && resultTable.get(i).size() < malesPerGroup)
+            	resultTable.get(i).add(malesInso.poll());
+            
+            while(!malesCiic.isEmpty() && resultTable.get(i).size() < malesPerGroup)
+            	resultTable.get(i).add(malesCiic.poll());
         }
-        
-        // If there are remaining females or males, distribute them to balance
-        for (int i = 0; i < teamCount; i++) {
-            while (resultTable.get(i).size() < groupSize) {
-                if (femaleInsoIndex < femalesInso.size()) {
-                    resultTable.get(i).add(femalesInso.get(femaleInsoIndex++));
-                } else if (femaleCiicIndex < femalesCiic.size()) {
-                    resultTable.get(i).add(femalesCiic.get(femaleCiicIndex++));
-                } else if (maleInsoIndex < malesInso.size()) {
-                    resultTable.get(i).add(malesInso.get(maleInsoIndex++));
-                } else if (maleCiicIndex < malesCiic.size()) {
-                    resultTable.get(i).add(malesCiic.get(maleCiicIndex++));
-                } else {
-                    break;
-                }
-            }
-        }
-        
         return resultTable;
 	}
 	
-	/**
-	 * Exports the student list to an excel
-	 * @param students
-	 * @param pathToExcel
-	 */
-	public void exportStudentsTo(List<StudentDTO> students, String pathToExcel) {
-		
-		// Sort the students so that they appear by name
-		students.sort(Comparator.comparing(StudentDTO::getFirstname)
-                .thenComparing(StudentDTO::getLastname));
-		
-		Workbook workbook = new XSSFWorkbook();
-		Sheet sheet = workbook.createSheet("Students");
-
-		// Create header row
-		Row headerRow = sheet.createRow(0);
-		headerRow.createCell(0).setCellValue("First Name");
-		headerRow.createCell(1).setCellValue("Last Name");
-		headerRow.createCell(2).setCellValue("Initial");
-		headerRow.createCell(3).setCellValue("Email");
-		headerRow.createCell(4).setCellValue("Program");
-
-		// Populate sheet with student data
-		int rowNum = 1;
-		for (StudentDTO student : students) {
-			Row row = sheet.createRow(rowNum++);
-
-			row.createCell(0).setCellValue(student.getFirstname());
-			row.createCell(1).setCellValue(student.getLastname());
-			row.createCell(2).setCellValue(student.getInitial());
-			row.createCell(3).setCellValue(student.getEmail());
-			row.createCell(4).setCellValue(student.getProgram().getLiteral());
-		}
-
-		// Write the workbook to a file
-		try (FileOutputStream fos = new FileOutputStream(pathToExcel)) {
-			workbook.write(fos);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				workbook.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	/**
-	 * Prints to the console the distribution of the teams
-	 * @param program1
-	 * @param program2
-	 * @param teamsTable
-	 */
-	public void debugLogTeamDistribution(MemberProgram program1, MemberProgram program2, Map<Integer, List<StudentDTO>> teamsTable) {
-		// Print teams for verification
-		int total = 0;
-        for (Map.Entry<Integer, List<StudentDTO>> entry : teamsTable.entrySet()) {
-            int teamNumber = entry.getKey();
-            List<StudentDTO> team = entry.getValue();
-
-            long femaleCount = team.stream().filter(s -> "F".equals(s.getSex())).count();
-            long maleCount = team.stream().filter(s -> !"F".equals(s.getSex())).count();
-
-            long femalesInsoCount = team.stream().filter(s -> "F".equals(s.getSex()) && program1 == s.getProgram()).count();
-            long femalesCiicCount = team.stream().filter(s -> "F".equals(s.getSex()) && program2 == s.getProgram()).count();
-
-            long malesInsoCount = team.stream().filter(s -> !"F".equals(s.getSex()) && program1 == s.getProgram()).count();
-            long malesCiicCount = team.stream().filter(s -> !"F".equals(s.getSex()) && program2 == s.getProgram()).count();
-
-            System.out.println("Team " + teamNumber + ":");
-            System.out.println("Total students: " + team.size());
-            System.out.println("Females: " + femaleCount + " (INSO: " + femalesInsoCount + ", CIIC: " + femalesCiicCount + ")");
-            System.out.println("Males: " + maleCount + " (INSO: " + malesInsoCount + ", CIIC: " + malesCiicCount + ")");
-            System.out.println();
-
-            total += team.size();
-        }
-        System.out.println("Total students processed in distribution: " + total);
-	}
 }

@@ -3,21 +3,12 @@
  */
 package assistant.rest.service;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.DateUtil;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -290,88 +281,5 @@ public class MemberService {
             student.setProgram(member.getProgram());
             return student;
         }).collect(Collectors.toList());
-    }
-    
-	/**
-	 * Loads students from excel
-	 * @param pathToExcel
-	 * @return List of students
-	 */
-	public List<StudentDTO> loadStudentsFrom(String pathToExcel) {
-		List<StudentDTO> students = new ArrayList<>();
-
-		try (FileInputStream fis = new FileInputStream(pathToExcel); 
-				Workbook workbook = new XSSFWorkbook(fis)) {
-
-			Sheet sheet = (Sheet) workbook.getSheetAt(0);
-			Iterator<Row> rowIterator = sheet.iterator();
-
-			// Skip header row
-			if (rowIterator.hasNext())
-				rowIterator.next();
-
-			while (rowIterator.hasNext()) {
-				Row row = rowIterator.next();
-
-                String first_lastName  = getCellValue(row.getCell(0));
-                String second_lastName = getCellValue(row.getCell(1));
-                String firstname = getCellValue(row.getCell(2));
-                String initial   = getCellValue(row.getCell(3));
-                String email     = getCellValue(row.getCell(6));
-                String sex       = getCellValue(row.getCell(9));
-                String program   = getCellValue(row.getCell(10));
-                
-                if (first_lastName.isBlank())
-                	// If no first last name is found, provide empty string character
-                	first_lastName = "-";
-
-                if (second_lastName.isBlank())
-                	// If no second last name is found, provide empty string character
-                	second_lastName = "-";
-                
-                if(initial.isBlank())
-                	// If no initial is found, provide empty string character
-                	initial = "-";
-                
-                if (sex.isBlank())
-                	// If no sex is implied, provide empty string character
-                	sex = "-";
-                
-                if(email.isBlank())
-                	// Check for the personal gmail account instead
-                	// This condition only gets triggered if and only if
-                	// the student doesn't have an institutional email given by mistake
-                	email = getCellValue(row.getCell(5));
-                
-                // Add the student DTO
-				students.add(new StudentDTO(firstname, first_lastName + " " + second_lastName, initial, sex, email, MemberProgram.asProgram(program)));
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return students;
-	}
-	
-    private String getCellValue(Cell cell) {
-        if (cell == null)
-            return "";
-        
-        switch (cell.getCellType()) {
-        case STRING:
-            return cell.getStringCellValue();
-        case NUMERIC:
-            if (DateUtil.isCellDateFormatted(cell)) {
-                return cell.getDateCellValue().toString();
-            } else {
-                return String.valueOf(cell.getNumericCellValue());
-            }
-        case BOOLEAN:
-            return String.valueOf(cell.getBooleanCellValue());
-        case FORMULA:
-            return cell.getCellFormula();
-        default:
-            return "";
-        }
     }
 }
