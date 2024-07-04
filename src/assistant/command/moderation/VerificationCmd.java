@@ -20,6 +20,7 @@ import assistant.rest.service.MemberService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -225,10 +226,25 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 		}
 
     	// From the user, open a private channel to send DMs
-    	event.getMember().getUser().openPrivateChannel().queue(
-    		// Send welcome message through DMs
-    		privateChannel -> privateChannel.sendMessage("It works").queue());
-    	// TODO
+    	event.getMember().getUser()
+    		.openPrivateChannel().queue(privateMessage -> showWelcomeMessage(privateMessage, event.getGuild()));
+	}
+	
+	private void showWelcomeMessage(PrivateChannel privateChannel, Guild server) {
+		/*
+		 * TODO:
+		 * 
+		 * Find member team, and complete name.
+		 */
+		privateChannel.sendMessage(String.format(
+			"""
+			Increíble %s, ahora eres un %s**COLEGIAL**%s:tada::tada::raised_hands_tone3::raised_hands_tone3:
+			Que fácil no?
+			""",
+			privateChannel.getUser().getEffectiveName(),
+			server.getEmojisByName("Huella", true).get(0).getAsMention(),
+			server.getEmojisByName("Huella", true).get(0).getAsMention()))
+			.queue();
 	}
 	
 	private void applyRoles(InteractionHook hook, Guild server, Member member, String email) {
