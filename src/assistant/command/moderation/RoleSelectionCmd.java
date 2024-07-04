@@ -75,7 +75,6 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI {
 		
 		String roleChanel = event.getOption("role-selection-channel").getAsString();
 		
-		
 		try {
 			Long.parseLong(roleChanel);
 		} catch (NumberFormatException nfe) {
