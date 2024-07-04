@@ -47,30 +47,6 @@ public class VerificationEmbed {
 			.build();
 	}
 	
-	public MessageEmbed buildWelcomeMessage(Color color) {
-		return new EmbedBuilder()
-			.setColor(color)
-			.addField(":mag_right:Búsqueda de lugares y edificios",
-				"""
-				- Encontrar edificios
-				- Encontrar sitios de comer
-				- Salones de estudio
-				""", false)
-			.addField(":bulb:Información de contactos",
-				"""
-				- Oficinas importantes
-				- Departamentos y facultades 
-				- Administración y servicios
-				""", false)
-			.addField(":link:Links",
-				"""
-				- Guía prepística
-				- Proyectos y organizaciones
-				- Enlaces para complementar información
-				""", false)
-			.build();
-	}
-	
 	public MessageEmbed buildServerBanner(String imageUrl, Color color) {
 		return new EmbedBuilder().setColor(color).setImage(imageUrl).build();
 	}

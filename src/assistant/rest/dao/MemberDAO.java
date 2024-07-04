@@ -284,12 +284,88 @@ public class MemberDAO {
 			        dir.name          AS role_name,
 			        dir.effectivename AS effectivename
 			    FROM member
-			        INNER JOIN assignedrole    AS asr ON asr.fmemid = memid
+			        INNER JOIN assignedrole    AS asr ON asr.fmemid  = memid
 			        INNER JOIN discordrole     AS dir ON dir.droleid = asr.fdroleid
 			        INNER JOIN serverownership AS seo ON seo.seoid   = dir.fseoid
 			    
 			    WHERE
 			        email = ? AND discserid = ?
+			""", List.of(email, server));
+		
+		transaction.prepare()
+			.executeThen(TransactionStatementType.SELECT_QUERY)
+			.commit();
+		
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		
+		return transaction.getLatestResult();
+	}
+	
+	public SubTransactionResult queryIsOrientador(String email, long server) {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
+			"""
+			SELECT orid
+			    FROM orientador
+			        INNER JOIN member          ON fmemid  = memid
+			        INNER JOIN program         ON fprogid = progid
+			        INNER JOIN department      ON program.fdepid = depid
+			        INNER JOIN serverownership ON serverownership.fdepid = depid
+			    WHERE
+			        email = ? AND discserid = ?
+			""", List.of(email, server));
+		
+		transaction.prepare()
+			.executeThen(TransactionStatementType.SELECT_QUERY)
+			.commit();
+		
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		
+		return transaction.getLatestResult();
+	}
+	
+	public SubTransactionResult queryPrepaOrientadores(String email, long server) {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
+			"""
+			WITH prepa_team AS (
+			    SELECT fteamid
+			        FROM prepa
+			            INNER JOIN member       ON prepa.fmemid = memid
+			            INNER JOIN assignedteam ON assignedteam.fmemid = memid
+			        WHERE email = ?
+			    LIMIT 1
+			)
+			SELECT  orientador.fname,
+			        orientador.lname,
+			        team.name,
+			        team.orgname
+			    FROM orientador
+			        INNER JOIN member          ON orientador.fmemid = memid
+			        INNER JOIN assignedteam    ON assignedteam.fmemid = memid
+			        INNER JOIN prepa_team      ON prepa_team.fteamid = assignedteam.fteamid
+			        INNER JOIN joinedmember    ON joinedmember.fmemid = memid
+			        INNER JOIN serverownership ON fseoid = seoid
+			    WHERE
+			        discserid = ?
 			""", List.of(email, server));
 		
 		transaction.prepare()

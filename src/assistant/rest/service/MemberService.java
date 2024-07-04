@@ -21,6 +21,7 @@ import assistant.rest.dao.MemberDAO;
 import assistant.rest.dto.DiscordRoleDTO;
 import assistant.rest.dto.EmailDTO;
 import assistant.rest.dto.MemberDTO;
+import assistant.rest.dto.PrepaOrientadorDTO;
 import assistant.rest.dto.StudentDTO;
 import assistant.rest.dto.TeamDTO;
 
@@ -190,6 +191,41 @@ public class MemberService {
 			roles.add(role);
 		}
 		return roles;
+	}
+	
+	/**
+	 * Prepa MUST be verified in order to provide the orientador data
+	 * 
+	 * @param email of the prepa
+	 * @param server
+	 * @return List of the orientadores that are part of the group that the prepa is.
+	 */
+	public List<PrepaOrientadorDTO> getPrepaOrientadores(String email, long server) {
+		
+		List<PrepaOrientadorDTO> orientadores = new ArrayList<>();
+		SubTransactionResult result = memberDAO.queryMemberRoles(email, server);
+		
+		// Map all the results from DAO to DTO
+		for (int i = 0; i < result.rowCount(); i++) {
+			PrepaOrientadorDTO orientador = new PrepaOrientadorDTO();
+			orientador.setFirstname(result.getValue("fname", i));
+			orientador.setLastname(result.getValue("lname", i));
+			orientador.setTeamname(result.getValue("name", i));
+			orientador.setOrganization(result.getValue("orgname", i));
+			
+			orientadores.add(orientador);
+		}
+		// If list is empty, that means that the prepa is not verified.
+		return orientadores;
+	}
+	
+	/**
+	 * @param email
+	 * @param server
+	 * @return true if he given email with the server turns out to be an orientador
+	 */
+	public boolean isOrientador(String email, long server) {
+		return !memberDAO.queryIsOrientador(email, server).isEmpty();
 	}
 	
 	/**

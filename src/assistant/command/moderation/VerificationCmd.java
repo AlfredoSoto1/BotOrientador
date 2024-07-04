@@ -5,6 +5,7 @@ package assistant.command.moderation;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import assistant.app.core.Application;
 import assistant.app.core.Logger;
@@ -14,7 +15,9 @@ import assistant.discord.interaction.InteractionModel;
 import assistant.discord.object.MemberPosition;
 import assistant.embeds.moderation.VerificationEmbed;
 import assistant.rest.dto.DiscordRoleDTO;
+import assistant.rest.dto.DiscordServerDTO;
 import assistant.rest.dto.MemberDTO;
+import assistant.rest.dto.PrepaOrientadorDTO;
 import assistant.rest.dto.TeamDTO;
 import assistant.rest.service.MemberService;
 import net.dv8tion.jda.api.entities.Guild;
@@ -200,14 +203,12 @@ public class VerificationCmd extends InteractionModel implements CommandI {
         	return;
         }
 		
-        
         // Update the member to later submit the member presence
         memberDTO.ifPresent(member -> {
         	// Set the funfacts and the username
         	member.setFunfact(funfacts);
         	member.setUsername(event.getMember().getEffectiveName());
         });
-        
         
 		// Check member verification
 		if(memberDTO.get().isVerified()) {
@@ -223,28 +224,115 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 			applyTeam(event.getHook(), event.getGuild(), event.getMember(), memberDTO.get().getEmail());
 			applyRoles(event.getHook(), event.getGuild(), event.getMember(), memberDTO.get().getEmail());
 			applyNickname(event.getHook(), event.getGuild(), event.getMember(), memberDTO.get());
-		}
 
-    	// From the user, open a private channel to send DMs
-    	event.getMember().getUser()
-    		.openPrivateChannel().queue(privateMessage -> showWelcomeMessage(privateMessage, event.getGuild()));
+			// From the user, open a private channel to send DMs
+			event.getMember().getUser()
+				.openPrivateChannel().queue(privateMessage -> showWelcomeMessage(privateMessage, memberDTO.get(), event.getGuild()));
+		}
 	}
 	
-	private void showWelcomeMessage(PrivateChannel privateChannel, Guild server) {
-		/*
-		 * TODO:
-		 * 
-		 * Find member team, and complete name.
-		 */
+	private void showWelcomeMessage(PrivateChannel privateChannel, MemberDTO member, Guild server) {
+		
+		// Check if the member is an orientador
+		if(service.isOrientador(member.getEmail(), server.getIdLong())) {
+			// Send custom message to orientador is joining the server
+			sendWelcomeMessageToOrientador(privateChannel, server, member);
+			return;
+		}
+
+		// Obtain the team of the member
+		Optional<TeamDTO> team = service.getMemberTeam(member.getEmail(), server.getIdLong());
+		
+		// If team not found, no need to print or display any message
+		// since its handled when the team is applied to the member
+		if(team.isEmpty())
+			return;
+		
+		// Send welcome message to member if its a prepa
+		sendWelcomeMessageToPrepa(privateChannel, server, member, team.get());
+	}
+	
+	private void sendWelcomeMessageToPrepa(PrivateChannel privateChannel, Guild server, MemberDTO member, TeamDTO team) {
+		// Obtain discord server information
+		DiscordServerDTO discordServer = super.getServerOwnerInfo(server.getIdLong());
+		
+		// Obtain a list of all the orientadores that form part of
+		// the same group as the prepa member who is joining
+		List<PrepaOrientadorDTO> prepaOrientadors = service.getPrepaOrientadores(member.getEmail(), server.getIdLong());
+		
+		// Obtain the names of the orientadores assuming
+		// that the member joining is a prepa and is already a verified member
+		String orientadorNames = prepaOrientadors.stream()
+				.map(PrepaOrientadorDTO::getFirstname)
+				.collect(Collectors.joining(", "));
+		
 		privateChannel.sendMessage(String.format(
 			"""
-			Increíble %s, ahora eres un %s**COLEGIAL**%s:tada::tada::raised_hands_tone3::raised_hands_tone3:
-			Que fácil no?
+			¡Increíble **%s**! Ahora eres un %s **COLEGIAL** %s :tada::tada::raised_hands_tone3::raised_hands_tone3:
+					
+			¿Fácil, no?
+			Bueno, ahora sí me presento formalmente.
+			
+			Hola %s **%s** %s,
+			
+			Me alegra mucho que estés aquí en el Colegio.
+			Yo soy el **Smart Assistant** del servidor y formo parte del equipo de **%s**, 
+			donde estamos organizados en sub-equipos para ayudarte mejor.
+			
+			Permíteme presentarte al equipo **_%s_**, uno de nuestros sub-equipos más destacados durante esta semana de orientación!. 
+			Juntos, nos esforzamos para ofrecerte el mejor soporte y resolver cualquier duda que tengas.
+			Tus estudiantes orientadores de tu equipo son: %s
+			
+			Para que tengas una idea, te puedo ayudar a:
+			
+			> ### :mag_right:Búsqueda de lugares y edificios
+			> - Encontrar edificios
+			> - Encontrar sitios de comer
+			> - Salones de estudio
+			
+			> ### :bulb:Información de contactos
+			> - Oficinas importantes
+			> - Departamentos y facultades 
+			> - Administración y servicios
+			
+			> ### :link:Links
+			> - Guía prepística
+			> - Proyectos y organizaciones
+			> - Enlaces para complementar información
+			
+			Espero ser de gran ayuda para tí, recuerda aquí siempre a la orden!!
+			
+			Si quieres, puedes empezar por utilizando los *slash commands*.
+			Para empezar, puedes intentar ``/help`` y veras como te sale un menú donde
+			podrás ver varios de mis comandos que tengo.
 			""",
-			privateChannel.getUser().getEffectiveName(),
-			server.getEmojisByName("Huella", true).get(0).getAsMention(),
-			server.getEmojisByName("Huella", true).get(0).getAsMention()))
-			.queue();
+				member.getFirstname(),
+				server.getEmojisByName("Huella", true).get(0).getAsMention(),
+				server.getEmojisByName("Huella", true).get(0).getAsMention(),
+				server.getEmojisByName("Huella", true).get(0).getAsMention(),
+				member.getFirstname(),
+				server.getEmojisByName("Huella", true).get(0).getAsMention(),
+				"ECE".equalsIgnoreCase(discordServer.getDepartment()) ? "TEAM-MADE" : "INSO/CIIC",
+				team.getName(), orientadorNames))
+			.queue();		
+	}
+	
+	private void sendWelcomeMessageToOrientador(PrivateChannel privateChannel, Guild server, MemberDTO member) {
+		// Obtain discord server information
+		DiscordServerDTO discordServer = super.getServerOwnerInfo(server.getIdLong());
+		
+		privateChannel.sendMessage(String.format(
+			"""
+			Bienvenido %s **%s** %s al **%s** Discord Server. 
+			Recuerda, avisar a los Bot Developers de cualquier problema con el bot.
+			De tener alguna idea respecto al bot o del server como tal, puedes decirle
+			a los Administradores o a los Bot Developers!!
+			""",
+				server.getEmojisByName("Huella", true).get(0).getAsMention(),
+				member.getFirstname(),
+				server.getEmojisByName("Huella", true).get(0).getAsMention(),
+				"ECE".equalsIgnoreCase(discordServer.getDepartment()) ? "TEAM-MADE" : "INSO/CIIC"))
+			.queue();		
 	}
 	
 	private void applyRoles(InteractionHook hook, Guild server, Member member, String email) {
