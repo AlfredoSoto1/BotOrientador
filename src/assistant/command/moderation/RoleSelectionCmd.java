@@ -65,7 +65,6 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI {
 	@Override
 	public List<OptionData> getOptions() {
 		return List.of(
-			new OptionData(OptionType.STRING, "log-channel", "send server logs", true),
 			new OptionData(OptionType.STRING, "role-selection-channel", "send role selection", true));
 	}
 
@@ -74,15 +73,8 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI {
 		if(!super.validateCommandUse(event))
 			return;
 		
-		String logChannel = event.getOption("log-channel").getAsString();
 		String roleChanel = event.getOption("role-selection-channel").getAsString();
 		
-		try {
-			Long.parseLong(logChannel);
-		} catch (NumberFormatException nfe) {
-			event.reply("The id provided for the log-channel is not a valid number").setEphemeral(true).queue();
-			return;
-		}
 		
 		try {
 			Long.parseLong(roleChanel);
@@ -91,18 +83,7 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI {
 			return;
 		}
 		
-		Optional<TextChannel> logTextChannel = Optional.ofNullable(event.getGuild().getTextChannelById(logChannel));
 		Optional<TextChannel> roleTextChannel = Optional.ofNullable(event.getGuild().getTextChannelById(roleChanel));
-		
-		// Register and validate the log channel here
-		
-		// Check if the channel is in server
-		if(logTextChannel.isPresent()) {
-			event.reply("Log channel set-up completed").setEphemeral(true).queue();
-		} else {
-			event.reply("Log channel not found").setEphemeral(true).queue();
-			return;
-		}
 		
 		if(roleTextChannel.isPresent()) {
 			event.reply("Role selection embed sent to channel").setEphemeral(true).queue();

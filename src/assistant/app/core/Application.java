@@ -71,7 +71,6 @@ public abstract class Application {
 		// Create a new database connection
 		databaseConnection = new DatabaseConnection(context.getBean("createDatabaseCredentials", DatabaseCredentials.class));
 		
-		// TODO: you have to automate this to support multiple bots
 		if (configuration == DebugConfiguration.BOT_ENABLED)
 			assistant = new ECEAssistant(context.getBean("createBotToken", TokenHolder.class));
 		

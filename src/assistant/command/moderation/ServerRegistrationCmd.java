@@ -22,6 +22,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 /**
  * @author Alfredo
  */
+@Deprecated
 public class ServerRegistrationCmd extends InteractionModel implements CommandI {
 
 	private RegistrationDAO registrationDAO;

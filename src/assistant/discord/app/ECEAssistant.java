@@ -28,6 +28,7 @@ import assistant.command.information.UprmMapCmd;
 import assistant.command.links.LinksCmd;
 import assistant.command.links.MadeWebCmd;
 import assistant.command.moderation.AssistantCmd;
+import assistant.command.moderation.RoleSelectionCmd;
 import assistant.command.moderation.VerificationCmd;
 import assistant.command.moderation.WelcomeMessenger;
 import assistant.discord.core.ListenerAdapterManager;
@@ -200,7 +201,7 @@ public class ECEAssistant extends BotApplication {
 		interactions.add(new VerificationCmd());
 		interactions.add(new WelcomeMessenger());
 //		interactions.add(new ServerRegistrationCmd());
-//		interactions.add(new RoleSelectionCmd());
+		interactions.add(new RoleSelectionCmd());
 //		interactions.add(new GamesCmd());
 	}
 }
