@@ -28,7 +28,7 @@ public abstract class InteractionModel {
 	private Map<String, ModalActionEvent> modalEvents;
 	private Map<String, ButtonActionEvent> buttonEvents;
 	private Map<String, SelectMenuActionEvent> selectMenuEvents;
-	
+
 	private DiscordService service;
 	
 	protected InteractionModel() {
@@ -93,7 +93,13 @@ public abstract class InteractionModel {
 					command.getDescription()
 				)
 				.addOptions(command.getOptions())
-				.queue();
+				.queue(
+					success -> {
+						System.out.println(success);
+					},
+					error -> {
+						System.out.println(error.getMessage());
+					});
 			}
 		}
 	}
@@ -130,7 +136,7 @@ public abstract class InteractionModel {
 	protected DiscordServerDTO getServerOwnerInfo(long server) {
 		return service.getRegisteredDiscordServer(server).get();
 	}
-
+	
 	protected Button registerButton(ButtonActionEvent action, Button nativeButton) {
 		// Saves the button action event linked to one button id
 		// This way it makes it easier for the listener adapter

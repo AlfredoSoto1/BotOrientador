@@ -19,8 +19,8 @@ public class VerificationEmbed {
 		
 	}
 	
-	public MessageEmbed buildVerificationPrompt(Role modRole, Role bdeRole) {
-		return new EmbedBuilder().setColor(new Color(40, 130, 138))
+	public MessageEmbed buildVerificationPrompt(Role modRole, Role bdeRole, Color color) {
+		return new EmbedBuilder().setColor(color)
 			.setTitle("**¡Bienvenido al servidor!** :wave:")
 			.setDescription(
 				"""

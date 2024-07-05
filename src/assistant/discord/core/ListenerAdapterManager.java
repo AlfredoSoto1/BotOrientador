@@ -22,8 +22,6 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
-import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveAllEvent;
-import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEmojiEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.events.session.SessionDisconnectEvent;
@@ -41,6 +39,7 @@ public class ListenerAdapterManager extends ListenerAdapter {
 	
 	private List<MessengerI> messages;
 	private Map<String, CommandI> commands;
+	private Map<Long, MessengerI> messageReactions;
 
 	private Map<String, ModalActionEvent> modals;
 	private Map<String, ButtonActionEvent> buttons;
@@ -64,6 +63,7 @@ public class ListenerAdapterManager extends ListenerAdapter {
 		
 		this.commands = new HashMap<>();
 		this.messages = new ArrayList<>();
+		this.messageReactions = new HashMap<>();
 		
 		this.interactions = new ArrayList<>();
 		
@@ -90,14 +90,18 @@ public class ListenerAdapterManager extends ListenerAdapter {
 	public void upsertInteractions(Collection<InteractionModel> interactions) {
 		// We want to add to store each interaction individually.
 		// This is so that each interaction gets its proper work flow and handle.
-		for(InteractionModel interaction : interactions) {
+		for (InteractionModel interaction : interactions) {
+			// Add the command for interaction
 			if (interaction instanceof CommandI command)
 				this.commands.put(command.getCommandName(), command);
+			
+			// Add all messenger interactions
 			if (interaction instanceof MessengerI messenger)
 				this.messages.add(messenger);
 			
 			this.interactions.add(interaction);
 			
+			// Add all registered interaction events
 			modals.putAll(interaction.getRegisteredModals());
 			buttons.putAll(interaction.getRegisteredButtons());
 			selectMenus.putAll(interaction.getRegisteredSelectMenu());
@@ -133,6 +137,7 @@ public class ListenerAdapterManager extends ListenerAdapter {
 		selectMenus.clear();
 		commands.clear();
 		messages.clear();
+		messageReactions.clear();
 		interactions.clear();
 	}
 	
@@ -180,24 +185,26 @@ public class ListenerAdapterManager extends ListenerAdapter {
 	
 	@Override
     public void onMessageReactionAdd(MessageReactionAddEvent event) {
-		// TODO
+		if(event.getUser().isBot())
+			return;
+		// Check for the interaction to be a messenger
+		// with this we can store the reaction id of each message
+		for(MessengerI messenger : messages)
+			for (int i = 0; i < messenger.getMessageID().size();i++)
+				messenger.onMessageReaction(event);
 	}
     
 	@Override
     public void onMessageReactionRemove(MessageReactionRemoveEvent event) {
-		// TODO
+		if(event.getUser().isBot())
+			return;
+		// Check for the interaction to be a messenger
+		// with this we can store the reaction id of each message
+		for(MessengerI messenger : messages)
+			for (int i = 0; i < messenger.getMessageID().size();i++)
+				messenger.onMessageReaction(event);
 	}
 
-	@Override
-    public void onMessageReactionRemoveAll(MessageReactionRemoveAllEvent event) {
-		// TODO
-	}
-	
-	@Override
-    public void onMessageReactionRemoveEmoji(MessageReactionRemoveEmojiEvent event) {
-		// TODO
-	}
-	
 	@Override
 	public void onModalInteraction(ModalInteractionEvent event) {
 		ModalActionEvent action = modals.get(event.getModalId());

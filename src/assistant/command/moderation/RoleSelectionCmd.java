@@ -4,42 +4,51 @@
 package assistant.command.moderation;
 
 import java.awt.Color;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import assistant.app.core.Logger;
+import assistant.app.core.Logger.LogFeedback;
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
-import net.dv8tion.jda.api.EmbedBuilder;
+import assistant.discord.interaction.MessengerI;
+import assistant.embeds.moderation.RoleSelectionEmbed;
+import assistant.rest.dto.DiscordServerDTO;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.emoji.EmojiUnion;
+import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.react.GenericMessageReactionEvent;
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
+import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
+import net.dv8tion.jda.api.events.session.ReadyEvent;
+import net.dv8tion.jda.api.exceptions.HierarchyException;
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
-import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 
 /**
  * @author Alfredo
  */
-public class RoleSelectionCmd extends InteractionModel implements CommandI {
+public class RoleSelectionCmd extends InteractionModel implements CommandI, MessengerI {
 
+	private RoleSelectionEmbed embed;
+	private List<Long> messagesToReact;
+	private List<RichCustomEmoji> reactionEmojis;
+	
 	private boolean isGlobal;
-	private StringSelectMenu roleSelection;
 	
 	public RoleSelectionCmd() {
-		// Create the role selection menu
-		super.registerSelectMenu(this::onRoleSelection, 		
-			roleSelection = StringSelectMenu.create("role-selection")
-	            .setPlaceholder("Select your roles")
-	            .setMinValues(0) 
-	            .setMaxValues(3)
-	            .addOptions(
-	                SelectOption.of("Role 1", "role1"),
-	                SelectOption.of("Role 2", "role2"),
-	                SelectOption.of("Role 3", "role3")
-	            )
-            .build()
-           );
+		this.embed = new RoleSelectionEmbed();
+		this.messagesToReact = new LinkedList<>();
+		this.reactionEmojis = new LinkedList<>();
 	}
 	
 	@Override
@@ -67,7 +76,14 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI {
 		return List.of(
 			new OptionData(OptionType.STRING, "role-selection-channel", "send role selection", true));
 	}
-
+	
+	@Override
+	public void onInit(ReadyEvent event) {
+		// TODO In the future:
+		// Create the emojis if they do not exist
+		// Link them with them with the database and roles
+	}
+	
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
 		if(!super.validateCommandUse(event))
@@ -82,47 +98,171 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI {
 			return;
 		}
 		
+		// Obtain text channel where the role selection will be set on
 		Optional<TextChannel> roleTextChannel = Optional.ofNullable(event.getGuild().getTextChannelById(roleChanel));
 		
-		if(roleTextChannel.isPresent()) {
-			event.reply("Role selection embed sent to channel").setEphemeral(true).queue();
-			sendRoleSelectionEmbed(roleTextChannel.get());
-		} else {
+		if(roleTextChannel.isEmpty()) {
 			event.reply("Role selection channel not found").setEphemeral(true).queue();
 			return;
 		}
+		
+		// Reply message to keep chat alive
+		event.reply("Role selection embed sent to channel").setEphemeral(true).queue();
+		
+		sendGamingRoleSelection(roleTextChannel.get());
 	}
 	
-	private void sendRoleSelectionEmbed(TextChannel textChannel) {
-		/*
-		 * Embedded messages
-		 */
-		String role_selection_title = 
-			"""
-		    **Role selection**
-		    """;
-		String role_gaming_title =
-			"""
-			 **Gaming roles**
-			""";
-		String role_gaming_description =
-			"""
-			@Fortnite
-			""";
-		
-		EmbedBuilder embedBuider = new EmbedBuilder();
+	@Override
+	public List<Long> getMessageID() {
+		return messagesToReact;
+	}
+	
+	@Override
+	public void memberJoin(GuildMemberJoinEvent event) {
+		// Do nothing here
+	}
 
-		embedBuider.setColor(new Color(40, 130, 138));
-		embedBuider.setTitle(role_selection_title);
+	@Override
+	public void messageReceived(MessageReceivedEvent event) {
+		// Do nothing here
+	}
+
+	@Override
+	public void onMessageReaction(GenericMessageReactionEvent event) {
 		
-		embedBuider.addField(role_gaming_title, role_gaming_description, false);
+		// Check if the message to be reacted with is registered
+		if (!messagesToReact.contains(event.getMessageIdLong()))
+			return;
 		
-		textChannel.sendMessageEmbeds(embedBuider.build())
-			.addActionRow(roleSelection)
-			.queue();
+		// Handle the proper event from the given generic one
+		if (event instanceof MessageReactionAddEvent addEvent) {
+			handleAddReaction(addEvent);
+		} else if (event instanceof MessageReactionRemoveEvent removeEvent) {
+			handleRemoveReaction(removeEvent);
+		}
 	}
 	
-	private void onRoleSelection(StringSelectInteractionEvent event) {
-		event.reply("Selected").setEphemeral(true).queue();
+	private void handleAddReaction(MessageReactionAddEvent event) {
+		// Obtain the role from the selected emoji in server
+		Optional<Role> role = getRoleFromSelection(event.getEmoji(), event.getGuild());
+		
+		// Apply the role if found in server
+		if (role.isPresent()) {
+			applyRole(event.getGuild(), event.getMember(), role.get());
+		} else {
+			Logger.instance().logFile(LogFeedback.WARNING, "Role is not present in server");
+		}
+	}
+	
+	private void handleRemoveReaction(MessageReactionRemoveEvent event) {
+		// Obtain the role from the selected emoji in server
+		Optional<Role> role =  getRoleFromSelection(event.getEmoji(), event.getGuild());
+		
+		// Apply the role if found in server
+		if (role.isPresent()) {
+			removeRole(event.getGuild(), event.getMember(), role.get());
+		} else {
+			Logger.instance().logFile(LogFeedback.WARNING, "Role is not present in server");
+		}
+	}
+	
+	private void sendGamingRoleSelection(TextChannel channel) {
+		Guild server = channel.getGuild();
+		DiscordServerDTO discordServer = super.getServerOwnerInfo(server.getIdLong());
+		Color color = Color.decode("#" + discordServer.getColor());
+		
+		reactionEmojis.add(server.getEmojisByName("fortnite",   true).get(0));
+		reactionEmojis.add(server.getEmojisByName("valorant",   true).get(0));
+		reactionEmojis.add(server.getEmojisByName("pokemon",    true).get(0));
+		reactionEmojis.add(server.getEmojisByName("amongus",    true).get(0));
+		reactionEmojis.add(server.getEmojisByName("minecraft",  true).get(0));
+		reactionEmojis.add(server.getEmojisByName("ow",         true).get(0));
+		reactionEmojis.add(server.getEmojisByName("thecompany", true).get(0));
+		reactionEmojis.add(server.getEmojisByName("lol",        true).get(0));
+		reactionEmojis.add(server.getEmojisByName("smash",      true).get(0));
+		
+		List<String> emojiMentions = reactionEmojis.stream()
+							            .map(RichCustomEmoji::getAsMention)
+							            .collect(Collectors.toList());
+		
+		String gamingSelection = String.format(
+			"""
+			> %s Fortnite
+            > %s Valorant
+            > %s Pokémon
+            > %s Among Us
+            > %s Minecraft
+            > %s Overwatch
+            > %s The Lethal Company
+            > %s League of Legends
+            > %s Super Smash Bros
+			""", emojiMentions.toArray());
+		
+		channel.sendMessageEmbeds(embed.buildGamingBuffet(color, gamingSelection))
+			.queue(message -> {
+				reactionEmojis.forEach(emoji -> message.addReaction(emoji).queue());
+				messagesToReact.add(message.getIdLong());
+			});
+	}
+	
+	private void applyRole(Guild server, Member member, Role role) {
+	    try {
+	    	server.addRoleToMember(member, role).queue(
+    			success -> Logger.instance().logFile(LogFeedback.SUCCESS, "Given Role [%s] to [%s]", role.getName(), member.getEffectiveName()));
+		} catch (HierarchyException he) {
+			Logger.instance().logFile(LogFeedback.WARNING, "Failed to add role [%s] to member [%s]: %s",
+					role.getName(), member.getEffectiveName(), he.getMessage());
+		} catch (InsufficientPermissionException ipe) {
+			Logger.instance().logFile(LogFeedback.WARNING, "Failed to add role [%s] to member [%s]: %s",
+					role.getName(), member.getEffectiveName(), ipe.getMessage());
+		}
+	}
+	
+	private void removeRole(Guild server, Member member, Role role) {
+	    try {
+	    	server.removeRoleFromMember(member, role).queue(
+    			success -> Logger.instance().logFile(LogFeedback.SUCCESS, "Removed Role [%s] to [%s]", role.getName(), member.getEffectiveName()));
+		} catch (HierarchyException he) {
+			Logger.instance().logFile(LogFeedback.WARNING, "Failed to add role [%s] to member [%s]: %s",
+					role.getName(), member.getEffectiveName(), he.getMessage());
+		} catch (InsufficientPermissionException ipe) {
+			Logger.instance().logFile(LogFeedback.WARNING, "Failed to add role [%s] to member [%s]: %s",
+					role.getName(), member.getEffectiveName(), ipe.getMessage());
+		}
+	}
+	
+	private Optional<Role> getRoleFromSelection(EmojiUnion emoji, Guild server) {
+		Role role = null;
+
+		switch (emoji.getName().toLowerCase()) {
+        case "fortnite":
+            role = server.getRolesByName("Fortnite", true).get(0);
+            break;
+        case "valorant":
+            role = server.getRolesByName("Valorant", true).get(0);
+            break;
+        case "pokemon":
+            role = server.getRolesByName("Pokémon", true).get(0);
+            break;
+        case "amongus":
+            role = server.getRolesByName("AmongUs", true).get(0);
+            break;
+        case "minecraft":
+            role = server.getRolesByName("Minecraft", true).get(0);
+            break;
+        case "ow":
+            role = server.getRolesByName("Overwatch", true).get(0);
+            break;
+        case "thecompany":
+            role = server.getRolesByName("TheCompany", true).get(0);
+            break;
+        case "lol":
+            role = server.getRolesByName("LOL", true).get(0);
+            break;
+        case "smash":
+            role = server.getRolesByName("Super Smash Bros", true).get(0);
+            break;
+	    }
+	    return Optional.ofNullable(role);
 	}
 }

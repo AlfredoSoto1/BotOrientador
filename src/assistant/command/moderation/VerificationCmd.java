@@ -3,6 +3,7 @@
  */
 package assistant.command.moderation;
 
+import java.awt.Color;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -143,7 +144,10 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 			Optional<Role> modRole = super.getEffectiveRole(MemberPosition.MODERATOR, textChannel.get().getGuild());
 			Optional<Role> bdeRole = super.getEffectiveRole(MemberPosition.BOT_DEVELOPER, textChannel.get().getGuild());
 			
-			textChannel.get().sendMessageEmbeds(verificationEmbed.buildVerificationPrompt(modRole.get(), bdeRole.get()))
+			DiscordServerDTO discordServer = super.getServerOwnerInfo(event.getGuild().getIdLong());
+			Color color = Color.decode("#" + discordServer.getColor());
+			
+			textChannel.get().sendMessageEmbeds(verificationEmbed.buildVerificationPrompt(modRole.get(), bdeRole.get(), color))
 				.setActionRow(verifyButton)
 				.queue();
 		}
