@@ -4,6 +4,7 @@
 package assistant.rest.service;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,10 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import assistant.database.SubTransactionResult;
+import assistant.discord.object.InteractionState;
 import assistant.discord.object.MemberPosition;
 import assistant.rest.dao.DiscordServerDAO;
 import assistant.rest.dto.DiscordRoleDTO;
 import assistant.rest.dto.DiscordServerDTO;
+import assistant.rest.dto.InteractionStateDTO;
 
 /**
  * @author Alfredo
@@ -123,4 +126,26 @@ public class DiscordService {
 		return dregistrationDAO.insertRole(role);
 	}
 	
+	public boolean cacheInteractionState(InteractionState type, long state, long server) {
+		return !dregistrationDAO.queryCacheInteractionState(type, state, server).isEmpty();
+	}
+	
+	public boolean deleteCacheInteractionState(long state, long server) {
+		return !dregistrationDAO.queryDeleteCacheInteractionState(state, server).isEmpty();
+	}
+	
+	public List<InteractionStateDTO> getCacheInteractionState(InteractionState type, long server) {
+		List<InteractionStateDTO> sates = new ArrayList<>();
+		SubTransactionResult result = dregistrationDAO.queryGetCacheInteractionState(type, server);
+		
+		// Map all the results from DAO to DTO
+		for (int i = 0; i < result.rowCount(); i++) {
+            InteractionStateDTO interactionState = new InteractionStateDTO();
+            interactionState.setState(result.getValue("state", 0));
+            interactionState.setServerId(result.getValue("discserid", 0));
+            interactionState.setType(InteractionState.asInteraction(result.getValue("type", 0)));
+            sates.add(interactionState);
+		}
+		return sates;
+	}
 }

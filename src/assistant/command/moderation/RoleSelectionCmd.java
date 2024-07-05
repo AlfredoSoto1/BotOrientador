@@ -14,8 +14,10 @@ import assistant.app.core.Logger.LogFeedback;
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
 import assistant.discord.interaction.MessengerI;
+import assistant.discord.object.InteractionState;
 import assistant.embeds.moderation.RoleSelectionEmbed;
 import assistant.rest.dto.DiscordServerDTO;
+import assistant.rest.dto.InteractionStateDTO;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
@@ -74,7 +76,10 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI, Mess
 	@Override
 	public List<OptionData> getOptions() {
 		return List.of(
-			new OptionData(OptionType.STRING, "role-selection-channel", "send role selection", true));
+			new OptionData(OptionType.STRING, "role-selection-channel", "send role selection", true),
+			new OptionData(OptionType.STRING, "cache", "manage cache of the selection embed", true)
+				.addChoice("create", "create")
+				.addChoice("delete", "delete"));
 	}
 	
 	@Override
@@ -82,6 +87,16 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI, Mess
 		// TODO In the future:
 		// Create the emojis if they do not exist
 		// Link them with them with the database and roles
+		
+		for (Guild server : event.getJDA().getGuilds()) {
+			// Obtain all the interaction role state previous
+			// to this new instance of the bot-application
+			List<InteractionStateDTO> states = super.getCacheInteractionStates(InteractionState.REACTON_ROLE_SELECTION, server.getIdLong());
+			
+			// Populate the message ids as previous states
+			for (InteractionStateDTO state : states)
+				messagesToReact.add(state.getState());
+		}
 	}
 	
 	@Override
@@ -90,6 +105,14 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI, Mess
 			return;
 		
 		String roleChanel = event.getOption("role-selection-channel").getAsString();
+		String deleteCache = event.getOption("cache").getAsString();
+		
+		if ("delete".equalsIgnoreCase(deleteCache)) {
+			for (long state : messagesToReact)
+				super.deleteCacheInteractionStates(state, event.getGuild().getIdLong());
+			event.reply("Deleted cached reaction role selection").setEphemeral(true).queue();
+			return;
+		}
 		
 		try {
 			Long.parseLong(roleChanel);
@@ -202,6 +225,7 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI, Mess
 			.queue(message -> {
 				reactionEmojis.forEach(emoji -> message.addReaction(emoji).queue());
 				messagesToReact.add(message.getIdLong());
+				super.cacheUniqueState(InteractionState.REACTON_ROLE_SELECTION, message.getIdLong(), server.getIdLong());
 			});
 	}
 	

@@ -19,6 +19,7 @@ import assistant.database.SubTransactionResult;
 import assistant.database.Transaction;
 import assistant.database.TransactionError;
 import assistant.database.TransactionStatementType;
+import assistant.discord.object.InteractionState;
 import assistant.discord.object.MemberPosition;
 import assistant.rest.dto.DiscordRoleDTO;
 import assistant.rest.dto.DiscordServerDTO;
@@ -301,5 +302,95 @@ public class DiscordServerDAO {
 		
 		Application.instance().getDatabaseConnection().establishConnection(rq);
 		return idResult.get();
+	}
+	
+	public SubTransactionResult queryCacheInteractionState(InteractionState type, long state, long server) {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
+			"""
+			WITH selected_server AS (
+			    SELECT seoid FROM serverownership
+			        WHERE
+			            discserid = ?
+			    LIMIT 1
+			)
+			INSERT INTO interactionstate (fseoid, state, type)
+			    SELECT seoid, ?, ? FROM selected_server
+			RETURNING istateid
+			""", List.of(server, state, type.getLiteral()));
+		
+		transaction.prepare()
+		.executeThen(TransactionStatementType.MIXED_QUERY)
+		.commit();
+		
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		
+		return transaction.getLatestResult();
+	}
+	
+	public SubTransactionResult queryDeleteCacheInteractionState(long state, long server) {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
+			"""
+			DELETE FROM interactionstate
+			    WHERE
+			        state = ? AND fseoid = (SELECT seoid FROM serverownership WHERE discserid = ? LIMIT 1)
+			RETURNING istateid
+			""", List.of(state, server));
+		
+		transaction.prepare()
+		.executeThen(TransactionStatementType.MIXED_QUERY)
+		.commit();
+		
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		
+		return transaction.getLatestResult();
+	}
+	
+	public SubTransactionResult queryGetCacheInteractionState(InteractionState type, long server) {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
+			"""
+			SELECT state, type, discserid
+			    FROM interactionstate
+			        INNER JOIN serverownership ON fseoid = seoid
+			    WHERE
+			        discserid = ? AND type = ?
+			""", List.of(server, type.getLiteral()));
+		
+		transaction.prepare()
+			.executeThen(TransactionStatementType.SELECT_QUERY)
+			.commit();
+		
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		
+		return transaction.getLatestResult();
 	}
 }

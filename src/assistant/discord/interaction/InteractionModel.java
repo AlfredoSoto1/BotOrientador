@@ -4,13 +4,16 @@
 package assistant.discord.interaction;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import assistant.app.core.Application;
+import assistant.discord.object.InteractionState;
 import assistant.discord.object.MemberPosition;
 import assistant.rest.dto.DiscordRoleDTO;
 import assistant.rest.dto.DiscordServerDTO;
+import assistant.rest.dto.InteractionStateDTO;
 import assistant.rest.service.DiscordService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
@@ -135,6 +138,18 @@ public abstract class InteractionModel {
 	
 	protected DiscordServerDTO getServerOwnerInfo(long server) {
 		return service.getRegisteredDiscordServer(server).get();
+	}
+	
+	protected boolean cacheUniqueState(InteractionState type, long state, long sever) {
+		return service.cacheInteractionState(type, state, sever);
+	}
+	
+	protected List<InteractionStateDTO> getCacheInteractionStates(InteractionState type, long sever) {
+		return service.getCacheInteractionState(type, sever);
+	}
+	
+	protected boolean deleteCacheInteractionStates(long state, long sever) {
+		return service.deleteCacheInteractionState(state, sever);
 	}
 	
 	protected Button registerButton(ButtonActionEvent action, Button nativeButton) {
