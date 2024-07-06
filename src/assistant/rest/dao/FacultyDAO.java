@@ -16,6 +16,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.stereotype.Repository;
 
 import assistant.app.core.Application;
+import assistant.database.SubTransactionResult;
+import assistant.database.Transaction;
+import assistant.database.TransactionError;
+import assistant.database.TransactionStatementType;
 import assistant.database.DatabaseConnection.RunnableSQL;
 import assistant.rest.dto.ContactDTO;
 import assistant.rest.dto.EmailDTO;
@@ -67,31 +71,60 @@ public class FacultyDAO {
 		 
 	}
 	
-	public List<EmailDTO> getFacultyEmails() {
-		final String SQL =
+	public SubTransactionResult getFacultyCount(String departmentAbbreviation) {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
+			"""
+			SELECT COUNT(*) 
+			    FROM faculty
+			        INNER JOIN department ON fdepid = depid
+			    WHERE
+			        abreviation = ?
+			""", List.of(departmentAbbreviation));
+		
+		transaction.prepare()
+			.executeThen(TransactionStatementType.SELECT_QUERY)
+			.commit();
+		
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		
+		return transaction.getLatestResult();
+	}
+	
+	public SubTransactionResult getFacultyEmails() {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
 			"""
 			SELECT  facid, email
                 FROM faculty
 			        INNER JOIN contact ON fcontid = contid
-			""";
-		List<EmailDTO> emails = new ArrayList<>();
+			""", List.of());
 		
-		RunnableSQL rq = connection -> {
-			PreparedStatement stmt = connection.prepareStatement(SQL);
-			
-			ResultSet result = stmt.executeQuery();
-			while(result.next()) {
-				EmailDTO email = new EmailDTO();
-				email.setId(result.getInt("facid"));
-				email.setEmail(result.getString("email"));
-				emails.add(email);
-			}
-			result.close();
-			stmt.close();
-		};
+		transaction.prepare()
+			.executeThen(TransactionStatementType.SELECT_QUERY)
+			.commit();
 		
-		Application.instance().getDatabaseConnection().establishConnection(rq);
-		return emails;
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		
+		return transaction.getLatestResult();
 	}
 	
 	public List<FacultyDTO> getAllFaculty(int offset, int limit, String department) {

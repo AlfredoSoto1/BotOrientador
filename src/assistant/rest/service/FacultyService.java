@@ -3,12 +3,14 @@
  */
 package assistant.rest.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import assistant.database.SubTransactionResult;
 import assistant.rest.dao.FacultyDAO;
 import assistant.rest.dto.EmailDTO;
 import assistant.rest.dto.FacultyDTO;
@@ -26,8 +28,26 @@ public class FacultyService {
 		this.facultyDAO = facultyDAO;
 	}
 	
+	public long getRecordCount(String departmentAbbreviation) {
+		SubTransactionResult result = facultyDAO.getFacultyCount(departmentAbbreviation);
+		
+		if (result.isEmpty())
+			return 0;
+		
+		return result.getValue("count", 0);
+	}
+	
 	public List<EmailDTO> getFacultyEmails() {
-		return facultyDAO.getFacultyEmails();
+		List<EmailDTO> emails = new ArrayList<>();
+		SubTransactionResult result = facultyDAO.getFacultyEmails();
+		
+		for (int i = 0;i < result.rowCount();i++) {
+			EmailDTO email = new EmailDTO();
+			email.setId(result.getValue("facid", i));
+			email.setEmail(result.getValue("email", i));
+			emails.add(email);
+		}
+		return emails;
 	}
 	
 	public List<FacultyDTO> getFaculty(int page, int size, String department) {
