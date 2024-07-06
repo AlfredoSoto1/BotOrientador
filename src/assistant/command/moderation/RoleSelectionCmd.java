@@ -192,8 +192,6 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI, Mess
 		// Apply the role if found in server
 		if (role.isPresent()) {
 			removeRole(event.getGuild(), event.getMember(), role.get());
-		} else {
-			Logger.instance().logFile(LogFeedback.WARNING, "Role is not present in server");
 		}
 	}
 	
@@ -203,6 +201,7 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI, Mess
 		Color color = Color.decode("#" + discordServer.getColor());
 		
 		// Build the buffets to be displayed
+		Pair<MessageEmbed, Consumer<Message>> coding = embed.buildCodingBuffet(color, server);
 		Pair<MessageEmbed, Consumer<Message>> gaming = embed.buildGamingBuffet(color, server);
 		Pair<MessageEmbed, Consumer<Message>> entertainment = embed.buildEntertainmentBuffet(color);
 		
@@ -216,6 +215,8 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI, Mess
 		};
 		
 		// Send the embed with the reactions to select from
+		channel.sendMessageEmbeds(coding.getLeft())
+			.queue(message -> uploadReaction.accept(message, coding.getRight()));
 		channel.sendMessageEmbeds(gaming.getLeft())
 			.queue(message -> uploadReaction.accept(message, gaming.getRight()));
 		channel.sendMessageEmbeds(entertainment.getLeft())
@@ -250,8 +251,33 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI, Mess
 	
 	private Optional<Role> getRoleFromSelection(EmojiUnion emoji, Guild server) {
 		Role role = null;
-
+		
 		switch (emoji.getName().toLowerCase()) {
+		case "javascript":
+			role = server.getRolesByName("js", true).get(0);
+			break;
+		case "ts":
+			role = server.getRolesByName("ts", true).get(0);
+			break;
+		case "python":
+			role = server.getRolesByName("python", true).get(0);
+			break;
+		case "java":
+			role = server.getRolesByName("java", true).get(0);
+			break;
+		case "c_hashtag":
+			role = server.getRolesByName("c#", true).get(0);
+			break;
+		case "c_":
+			role = server.getRolesByName("c", true).get(0);
+			break;
+		case "cpp":
+			role = server.getRolesByName("c++", true).get(0);
+			break;
+		case "asm":
+			role = server.getRolesByName("asm", true).get(0);
+			break;
+		
         case "fortnite":
             role = server.getRolesByName("Fortnite", true).get(0);
             break;
@@ -279,7 +305,25 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI, Mess
         case "smash":
             role = server.getRolesByName("Super Smash Bros", true).get(0);
             break;
+	    case "\uD83D\uDCFA": // :tv:
+	        role = server.getRolesByName("Series", true).get(0);
+	        break;
+	    case "\uD83C\uDFAC": // :clapper:
+	        role = server.getRolesByName("Movies Enthusiast", true).get(0);
+	        break;
+	    case "\uD83C\uDFB5": // :musical_note:
+	        role = server.getRolesByName("Music Lover", true).get(0);
+	        break;
+	    case "\uD83E\uDD21": // :clown:
+	        role = server.getRolesByName("I like Memes", true).get(0);
+	        break;
+	    case "\uD83C\uDFA8": // :art:
+	        role = server.getRolesByName("Artist", true).get(0);
+	        break;
+	    case "\uD83D\uDCBB": // :desktop:
+	        role = server.getRolesByName("hardware", true).get(0);
+	        break;
 	    }
-	    return Optional.ofNullable(role);
+		return Optional.ofNullable(role);
 	}
 }

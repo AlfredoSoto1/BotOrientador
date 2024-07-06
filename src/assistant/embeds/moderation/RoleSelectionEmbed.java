@@ -25,20 +25,94 @@ public class RoleSelectionEmbed {
 
 	}
 	
+	public Pair<MessageEmbed, Consumer<Message>> buildCodingBuffet(Color color, Guild server) {
+		List<RichCustomEmoji> reactionEmojis = List.of(
+			server.getEmojisByName("JavaScript", true).get(0),
+			server.getEmojisByName("TS",         true).get(0),
+			server.getEmojisByName("Python",     true).get(0),
+			server.getEmojisByName("Java",       true).get(0),
+			server.getEmojisByName("C_hashtag",  true).get(0),
+			server.getEmojisByName("C_",         true).get(0),
+			server.getEmojisByName("CPP",        true).get(0),
+			server.getEmojisByName("ASM",        true).get(0)
+		);
+		
+		List<String> emojiMentions_group1 = reactionEmojis.subList(0, 3)
+										.stream()
+										.map(RichCustomEmoji::getAsMention)
+										.collect(Collectors.toList());
+		
+		List<String> emojiMentions_group2 = reactionEmojis.subList(3, 5)
+										.stream()
+										.map(RichCustomEmoji::getAsMention)
+										.collect(Collectors.toList());
+		
+		List<String> emojiMentions_group3 = reactionEmojis.subList(5, 8)
+										.stream()
+							            .map(RichCustomEmoji::getAsMention)
+							            .collect(Collectors.toList());
+		
+		MessageEmbed embed = new EmbedBuilder()
+			.setColor(color)
+			.setTitle("`// Programming Langauges Role Selection`")
+			.setFooter("React below to choose your favorite programming language")
+			.addField("", String.format(
+				"""
+				> %s Java Script
+				> \u200B
+	            > %s Type Script
+				> \u200B
+	            > %s Python
+				""", emojiMentions_group1.toArray()), true)
+			.addField("", String.format(
+				"""
+	            > %s Java
+	            > \u200B
+	            > \u200B
+	            > %s C#
+	            > \u200B
+				""", emojiMentions_group2.toArray()), true)
+			.addField("", String.format(
+				"""
+	            > %s C
+	            > \u200B
+	            > %s C++
+	            > \u200B
+	            > %s Assembly
+				""", emojiMentions_group3.toArray()), true)
+			.build();
+		
+	    Consumer<Message> consumer = message -> {
+	    	reactionEmojis.forEach(emoji -> message.addReaction(emoji).queue());
+	    };
+		return Pair.of(embed, consumer);
+	}
+	
 	public Pair<MessageEmbed, Consumer<Message>> buildGamingBuffet(Color color, Guild server) {
 		List<RichCustomEmoji> reactionEmojis = List.of(
 			server.getEmojisByName("fortnite",   true).get(0),
 			server.getEmojisByName("valorant",   true).get(0),
+			server.getEmojisByName("ow",         true).get(0),
 			server.getEmojisByName("pokemon",    true).get(0),
+			server.getEmojisByName("lol",        true).get(0),
+			server.getEmojisByName("smash",      true).get(0),
 			server.getEmojisByName("amongus",    true).get(0),
 			server.getEmojisByName("minecraft",  true).get(0),
-			server.getEmojisByName("ow",         true).get(0),
-			server.getEmojisByName("thecompany", true).get(0),
-			server.getEmojisByName("lol",        true).get(0),
-			server.getEmojisByName("smash",      true).get(0)
+			server.getEmojisByName("thecompany", true).get(0)
 		);
 		
-		List<String> emojiMentions = reactionEmojis.stream()
+		List<String> emojiMentions_group1 = reactionEmojis.subList(0, 3)
+										.stream()
+										.map(RichCustomEmoji::getAsMention)
+										.collect(Collectors.toList());
+		
+		List<String> emojiMentions_group2 = reactionEmojis.subList(3, 6)
+										.stream()
+										.map(RichCustomEmoji::getAsMention)
+										.collect(Collectors.toList());
+		
+		List<String> emojiMentions_group3 = reactionEmojis.subList(6, 9)
+										.stream()
 							            .map(RichCustomEmoji::getAsMention)
 							            .collect(Collectors.toList());
 		
@@ -49,15 +123,27 @@ public class RoleSelectionEmbed {
 			.addField("", String.format(
 				"""
 				> %s Fortnite
+				> \u200B
 	            > %s Valorant
-	            > %s Pokémon
-	            > %s Among Us
-	            > %s Minecraft
+	            > \u200B
 	            > %s Overwatch
-	            > %s The Lethal Company
+				""", emojiMentions_group1.toArray()), true)
+			.addField("", String.format(
+				"""
+	            > %s Pokémon
+	            > \u200B
 	            > %s League of Legends
+	            > \u200B
 	            > %s Super Smash Bros
-				""", emojiMentions.toArray()), false)
+				""", emojiMentions_group2.toArray()), true)
+			.addField("", String.format(
+				"""
+	            > %s Among Us
+	            > \u200B
+	            > %s Minecraft
+	            > \u200B
+	            > %s The Lethal Company
+				""", emojiMentions_group3.toArray()), true)
 			.build();
 		
 	    Consumer<Message> consumer = message -> {
@@ -69,12 +155,12 @@ public class RoleSelectionEmbed {
 	public Pair<MessageEmbed, Consumer<Message>> buildEntertainmentBuffet(Color color) {
 	    // Unicode representations of the emojis
 	    List<String> reactionEmojis = List.of(
-	        "\uD83D\uDCFA", // :tv:
-	        "\uD83C\uDFAC", // :clapper:
-	        "\uD83C\uDFB5", // :musical_note:
-	        "\uD83E\uDD21", // :clown:
-	        "\uD83C\uDFA8", // :art:
-	        "\uD83D\uDCBB"  // :desktop:
+	        "\uD83D\uDCFA", // :tv:            // series
+	        "\uD83C\uDFAC", // :clapper:       // movies
+	        "\uD83E\uDD21", // :clown:         // memes
+	        "\uD83D\uDCBB", // :desktop:       // techie
+	        "\uD83C\uDFA8", // :art:           // art
+	        "\uD83C\uDFB5"  // :musical_note:  // music
 	    );
 	    
 	    MessageEmbed embed = new EmbedBuilder()
@@ -84,12 +170,19 @@ public class RoleSelectionEmbed {
 			.addField("", String.format(
 				"""
 				> %s Series
+				> \u200B
 				> %s Movies Enthusiast
-				> %s Music Lover
+				> \u200B
 				> %s Meme Lord 
-				> %s Artist
+				""", reactionEmojis.subList(0, 3).toArray()), true)
+			.addField("", String.format(
+				"""
 				> %s Techie
-				""", reactionEmojis.toArray()), false)
+				> \u200B
+				> %s Artist
+				> \u200B
+				> %s Music Lover
+				""", reactionEmojis.subList(3, 6).toArray()), true)
 			.build();
 	    
 	    Consumer<Message> consumer = message -> {
@@ -97,5 +190,4 @@ public class RoleSelectionEmbed {
 	    };
 	    return Pair.of(embed, consumer);
 	}
-	
 }
