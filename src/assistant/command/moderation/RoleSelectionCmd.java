@@ -7,7 +7,8 @@ import java.awt.Color;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import assistant.app.core.Logger;
 import assistant.app.core.Logger.LogFeedback;
@@ -20,10 +21,11 @@ import assistant.rest.dto.DiscordServerDTO;
 import assistant.rest.dto.InteractionStateDTO;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.emoji.EmojiUnion;
-import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -35,6 +37,7 @@ import net.dv8tion.jda.api.exceptions.HierarchyException;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.internal.utils.tuple.Pair;
 
 /**
  * @author Alfredo
@@ -43,14 +46,14 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI, Mess
 
 	private RoleSelectionEmbed embed;
 	private List<Long> messagesToReact;
-	private List<RichCustomEmoji> reactionEmojis;
 	
 	private boolean isGlobal;
+	private boolean isOnTest;
 	
 	public RoleSelectionCmd() {
+		this.isOnTest = false;
 		this.embed = new RoleSelectionEmbed();
 		this.messagesToReact = new LinkedList<>();
-		this.reactionEmojis = new LinkedList<>();
 	}
 	
 	@Override
@@ -78,6 +81,7 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI, Mess
 		return List.of(
 			new OptionData(OptionType.STRING, "role-selection-channel", "send role selection", true),
 			new OptionData(OptionType.STRING, "cache", "manage cache of the selection embed", true)
+				.addChoice("test", "test")
 				.addChoice("create", "create")
 				.addChoice("delete", "delete"));
 	}
@@ -105,13 +109,17 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI, Mess
 			return;
 		
 		String roleChanel = event.getOption("role-selection-channel").getAsString();
-		String deleteCache = event.getOption("cache").getAsString();
+		String cache = event.getOption("cache").getAsString();
 		
-		if ("delete".equalsIgnoreCase(deleteCache)) {
+		if ("delete".equalsIgnoreCase(cache)) {
 			for (long state : messagesToReact)
 				super.deleteCacheInteractionStates(state, event.getGuild().getIdLong());
 			event.reply("Deleted cached reaction role selection").setEphemeral(true).queue();
 			return;
+		} else if ("test".equalsIgnoreCase(cache)) {
+			isOnTest = true;
+		} else {
+			isOnTest = false;
 		}
 		
 		try {
@@ -132,7 +140,7 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI, Mess
 		// Reply message to keep chat alive
 		event.reply("Role selection embed sent to channel").setEphemeral(true).queue();
 		
-		sendGamingRoleSelection(roleTextChannel.get());
+		sendBuffet(roleTextChannel.get());
 	}
 	
 	@Override
@@ -189,44 +197,29 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI, Mess
 		}
 	}
 	
-	private void sendGamingRoleSelection(TextChannel channel) {
+	private void sendBuffet(TextChannel channel) {
 		Guild server = channel.getGuild();
 		DiscordServerDTO discordServer = super.getServerOwnerInfo(server.getIdLong());
 		Color color = Color.decode("#" + discordServer.getColor());
 		
-		reactionEmojis.add(server.getEmojisByName("fortnite",   true).get(0));
-		reactionEmojis.add(server.getEmojisByName("valorant",   true).get(0));
-		reactionEmojis.add(server.getEmojisByName("pokemon",    true).get(0));
-		reactionEmojis.add(server.getEmojisByName("amongus",    true).get(0));
-		reactionEmojis.add(server.getEmojisByName("minecraft",  true).get(0));
-		reactionEmojis.add(server.getEmojisByName("ow",         true).get(0));
-		reactionEmojis.add(server.getEmojisByName("thecompany", true).get(0));
-		reactionEmojis.add(server.getEmojisByName("lol",        true).get(0));
-		reactionEmojis.add(server.getEmojisByName("smash",      true).get(0));
+		// Build the buffets to be displayed
+		Pair<MessageEmbed, Consumer<Message>> gaming = embed.buildGamingBuffet(color, server);
+		Pair<MessageEmbed, Consumer<Message>> entertainment = embed.buildEntertainmentBuffet(color);
 		
-		List<String> emojiMentions = reactionEmojis.stream()
-							            .map(RichCustomEmoji::getAsMention)
-							            .collect(Collectors.toList());
-		
-		String gamingSelection = String.format(
-			"""
-			> %s Fortnite
-            > %s Valorant
-            > %s Pokémon
-            > %s Among Us
-            > %s Minecraft
-            > %s Overwatch
-            > %s The Lethal Company
-            > %s League of Legends
-            > %s Super Smash Bros
-			""", emojiMentions.toArray());
-		
-		channel.sendMessageEmbeds(embed.buildGamingBuffet(color, gamingSelection))
-			.queue(message -> {
-				reactionEmojis.forEach(emoji -> message.addReaction(emoji).queue());
-				messagesToReact.add(message.getIdLong());
+		BiConsumer<Message, Consumer<Message>> uploadReaction = (message, reactionApply) -> {
+			// Register the message id of the embed
+			messagesToReact.add(message.getIdLong());
+			if (!isOnTest)
 				super.cacheUniqueState(InteractionState.REACTON_ROLE_SELECTION, message.getIdLong(), server.getIdLong());
-			});
+			// Apply reactions to the message
+			reactionApply.accept(message);
+		};
+		
+		// Send the embed with the reactions to select from
+		channel.sendMessageEmbeds(gaming.getLeft())
+			.queue(message -> uploadReaction.accept(message, gaming.getRight()));
+		channel.sendMessageEmbeds(entertainment.getLeft())
+			.queue(message -> uploadReaction.accept(message, entertainment.getRight()));
 	}
 	
 	private void applyRole(Guild server, Member member, Role role) {
@@ -266,7 +259,7 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI, Mess
             role = server.getRolesByName("Valorant", true).get(0);
             break;
         case "pokemon":
-            role = server.getRolesByName("Pokémon", true).get(0);
+            role = server.getRolesByName("Pokemon", true).get(0);
             break;
         case "amongus":
             role = server.getRolesByName("AmongUs", true).get(0);

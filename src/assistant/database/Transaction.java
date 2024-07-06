@@ -91,7 +91,7 @@ public class Transaction implements AutoCloseable {
 		try {
 			connection.getConnection().setAutoCommit(false);
 		} catch (SQLException e) {
-			errors.add(new TransactionError(e.getMessage()));
+			errors.add(new TransactionError(e.getLocalizedMessage()));
 			return this;
 		}
 		
@@ -101,7 +101,7 @@ public class Transaction implements AutoCloseable {
 				PreparedStatement stmt = connection.getConnection().prepareStatement(statement.SQL());
 				statements.add(stmt);
 			} catch (SQLException e) {
-				errors.add(new TransactionError(e.getMessage()));
+				errors.add(new TransactionError(e.getLocalizedMessage()));
 				cancelTransaction();
 				return this;
 			}
@@ -135,7 +135,7 @@ public class Transaction implements AutoCloseable {
 		try {
 			pstmt.close();
 		} catch (SQLException e) {
-			errors.add(new TransactionError(e.getMessage()));
+			errors.add(new TransactionError(e.getLocalizedMessage()));
 		}
 		return this;
 	}
@@ -174,7 +174,7 @@ public class Transaction implements AutoCloseable {
 			
 			pstmt.close();
 		} catch (SQLException e) {
-			errors.add(new TransactionError(e.getMessage()));
+			errors.add(new TransactionError(e.getLocalizedMessage()));
 		}
 		return this;
 	}
@@ -191,7 +191,7 @@ public class Transaction implements AutoCloseable {
 			connection.getConnection().commit();
 			connection.getConnection().setAutoCommit(true);
 		} catch (SQLException e) {
-			errors.add(new TransactionError(e.getMessage()));
+			errors.add(new TransactionError(e.getLocalizedMessage()));
 		}
 		return this;
 	}
@@ -201,7 +201,7 @@ public class Transaction implements AutoCloseable {
 			connection.getConnection().rollback();
 			connection.getConnection().setAutoCommit(true);
 		} catch (SQLException e) {
-			errors.add(new TransactionError(e.getMessage()));
+			errors.add(new TransactionError(e.getLocalizedMessage()));
 		}
 	}
 	
@@ -226,7 +226,7 @@ public class Transaction implements AutoCloseable {
 				cancelTransaction();
 			close();
 		} catch (Exception e) {
-			errors.add(new TransactionError(e.getMessage()));
+			errors.add(new TransactionError(e.getLocalizedMessage()));
 		}
 	}
 	
@@ -308,7 +308,7 @@ public class Transaction implements AutoCloseable {
 	        }
 
 		} catch (SQLException e) {
-			errors.add(new TransactionError(e.getMessage()));
+			errors.add(new TransactionError(e.getLocalizedMessage()));
 			cancelTransaction();
 		}
 	}
