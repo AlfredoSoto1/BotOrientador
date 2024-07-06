@@ -132,7 +132,7 @@ public class ECEAssistant extends BotApplication {
 //		interactions.add(faculty);
 //		interactions.add(projects);
 //		interactions.add(eoInfo);
-//		interactions.add(findBuilding);
+		interactions.add(findBuilding);
 //		interactions.add(organizations);
 	}
 	
@@ -196,11 +196,9 @@ public class ECEAssistant extends BotApplication {
 		 * Create the commands, preferably load them
 		 * directly from a json file and upsert them to the jda.
 		 */
-//		interactions.add(new LoginCmd());
 		interactions.add(new AssistantCmd(this));
 		interactions.add(new VerificationCmd());
 		interactions.add(new WelcomeMessenger());
-//		interactions.add(new ServerRegistrationCmd());
 		interactions.add(new RoleSelectionCmd());
 //		interactions.add(new GamesCmd());
 	}

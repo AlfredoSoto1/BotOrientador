@@ -7,14 +7,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.stereotype.Repository;
 
 import assistant.app.core.Application;
 import assistant.database.DatabaseConnection.RunnableSQL;
+import assistant.database.SubTransactionResult;
+import assistant.database.Transaction;
+import assistant.database.TransactionError;
+import assistant.database.TransactionStatementType;
 import assistant.rest.dto.BuildingDTO;
 
 /**
@@ -60,34 +62,44 @@ public class BuildingDAO {
 		return buildings;
 	}
 	
-	public Optional<BuildingDTO> findBuilding(int id) {
-		final String SQL = 
+	public SubTransactionResult findBuilding(String code, String possibleMatch) {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
 			"""
-			select buildid, code, name, gpin
-					from building
-				where buildid = ?;
-			""";
-		AtomicBoolean found = new AtomicBoolean(false);
-		BuildingDTO building = new BuildingDTO();
+			SELECT  buildid,
+			        code,
+			        name, 
+			        gpin
+			    FROM building
+			    WHERE
+			        code = ?
+			UNION ALL
+			SELECT  buildid,
+			        code,
+			        name, 
+			        gpin
+			    FROM building
+			    WHERE
+			        code like ? AND code != ? AND
+			        NOT EXISTS (SELECT 1 FROM building WHERE code = ?)
+			""", List.of(code, possibleMatch + "%", code, code));
 		
-		RunnableSQL rq = connection -> {
-			PreparedStatement stmt = connection.prepareStatement(SQL);
-			stmt.setInt(1, id);
-
-			ResultSet result = stmt.executeQuery();
-			while(result.next()) {
-				building.setId(result.getInt("buildid"));
-				building.setCode(result.getString("code"));
-				building.setName(result.getString("name"));
-				building.setGpin(result.getString("gpin"));
-				found.set(true);
-			}
-			result.close();
-			stmt.close();
-		};
+		transaction.prepare()
+			.executeThen(TransactionStatementType.SELECT_QUERY)
+			.commit();
 		
-		Application.instance().getDatabaseConnection().establishConnection(rq);
-		return found.get() ? Optional.of(building) : Optional.empty();
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		
+		return transaction.getLatestResult();
 	}
 	
 	public int insertBuilding(BuildingDTO building) {

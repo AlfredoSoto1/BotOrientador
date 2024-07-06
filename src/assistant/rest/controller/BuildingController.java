@@ -53,13 +53,13 @@ public class BuildingController {
 	
 	@GetMapping("/{id}")
     public ResponseEntity<?> getBuilding(
-    		@PathVariable Integer id,
+    		@PathVariable String code,
     		@RequestHeader("Authorization") String token) {
 		
 		if (TokenHolder.authenticateREST(token, tokenHolders))
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
 		
-        return ResponseEntity.of(service.findBuilding(id));
+        return ResponseEntity.of(service.findBuilding(code));
     }
 	
     @PostMapping
