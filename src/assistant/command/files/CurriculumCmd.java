@@ -3,11 +3,15 @@
  */
 package assistant.command.files;
 
+import java.awt.Color;
 import java.io.File;
 import java.util.List;
 
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
+import assistant.embeds.files.CurriculumEmbed;
+import assistant.rest.dto.DiscordServerDTO;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -44,20 +48,12 @@ public class CurriculumCmd extends InteractionModel implements CommandI {
 			Trata una de las opciones que ofrece el ``/curriculo``.
 			""";
 	
-	private File INELcurriculum;
-	private File ICOMcurriculum;
-	private File INSOcurriculum;
-	private File CIICcurriculum;
+	private CurriculumEmbed embed;
 	
 	private boolean isGlobal;
 	
 	public CurriculumCmd() {
-		// TODO This are not dynamically set. Find a way of
-		// load it every time the command gets called, but reduce the command output time
-		this.INELcurriculum = new File("assets/pdfs/curriculos/INEL.pdf");
-		this.ICOMcurriculum = new File("assets/pdfs/curriculos/ICOM.pdf");
-		this.INSOcurriculum = new File("assets/pdfs/curriculos/INSO.pdf");
-		this.CIICcurriculum = new File("assets/pdfs/curriculos/CIIC.pdf");
+		this.embed = new CurriculumEmbed();
 	}
 	
 	@Override
@@ -85,39 +81,60 @@ public class CurriculumCmd extends InteractionModel implements CommandI {
 		return List.of(
 			new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje un programa de estudio", true)
 				.addChoice("INEL - Electrical Engineering", OPTION_CHOICE_INEL)
-				.addChoice("ICOM - Computer Engineering", OPTION_CHOICE_ICOM)
-				.addChoice("INSO - Software Engineering", OPTION_CHOICE_INSO)
+				.addChoice("ICOM - Computer Engineering",   OPTION_CHOICE_ICOM)
+				.addChoice("INSO - Software Engineering",   OPTION_CHOICE_INSO)
 				.addChoice("CIIC - Computer Science & Engineering", OPTION_CHOICE_CIIC)
 			);
 	}
 
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
-		// Give the pdf file of the corresponding curriculum
-		OptionMapping programOption = event.getOption(COMMAND_LABEL);
 		
-		// Show user that the bot is typing
-		event.getChannel().sendTyping().queue();
+		Guild server = event.getGuild();
+		DiscordServerDTO discordServer = super.getServerOwnerInfo(server.getIdLong());
+		String department = discordServer.getDepartment();
+		Color color = Color.decode("#" + discordServer.getColor());
 		
-		switch(programOption.getAsString()) {
+		File INELcurriculum = new File("assistant/curriculos/INEL.pdf");
+		File ICOMcurriculum = new File("assistant/curriculos/ICOM.pdf");
+		File INSOcurriculum = new File("assistant/curriculos/INSO.pdf");
+		File CIICcurriculum = new File("assistant/curriculos/CIIC.pdf");
+		
+		FileUpload uploadINEL = FileUpload.fromData(INELcurriculum);
+		FileUpload uploadICOM = FileUpload.fromData(ICOMcurriculum);
+		FileUpload uploadINSO = FileUpload.fromData(INSOcurriculum);
+		FileUpload uploadCIIC = FileUpload.fromData(CIICcurriculum);
+		
+//		if ("ECE".equalsIgnoreCase(department)) {
+//			
+//			event.replyFiles(uploadTeamMade)
+//				.setEmbeds(embed.buildServerBanner(imageUrl_TeamMade, color)).queue();
+//		} else {
+//			event.sendFiles(uploadInsoCiic)
+//				.setEmbeds(embed.buildServerBanner(imageUrl_InsoCiic, color)).queue();
+//		}
+//		
+		switch(event.getOption(COMMAND_LABEL).getAsString()) {
 		case OPTION_CHOICE_INEL:
-			event.reply(GIVE_INEL_CURRICULUM).queue();
-			event.getChannel().sendFiles(FileUpload.fromData(INELcurriculum)).queue();
+			event.reply(GIVE_INEL_CURRICULUM)
+				.addFiles(FileUpload.fromData(INELcurriculum))
+				.setEphemeral(true).queue();
 			break;
 		case OPTION_CHOICE_ICOM:
-			event.reply(GIVE_ICOM_CURRICULUM).queue();
-			event.getChannel().sendFiles(FileUpload.fromData(ICOMcurriculum)).queue();
+			event.reply(GIVE_ICOM_CURRICULUM)
+				.addFiles(FileUpload.fromData(ICOMcurriculum))
+				.setEphemeral(true).queue();
 			break;
 		case OPTION_CHOICE_INSO:
-			event.reply(GIVE_INSO_CURRICULUM).queue();
-			event.getChannel().sendFiles(FileUpload.fromData(INSOcurriculum)).queue();
+			event.reply(GIVE_INSO_CURRICULUM)
+				.addFiles(FileUpload.fromData(INSOcurriculum))
+				.setEphemeral(true).queue();
 			break;
 		case OPTION_CHOICE_CIIC:
-			event.reply(GIVE_CIIC_CURRICULUM).queue();
-			event.getChannel().sendFiles(FileUpload.fromData(CIICcurriculum)).queue();
+			event.reply(GIVE_CIIC_CURRICULUM)
+				.addFiles(FileUpload.fromData(CIICcurriculum))
+				.setEphemeral(true).queue();
 			break;
-		default:
-				event.reply(NOT_FOUND_CURRICULUM).queue();
 		}
 	}
 }

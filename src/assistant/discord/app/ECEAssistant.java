@@ -71,24 +71,6 @@ public class ECEAssistant extends BotApplication {
 	}
 	
 	private void prepareInfoCommands() {
-		// TODO: Update global variable to commands that actually needs them
-
-		/*
-		 * TODO:
-		 * - Verification command and behavior
-		 * - Role selection command and behavior
-		 * - Role implanting when joining server
-		 * - Command with DAOs implementation
-		 */
-		
-		/**
-		 * TODO: Command implementation with CRUD operations
-		 * 
-		 */
-		
-		/*
-		 * Require manual update to work with database
-		 */
 		FacultyCmd faculty = new FacultyCmd();
 		ProjectsCmd projects = new ProjectsCmd();
 		OrgsCmd organizations = new OrgsCmd();
@@ -96,7 +78,7 @@ public class ECEAssistant extends BotApplication {
 		FindBuildingCmd findBuilding = new FindBuildingCmd();
 		
 		/*
-		 * Require update the hard coded data
+		 * Require to update since its hard coded data
 		 */
 		FAQCmd faq = new FAQCmd();
 		HelpCmd helpMenu = new HelpCmd();
@@ -129,15 +111,12 @@ public class ECEAssistant extends BotApplication {
 		 */
 //		interactions.add(faculty);
 //		interactions.add(projects);
-		interactions.add(eoInfo);
+//		interactions.add(eoInfo);
 //		interactions.add(findBuilding);
 //		interactions.add(organizations);
 	}
 	
 	private void prepareLinksCommands() {
-		/*
-		 * Require manual update to work with database
-		 */
 		LinksCmd usefulLinks = new LinksCmd();
 		MadeWebCmd madeWeb = new MadeWebCmd();
 		
@@ -149,9 +128,6 @@ public class ECEAssistant extends BotApplication {
 	}
 	
 	private void prepareContactsCommands() {
-		/*
-		 * Require manual update to work with database
-		 */
 		DCSPCmd dcsp = new DCSPCmd();
 		DepartmentCmd department = new DepartmentCmd();
 		DeanOfStudentsCmd deanOfStudents = new DeanOfStudentsCmd();
@@ -176,16 +152,13 @@ public class ECEAssistant extends BotApplication {
 	}
 	
 	private void prepareFilesCommands() {
-		/*
-		 * Require manual update to work with database
-		 */
 		CurriculumCmd curriculum = new CurriculumCmd();
 		FreshmanGuideCmd freshmanGuide = new FreshmanGuideCmd();
 		
 //		curriculum.setGlobal(true);
 //		freshmanGuide.setGlobal(true);
 //		
-//		interactions.add(curriculum);
+		interactions.add(curriculum);
 //		interactions.add(freshmanGuide);
 	}
 	
