@@ -14,15 +14,11 @@ public class ContactDTO {
 	private int id;
 	private String email;
 	
-	private List<ProjectDTO> projects;
-	private List<OrganizationDTO> organizations;
 	private List<ExtensionDTO> extensions;
 	private List<WebpageDTO> webpages;
 	private List<SocialMediaDTO> socialmedias;
 	
 	public ContactDTO() {
-		this.projects = new LinkedList<>();
-		this.organizations = new LinkedList<>();
 		this.extensions = new LinkedList<>();
 		this.webpages = new LinkedList<>();
 		this.socialmedias = new LinkedList<>();
@@ -42,22 +38,6 @@ public class ContactDTO {
 
 	public void setEmail(String email) {
 		this.email = email;
-	}
-
-	public List<ProjectDTO> getProjects() {
-		return projects;
-	}
-
-	public void addProjects(ProjectDTO project) {
-		this.projects.add(project);
-	}
-
-	public List<OrganizationDTO> getOrganizations() {
-		return organizations;
-	}
-
-	public void addOrganizations(OrganizationDTO organization) {
-		this.organizations.add(organization);
 	}
 
 	public List<ExtensionDTO> getExtensions() {

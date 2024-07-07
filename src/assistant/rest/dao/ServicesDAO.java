@@ -19,8 +19,6 @@ import assistant.database.DatabaseConnection.RunnableSQL;
 import assistant.rest.dto.ContactDTO;
 import assistant.rest.dto.EmailDTO;
 import assistant.rest.dto.ExtensionDTO;
-import assistant.rest.dto.OrganizationDTO;
-import assistant.rest.dto.ProjectDTO;
 import assistant.rest.dto.ServiceDTO;
 import assistant.rest.dto.SocialMediaDTO;
 import assistant.rest.dto.WebpageDTO;
@@ -31,18 +29,6 @@ import assistant.rest.dto.WebpageDTO;
 @Repository
 public class ServicesDAO {
 
-	private final String SQL_SELECT_PROJECT =
-		"""
-		select projecid, name, description
-			from project
-			where fcontid = ?
-		""";
-	private final String SQL_SELECT_ORGANIZATION =
-		"""
-		select orgid, name, description
-			from organization
-			where fcontid = ?
-		""";
 	private final String SQL_SELECT_EXTENSION =
 		"""
 		select extid, ext
@@ -205,28 +191,18 @@ public class ServicesDAO {
 	}
 	
 	private void contactInfoSelect(Connection connection,  ContactDTO contact) throws SQLException {
-		PreparedStatement stmt_project = connection.prepareStatement(SQL_SELECT_PROJECT);
-		PreparedStatement stmt_organiz = connection.prepareStatement(SQL_SELECT_ORGANIZATION);
 		PreparedStatement stmt_extensi = connection.prepareStatement(SQL_SELECT_EXTENSION);
 		PreparedStatement stmt_webpage = connection.prepareStatement(SQL_SELECT_WEB);
 		PreparedStatement stmt_socialm = connection.prepareStatement(SQL_SELECT_SOCIAL);
 		
-		stmt_project.setInt(1, contact.getId());
-		stmt_organiz.setInt(1, contact.getId());
 		stmt_extensi.setInt(1, contact.getId());
 		stmt_webpage.setInt(1, contact.getId());
 		stmt_socialm.setInt(1, contact.getId());
 		
-		ResultSet result_project = stmt_project.executeQuery();
-		ResultSet result_organiz = stmt_organiz.executeQuery();
 		ResultSet result_extensi = stmt_extensi.executeQuery();
 		ResultSet result_webpage = stmt_webpage.executeQuery();
 		ResultSet result_socialm = stmt_socialm.executeQuery();
 		
-		while(result_project.next())
-			contact.addProjects(new ProjectDTO(result_project.getInt("projecid"), result_project.getString("name"), result_project.getString("description")));
-		while(result_organiz.next())
-			contact.addOrganizations(new OrganizationDTO(result_organiz.getInt("orgid"), result_organiz.getString("name"), result_organiz.getString("description")));
 		while(result_extensi.next())
 			contact.addExtensions(new ExtensionDTO(result_extensi.getInt("extid"), result_extensi.getString("ext")));
 		while(result_webpage.next())
@@ -234,14 +210,10 @@ public class ServicesDAO {
 		while(result_socialm.next())
 			contact.addSocialmedias(new SocialMediaDTO(result_socialm.getInt("socialid"), result_socialm.getString("platform"), result_socialm.getString("urlhandle")));
 		
-		result_project.close();
-		result_organiz.close();
 		result_extensi.close();
 		result_webpage.close();
 		result_socialm.close();
 		
-		stmt_project.close();
-		stmt_organiz.close();
 		stmt_extensi.close();
 		stmt_webpage.close();
 		stmt_socialm.close();

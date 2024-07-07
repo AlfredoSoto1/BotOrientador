@@ -3,30 +3,23 @@
  */
 package assistant.rest.dao;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.stereotype.Repository;
 
 import assistant.app.core.Application;
+import assistant.database.DatabaseConnection.RunnableSQL;
 import assistant.database.SubTransactionResult;
 import assistant.database.Transaction;
 import assistant.database.TransactionError;
 import assistant.database.TransactionStatementType;
-import assistant.database.DatabaseConnection.RunnableSQL;
-import assistant.rest.dto.ContactDTO;
 import assistant.rest.dto.EmailDTO;
 import assistant.rest.dto.ExtensionDTO;
 import assistant.rest.dto.FacultyDTO;
-import assistant.rest.dto.OrganizationDTO;
-import assistant.rest.dto.ProjectDTO;
 import assistant.rest.dto.SocialMediaDTO;
 import assistant.rest.dto.WebpageDTO;
 
@@ -35,37 +28,6 @@ import assistant.rest.dto.WebpageDTO;
  */
 @Repository
 public class FacultyDAO {
-	
-	private final String SQL_SELECT_PROJECT =
-		"""
-		select projecid, name, description
-			from project
-			where fcontid = ?
-		""";
-	private final String SQL_SELECT_ORGANIZATION =
-		"""
-		select orgid, name, description
-			from organization
-			where fcontid = ?
-		""";
-	private final String SQL_SELECT_EXTENSION =
-		"""
-		select extid, ext
-			from extension
-			where fcontid = ?
-		""";
-	private final String SQL_SELECT_WEB =
-		"""
-		select webid, url, description
-			from webpage
-			where fcontid = ?
-		""";
-	private final String SQL_SELECT_SOCIAL =
-		"""
-		select socialid, platform, urlhandle
-			from socialmedia
-			where fcontid = ?
-		""";
 	
 	public FacultyDAO() {
 		 
@@ -127,132 +89,124 @@ public class FacultyDAO {
 		return transaction.getLatestResult();
 	}
 	
-	public List<FacultyDTO> getAllFaculty(int offset, int limit, String department) {
-		final String SQL =
+	public SubTransactionResult getAllFaculty(int offset, int limit, String department) {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
 			"""
-			SELECT  facid, fcontid, abreviation, 
-			        faculty.name,
-			        faculty.description, 
-			        jobentitlement, 
-			        office, 
-			        email
-				
-                FROM faculty
-			        INNER JOIN contact    ON fcontid = contid
-			        INNER JOIN department ON fdepid  = depid
-				WHERE
-					abreviation = ?
+			WITH faculty_selected AS (
+			    SELECT  facid,
+			            contid, 
+			            abreviation, 
+			            faculty.name,
+			            faculty.description, 
+			            jobentitlement, 
+			            office, 
+			            email 
+			        FROM faculty
+			            INNER JOIN contact    ON fcontid = contid
+			            INNER JOIN department ON fdepid  = depid
+			        WHERE
+			            abreviation = ?
+			), 
+			extension_selected AS (
+			    SELECT fcontid, extid, ext, true AS has_ext
+			        FROM extension
+			            INNER JOIN faculty_selected ON fcontid = contid
+			        WHERE fcontid = contid
+			),
+			web_selected AS (
+			    SELECT fcontid, webid, url, webpage.description, true AS has_web 
+			        FROM webpage
+			            INNER JOIN faculty_selected ON fcontid = contid
+					WHERE fcontid = contid
+			)
+			SELECT  *,
+			        COALESCE(web_selected.has_web, false) AS has_webpage,
+			        COALESCE(extension_selected.has_ext, false) AS has_extension
+			    FROM faculty_selected
+			        LEFT  JOIN web_selected       ON fcontid = contid
+			        INNER JOIN extension_selected ON extension_selected.fcontid = contid
 				
 			OFFSET ?
 			LIMIT  ?
-			""";
-		List<FacultyDTO> faculty = new ArrayList<>();
+			""", List.of(department, offset, limit));
 		
-		RunnableSQL rq = connection -> {
-			PreparedStatement stmt = connection.prepareStatement(SQL);
-			stmt.setString(1, department);
-			stmt.setInt(2, offset);
-			stmt.setInt(3, limit);
-			
-			ResultSet result = stmt.executeQuery();
-			while(result.next()) {
-				FacultyDTO professor = new FacultyDTO();
-				ContactDTO contact = new ContactDTO();
-				
-				professor.setId(result.getInt("facid"));
-				professor.setDepartment(result.getString("abreviation"));
-				
-				professor.setName(result.getString("name"));
-				professor.setJobentitlement(result.getString("jobentitlement"));
-				professor.setDescription(result.getString("description"));
-				professor.setOffice(result.getString("office"));
-				
-				int contid = result.getInt("fcontid");
-				
-				contact.setId(contid);
-				contact.setEmail(result.getString("email"));
-				professor.setContact(contact);
-				
-				faculty.add(professor);
-				
-				contactInfoSelect(connection, contact);
-			}
-			
-			result.close();
-			stmt.close();
-		};
+		transaction.prepare()
+			.executeThen(TransactionStatementType.SELECT_QUERY)
+			.commit();
 		
-		Application.instance().getDatabaseConnection().establishConnection(rq);
-		return faculty;
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		
+		return transaction.getLatestResult();
 	}
 	
-	public Optional<FacultyDTO> getProfessor(EmailDTO email) {
-		final String SQL_SELECT_FACULTY =
+	public SubTransactionResult getProfessor(EmailDTO email) {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
 			"""
-			SELECT  facid, 
-                    fcontid, 
-                    abreviation, 
-			        faculty.name,
-			        faculty.description, 
-			        jobentitlement, 
-			        office, 
-			        email
-				
-                FROM faculty
-			        INNER JOIN contact    ON fcontid = contid
-			        INNER JOIN department ON fdepid  = depid
-				WHERE 
-					email = ?
-			""";
-		AtomicBoolean found = new AtomicBoolean(false);
-		FacultyDTO professor = new FacultyDTO();
-		ContactDTO contact = new ContactDTO();
+			WITH faculty_selected AS (
+			    SELECT  facid,
+			            contid, 
+			            abreviation, 
+			            faculty.name,
+			            faculty.description, 
+			            jobentitlement, 
+			            office, 
+			            email 
+			        FROM faculty
+			            INNER JOIN contact    ON fcontid = contid
+			            INNER JOIN department ON fdepid  = depid
+			), 
+			extension_selected AS (
+			    SELECT fcontid, extid, ext, true AS has_ext
+			        FROM extension
+			            INNER JOIN faculty_selected ON fcontid = contid
+			        WHERE fcontid = contid
+			),
+			web_selected AS (
+			    SELECT fcontid, webid, url, webpage.description, true AS has_web 
+			        FROM webpage
+			            INNER JOIN faculty_selected ON fcontid = contid
+					WHERE fcontid = contid
+			)
+			SELECT  *,
+			        COALESCE(web_selected.has_web, false) AS has_webpage,
+			        COALESCE(extension_selected.has_ext, false) AS has_extension
+			    FROM faculty_selected
+			        LEFT  JOIN web_selected       ON fcontid = contid
+			        INNER JOIN extension_selected ON extension_selected.fcontid = contid
+			    WHERE
+			        email = ?
+			""", List.of(email.getEmail()));
 		
-		RunnableSQL rq = connection -> {
-			PreparedStatement stmt_faculty = connection.prepareStatement(SQL_SELECT_FACULTY);
-			stmt_faculty.setString(1, email.getEmail());
-
-			ResultSet result = stmt_faculty.executeQuery();
-			int contid = -1;
-			while(result.next()) {
-				professor.setId(result.getInt("facid"));
-				professor.setDepartment(result.getString("abreviation"));
-				
-				professor.setName(result.getString("name"));
-				professor.setJobentitlement(result.getString("jobentitlement"));
-				professor.setDescription(result.getString("description"));
-				professor.setOffice(result.getString("office"));
-				
-				contid = result.getInt("fcontid");
-				
-				contact.setId(contid);
-				contact.setEmail(result.getString("email"));
-				professor.setContact(contact);
-				
-				found.set(true);
-			}
-			result.close();
-			stmt_faculty.close();
-			
-			if(contid < 0)
-				return;
-			
-			contactInfoSelect(connection, contact);
-		};
+		transaction.prepare()
+			.executeThen(TransactionStatementType.SELECT_QUERY)
+			.commit();
 		
-		Application.instance().getDatabaseConnection().establishConnection(rq);
-		return found.get() ? Optional.of(professor) : Optional.empty();
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		
+		return transaction.getLatestResult();
 	}
 	
 	public int insertProfessor(FacultyDTO professor) {
-		final String SQL_INSERT_PROJECT =
-			"""
-			insert into project(name, description, fcontid) values (?, ?, ?)
-			""";
-		final String SQL_INSERT_ORGANIZATION =
-			"""
-			insert into organization (name, description, fcontid) values (?, ?, ?)
-			""";
 		final String SQL_INSERT_EXTENSION =
 			"""
 			insert into extension (ext, fcontid) values (?, ?)
@@ -298,31 +252,9 @@ public class FacultyDAO {
 					contid = result.getInt("fcontid");
 				}
 				
-				PreparedStatement stmt_project = connection.prepareStatement(SQL_INSERT_PROJECT);
-				PreparedStatement stmt_organiz = connection.prepareStatement(SQL_INSERT_ORGANIZATION);
 				PreparedStatement stmt_extensi = connection.prepareStatement(SQL_INSERT_EXTENSION);
 				PreparedStatement stmt_webpage = connection.prepareStatement(SQL_INSERT_WEBPAGE);
 				PreparedStatement stmt_socialm = connection.prepareStatement(SQL_INSERT_SOCIALMEDIA);
-				
-				if (!professor.getContact().getProjects().isEmpty()) {
-					for(ProjectDTO p : professor.getContact().getProjects()) {
-						stmt_project.setString(1, p.getName());
-						stmt_project.setString(2, p.getDescription());
-						stmt_project.setInt(3, contid);
-						stmt_project.addBatch();
-					}
-					stmt_project.executeBatch();
-				}
-				
-				if (!professor.getContact().getOrganizations().isEmpty()) {
-					for(OrganizationDTO o : professor.getContact().getOrganizations()) {
-						stmt_organiz.setString(1, o.getName());
-						stmt_organiz.setString(2, o.getDescription());
-						stmt_organiz.setInt(3, contid);
-						stmt_organiz.addBatch();
-					}
-					stmt_organiz.executeBatch();
-				}
 				
 				if (!professor.getContact().getExtensions().isEmpty()) {
 					for(ExtensionDTO e : professor.getContact().getExtensions()) {
@@ -363,48 +295,5 @@ public class FacultyDAO {
 		
 		Application.instance().getDatabaseConnection().establishConnection(rq);
 		return facid.get();
-	}
-	
-	private void contactInfoSelect(Connection connection,  ContactDTO contact) throws SQLException {
-		PreparedStatement stmt_project = connection.prepareStatement(SQL_SELECT_PROJECT);
-		PreparedStatement stmt_organiz = connection.prepareStatement(SQL_SELECT_ORGANIZATION);
-		PreparedStatement stmt_extensi = connection.prepareStatement(SQL_SELECT_EXTENSION);
-		PreparedStatement stmt_webpage = connection.prepareStatement(SQL_SELECT_WEB);
-		PreparedStatement stmt_socialm = connection.prepareStatement(SQL_SELECT_SOCIAL);
-		
-		stmt_project.setInt(1, contact.getId());
-		stmt_organiz.setInt(1, contact.getId());
-		stmt_extensi.setInt(1, contact.getId());
-		stmt_webpage.setInt(1, contact.getId());
-		stmt_socialm.setInt(1, contact.getId());
-		
-		ResultSet result_project = stmt_project.executeQuery();
-		ResultSet result_organiz = stmt_organiz.executeQuery();
-		ResultSet result_extensi = stmt_extensi.executeQuery();
-		ResultSet result_webpage = stmt_webpage.executeQuery();
-		ResultSet result_socialm = stmt_socialm.executeQuery();
-		
-		while(result_project.next())
-			contact.addProjects(new ProjectDTO(result_project.getInt("projecid"), result_project.getString("name"), result_project.getString("description")));
-		while(result_organiz.next())
-			contact.addOrganizations(new OrganizationDTO(result_organiz.getInt("orgid"), result_organiz.getString("name"), result_organiz.getString("description")));
-		while(result_extensi.next())
-			contact.addExtensions(new ExtensionDTO(result_extensi.getInt("extid"), result_extensi.getString("ext")));
-		while(result_webpage.next())
-			contact.addWebpages(new WebpageDTO(result_webpage.getInt("webid"), result_webpage.getString("url"), result_webpage.getString("description")));
-		while(result_socialm.next())
-			contact.addSocialmedias(new SocialMediaDTO(result_socialm.getInt("socialid"), result_socialm.getString("platform"), result_socialm.getString("urlhandle")));
-		
-		result_project.close();
-		result_organiz.close();
-		result_extensi.close();
-		result_webpage.close();
-		result_socialm.close();
-		
-		stmt_project.close();
-		stmt_organiz.close();
-		stmt_extensi.close();
-		stmt_webpage.close();
-		stmt_socialm.close();
 	}
 }

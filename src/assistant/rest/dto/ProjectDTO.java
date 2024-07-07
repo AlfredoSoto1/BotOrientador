@@ -11,6 +11,7 @@ public class ProjectDTO {
 	private int id;
 	private String name;
 	private String description;
+	private String email;
 	
 	public ProjectDTO() {
 		
@@ -44,6 +45,14 @@ public class ProjectDTO {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 	
 }

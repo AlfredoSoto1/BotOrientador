@@ -106,6 +106,15 @@ public class SubTransactionResult {
         return columnIndex >= 0 ? (T) rows.get(rowIndex)[columnIndex] : null;
     }
     
+    /**
+     * @param <T>
+     * @param columnName
+     * @return Returns the first value of the result table
+     */
+	public <T> T getValue(String columnName) {
+    	return this.getValue(columnName, 0);
+    }
+    
 	private Object getColumnValue(ResultSet result, int columnType, String columnName) throws SQLException {
 		// Retrieve value based on column type
         switch (columnType) {
