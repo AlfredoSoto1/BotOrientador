@@ -116,8 +116,19 @@ public class ListenerAdapterManager extends ListenerAdapter {
 		event.getJDA().getGuilds().forEach(server -> server.updateCommands().queue());
 		
 		for(InteractionModel interaction : interactions) {
-			interaction.upsertCommand(event);
-			interaction.onInit(event);
+			if (interaction instanceof CommandI command) {
+				// Global commands will get created/updated
+				// when the bot starts running
+				if (command.isGlobal())
+					command.upsertJDACommand(event.getJDA());
+				else
+					// Start the interaction model for each server
+					// Each server should handle the creation of the command
+					event.getJDA().getGuilds().forEach(command::upsertGuildCommand);
+			}
+			// Initiate each interaction
+			interaction.onJDAInit(event);
+			event.getJDA().getGuilds().forEach(interaction::onGuildInit);
 		}
 	}
 	

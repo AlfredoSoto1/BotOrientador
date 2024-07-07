@@ -15,6 +15,7 @@ import assistant.embeds.information.OrganizationsEmbed;
 import assistant.rest.dto.DiscordServerDTO;
 import assistant.rest.dto.OrganizationDTO;
 import assistant.rest.service.OrganizationsService;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.Command.Choice;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -59,7 +60,7 @@ public class OrgsCmd extends InteractionModel implements CommandI {
 	}
 
 	@Override
-	public List<OptionData> getOptions() {
+	public List<OptionData> getOptions(Guild server) {
 		
 		List<String> names = service.getOrganizationNames(0, 15);
 		

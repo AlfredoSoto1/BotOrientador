@@ -15,6 +15,7 @@ import assistant.embeds.information.ProjectsEmbed;
 import assistant.rest.dto.DiscordServerDTO;
 import assistant.rest.dto.ProjectDTO;
 import assistant.rest.service.ProjectsService;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.Command.Choice;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -58,7 +59,7 @@ public class ProjectsCmd extends InteractionModel implements CommandI {
 	}
 
 	@Override
-	public List<OptionData> getOptions() {
+	public List<OptionData> getOptions(Guild server) {
 		List<String> names = service.getProjectNames(0, 10);
 		
 		List<Choice> choices = names.stream()

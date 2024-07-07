@@ -8,6 +8,7 @@ import java.util.List;
 
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.utils.FileUpload;
@@ -18,20 +19,19 @@ import net.dv8tion.jda.api.utils.FileUpload;
  */
 public class MadeWebCmd extends InteractionModel implements CommandI {
 
-	private boolean isGlobal;
-	
 	public MadeWebCmd() {
 		
 	}
 	
 	@Override
 	public boolean isGlobal() {
-		return isGlobal;
+		return false;
 	}
 
 	@Override
+	@Deprecated
 	public void setGlobal(boolean isGlobal) {
-		this.isGlobal = isGlobal;
+		// This is a server only command
 	}
 	
 	@Override
@@ -45,7 +45,7 @@ public class MadeWebCmd extends InteractionModel implements CommandI {
 	}
 
 	@Override
-	public List<OptionData> getOptions() {
+	public List<OptionData> getOptions(Guild server) {
 		return List.of();
 	}
 
@@ -55,14 +55,7 @@ public class MadeWebCmd extends InteractionModel implements CommandI {
 			"""
 			Aquí el enlace para la página web de Made! :green_heart:
 			https://sites.google.com/upr.edu/maderodriguez/
-			"""
-		).queue();
-		
-		// Load the file dynamically, this is done so
-		// that resources can get changed on the fly.
-		// TODO: this needs to be improved to reduce latency of loading resources
-		// every time the command gets called
-		event.getChannel().sendTyping();
-		event.getChannel().sendFiles(FileUpload.fromData(new File("assets/images/MadeWeb.png"))).queue();
+			""")
+		.addFiles(FileUpload.fromData(new File("assets/images/MadeWeb.png"))).queue();
 	}
 }

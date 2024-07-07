@@ -3,14 +3,13 @@
  */
 package assistant.command.files;
 
-import java.io.File;
 import java.util.List;
 
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.utils.FileUpload;
 
 /**
  * @author Alfredo
@@ -23,7 +22,7 @@ public class FreshmanGuideCmd extends InteractionModel implements CommandI {
 	public FreshmanGuideCmd() {
 		
 	}
-	
+
 	@Override
 	public boolean isGlobal() {
 		return isGlobal;
@@ -45,14 +44,17 @@ public class FreshmanGuideCmd extends InteractionModel implements CommandI {
 	}
 
 	@Override
-	public List<OptionData> getOptions() {
+	public List<OptionData> getOptions(Guild server) {
 		return List.of();
 	}
 
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
-		// Give the pdf file of the corresponding curriculum
-		event.reply("Aquí tienes la guía prepística. Espero que te sea súper util!! :grin:").queue();
-		event.getChannel().sendFiles(FileUpload.fromData(new File("assets/pdfs/guia-prepistica/GuiaPrepistica.pdf"))).queue();
+		event.reply(
+			"""
+			Aquí tienes la guía prepística. Espero que te sea súper util!! :grin:
+			https://sites.google.com/upr.edu/guiaprepisticauprm/inicio
+			""")
+		.setEphemeral(event.isFromGuild()).queue();
 	}
 }

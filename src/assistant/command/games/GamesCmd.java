@@ -8,6 +8,7 @@ import java.util.List;
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
 import assistant.discord.interaction.MessengerI;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -46,7 +47,7 @@ public class GamesCmd extends InteractionModel implements CommandI, MessengerI {
 	}
 
 	@Override
-	public List<OptionData> getOptions() {
+	public List<OptionData> getOptions(Guild server) {
 		return List.of();
 	}
 

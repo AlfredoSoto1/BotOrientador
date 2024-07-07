@@ -52,19 +52,16 @@ public class WelcomeMessenger extends InteractionModel implements MessengerI {
 		String department = discordServer.getDepartment();
 		Color color = Color.decode("#" + discordServer.getColor());
 		
-		File teamMade = new File("assistant/images/WelcomeBanner_TEAM_MADE.png");
-		File insociic = new File("assistant/images/WelcomeBanner_INSO_CIIC.png");
-		FileUpload uploadTeamMade = FileUpload.fromData(teamMade);
-		FileUpload uploadInsoCiic = FileUpload.fromData(insociic);
-		
 		String imageUrl_TeamMade = "attachment://WelcomeBanner_TEAM_MADE.png";
 		String imageUrl_InsoCiic = "attachment://WelcomeBanner_INSO_CIIC.png";
 		
 		if ("ECE".equalsIgnoreCase(department)) {
-			privateChannel.sendFiles(uploadTeamMade)
+			File teamMade = new File("assistant/images/WelcomeBanner_TEAM_MADE.png");
+			privateChannel.sendFiles(FileUpload.fromData(teamMade))
 				.setEmbeds(embed.buildServerBanner(imageUrl_TeamMade, color)).queue();
 		} else {
-			privateChannel.sendFiles(uploadInsoCiic)
+			File insociic = new File("assistant/images/WelcomeBanner_INSO_CIIC.png");
+			privateChannel.sendFiles(FileUpload.fromData(insociic))
 				.setEmbeds(embed.buildServerBanner(imageUrl_InsoCiic, color)).queue();
 		}
 		

@@ -86,7 +86,6 @@ public class ECEAssistant extends BotApplication {
 		RulesCmd serverRules = new RulesCmd();
 		CalendarCmd calendar = new CalendarCmd();
 
-		faq.setGlobal(false);
 		helpMenu.setGlobal(false);
 		uprmMap.setGlobal(false);
 		serverRules.setGlobal(false);
@@ -99,7 +98,7 @@ public class ECEAssistant extends BotApplication {
 		/*
 		 * Add the commands that have hard-coded data
 		 */
-//		interactions.add(faq);
+		interactions.add(faq);
 //		interactions.add(helpMenu);
 //		interactions.add(uprmMap);
 //		interactions.add(serverRules);
@@ -120,7 +119,6 @@ public class ECEAssistant extends BotApplication {
 		LinksCmd usefulLinks = new LinksCmd();
 		MadeWebCmd madeWeb = new MadeWebCmd();
 		
-		madeWeb.setGlobal(false);
 		usefulLinks.setGlobal(false);
 
 //		interactions.add(madeWeb);
@@ -155,10 +153,9 @@ public class ECEAssistant extends BotApplication {
 		CurriculumCmd curriculum = new CurriculumCmd();
 		FreshmanGuideCmd freshmanGuide = new FreshmanGuideCmd();
 		
-//		curriculum.setGlobal(true);
 //		freshmanGuide.setGlobal(true);
 //		
-		interactions.add(curriculum);
+//		interactions.add(curriculum);
 //		interactions.add(freshmanGuide);
 	}
 	

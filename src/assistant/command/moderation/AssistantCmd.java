@@ -9,6 +9,7 @@ import assistant.discord.app.BotApplication;
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
 import assistant.discord.object.AssistantOptions;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -49,7 +50,7 @@ public class AssistantCmd extends InteractionModel implements CommandI {
 	}
 
 	@Override
-	public List<OptionData> getOptions() {
+	public List<OptionData> getOptions(Guild server) {
 		return List.of(
 			new OptionData(OptionType.STRING, COMMAND_LABEL, "Choose a command", true)
 				.addChoice("disconnect", AssistantOptions.DISCONNECT.getOption())
@@ -65,12 +66,13 @@ public class AssistantCmd extends InteractionModel implements CommandI {
 		
 		switch(option) {
 		case AssistantOptions.DISCONNECT:
-			event.reply("Shutting down...").setEphemeral(true).queue();
+			event.reply("Shutting down...").setEphemeral(event.isFromGuild()).queue();
 			bot.shutdown();
 			break;
 		default:
 			// skip this action if no reply was provided
-			event.reply("Mmhh this command does nothing, try again with another one").setEphemeral(true).queue();
+			event.reply("Mmhh this command does nothing, try again with another one")
+				.setEphemeral(event.isFromGuild()).queue();
 		}
 	}
 }

@@ -32,7 +32,6 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.GenericMessageReactionEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionRemoveEvent;
-import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.exceptions.HierarchyException;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -47,7 +46,6 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI, Mess
 	private RoleSelectionEmbed embed;
 	private List<Long> messagesToReact;
 	
-	private boolean isGlobal;
 	private boolean isOnTest;
 	
 	public RoleSelectionCmd() {
@@ -58,12 +56,13 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI, Mess
 	
 	@Override
 	public boolean isGlobal() {
-		return isGlobal;
+		return false;
 	}
 
 	@Override
+	@Deprecated
 	public void setGlobal(boolean isGlobal) {
-		this.isGlobal = isGlobal;
+		// This is a server only command
 	}
 
 	@Override
@@ -77,7 +76,7 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI, Mess
 	}
 
 	@Override
-	public List<OptionData> getOptions() {
+	public List<OptionData> getOptions(Guild server) {
 		return List.of(
 			new OptionData(OptionType.STRING, "role-selection-channel", "send role selection", true),
 			new OptionData(OptionType.STRING, "cache", "manage cache of the selection embed", true)
@@ -87,20 +86,18 @@ public class RoleSelectionCmd extends InteractionModel implements CommandI, Mess
 	}
 	
 	@Override
-	public void onInit(ReadyEvent event) {
+	public void onGuildInit(Guild server) {
 		// TODO In the future:
 		// Create the emojis if they do not exist
 		// Link them with them with the database and roles
 		
-		for (Guild server : event.getJDA().getGuilds()) {
-			// Obtain all the interaction role state previous
-			// to this new instance of the bot-application
-			List<InteractionStateDTO> states = super.getCacheInteractionStates(InteractionState.REACTON_ROLE_SELECTION, server.getIdLong());
-			
-			// Populate the message ids as previous states
-			for (InteractionStateDTO state : states)
-				messagesToReact.add(state.getState());
-		}
+		// Obtain all the interaction role state previous
+		// to this new instance of the bot-application
+		List<InteractionStateDTO> states = super.getCacheInteractionStates(InteractionState.REACTON_ROLE_SELECTION, server.getIdLong());
+		
+		// Populate the message ids as previous states
+		for (InteractionStateDTO state : states)
+			messagesToReact.add(state.getState());
 	}
 	
 	@Override

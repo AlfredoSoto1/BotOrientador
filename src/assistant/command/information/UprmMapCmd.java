@@ -3,13 +3,11 @@
  */
 package assistant.command.information;
 
-import java.awt.Color;
 import java.util.List;
 
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
-import assistant.rest.dto.DiscordServerDTO;
-import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
@@ -46,26 +44,17 @@ public class UprmMapCmd extends InteractionModel implements CommandI {
 	}
 
 	@Override
-	public List<OptionData> getOptions() {
+	public List<OptionData> getOptions(Guild server) {
 		return List.of();
 	}
 
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
-		
-		DiscordServerDTO discordServer = super.getServerOwnerInfo(event.getGuild().getIdLong());
-		Color color = Color.decode("#" + discordServer.getColor());
-		
-		EmbedBuilder embedBuider = new EmbedBuilder();
-
-		embedBuider.setColor(color);
-		embedBuider.setTitle("Mapa del UPRM");
-
-		embedBuider.addField(
-			"Mapa:",
-			"https://www.uprm.edu/portales/mapa/", false);
-		
-		event.replyEmbeds(embedBuider.build()).setEphemeral(event.isFromGuild()).queue();
+		event.reply(
+			"""
+			UPRM Map
+			https://www.uprm.edu/portales/mapa/
+			""").setEphemeral(event.isFromGuild()).queue();
 	}
 
 }

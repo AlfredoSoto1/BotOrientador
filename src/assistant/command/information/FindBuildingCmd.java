@@ -11,6 +11,7 @@ import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
 import assistant.rest.dto.BuildingDTO;
 import assistant.rest.service.BuildingService;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -51,7 +52,7 @@ public class FindBuildingCmd extends InteractionModel implements CommandI {
 	}
 
 	@Override
-	public List<OptionData> getOptions() {
+	public List<OptionData> getOptions(Guild server) {
 		return List.of(
 			new OptionData(OptionType.STRING, COMMAND_LABEL, "Dispone la localización del edificio en el que se encuentra", true));
 	}

@@ -9,6 +9,7 @@ import java.util.List;
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -52,7 +53,7 @@ public class DepartmentCmd extends InteractionModel implements CommandI {
 	}
 
 	@Override
-	public List<OptionData> getOptions() {
+	public List<OptionData> getOptions(Guild server) {
 		return List.of(
 			new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje un departamento", true)
 				.addChoice("INEL/ICOM - Department", OPTION_SELECTED_INEL_ICOM)

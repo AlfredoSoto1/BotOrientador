@@ -13,6 +13,7 @@ import assistant.embeds.information.FacultyEmbed;
 import assistant.rest.dto.DiscordServerDTO;
 import assistant.rest.dto.FacultyDTO;
 import assistant.rest.service.FacultyService;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -26,8 +27,6 @@ public class FacultyCmd extends InteractionModel implements CommandI {
 	private FacultyEmbed embed;
 	private FacultyService service;
 	
-	private boolean isGlobal;
-	
 	public FacultyCmd() {
 		this.embed = new FacultyEmbed();
 		this.service = Application.instance().getSpringContext().getBean(FacultyService.class);
@@ -35,12 +34,13 @@ public class FacultyCmd extends InteractionModel implements CommandI {
 	
 	@Override
 	public boolean isGlobal() {
-		return isGlobal;
+		return false;
 	}
 
 	@Override
+	@Deprecated
 	public void setGlobal(boolean isGlobal) {
-		this.isGlobal = isGlobal;
+		// This is a server only command
 	}
 	
 	@Override
@@ -54,9 +54,10 @@ public class FacultyCmd extends InteractionModel implements CommandI {
 	}
 
 	@Override
-	public List<OptionData> getOptions() {
+	public List<OptionData> getOptions(Guild server) {
 		return List.of(
 			new OptionData(OptionType.INTEGER, "page", "select the page", true)
+				.setRequired(true)
 				.setMinValue(0));
 	}
 

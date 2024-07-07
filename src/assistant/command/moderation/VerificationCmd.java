@@ -46,7 +46,6 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	
 	private static final String COMMAND_LABEL = "channel";
 	
-	private boolean isGlobal;
 	private Modal verifyPrompt;
 	private Button verifyButton;
 	
@@ -94,12 +93,13 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	
 	@Override
 	public boolean isGlobal() {
-		return isGlobal;
+		return false;
 	}
 	
 	@Override
+	@Deprecated
 	public void setGlobal(boolean isGlobal) {
-		this.isGlobal = isGlobal;
+		// This is a server only command
 	}
 
 	@Override
@@ -113,7 +113,7 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 	}
 	
 	@Override
-	public List<OptionData> getOptions() {
+	public List<OptionData> getOptions(Guild server) {
 		return List.of(
 			new OptionData(OptionType.STRING, COMMAND_LABEL, "select channel to send verification message", true));
 	}

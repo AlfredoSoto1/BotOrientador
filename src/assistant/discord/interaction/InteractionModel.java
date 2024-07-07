@@ -41,12 +41,16 @@ public abstract class InteractionModel {
 		
 		this.service = Application.instance().getSpringContext().getBean(DiscordService.class);
 	}
-	
+
 	/**
-	 * On initiation
 	 * @param event
 	 */
-	public void onInit(ReadyEvent event) {}
+	public void onJDAInit(ReadyEvent event) {}
+
+	/**
+	 * @param server
+	 */
+	public void onGuildInit(Guild server) {}
 	
 	/**
 	 * On disposal
@@ -65,48 +69,6 @@ public abstract class InteractionModel {
 		return selectMenuEvents;
 	}
 
-	public void upsertCommand(ReadyEvent event) {
-		if (!(this instanceof CommandI command))
-			return;
-		
-		for(Guild server : event.getJDA().getGuilds()) {
-			/*
-			 * Commands that are global, are commands
-			 * that are accessible throughout all servers
-			 * and private channels that the bot can interact with the user.
-			 */
-			if(command.isGlobal()) {
-				// For global commands, they get inserted
-				// directly into the JDA when it loads.
-				// This action can take a long time to see
-				// the command fully activated in the server.
-				event.getJDA().upsertCommand(
-					command.getCommandName(), 
-					command.getDescription()
-				)
-				.addOptions(command.getOptions())
-				.queue();
-			} else {
-				// For non global commands, they get
-				// inserted directly into the server.
-				// This has no delay when looking for the
-				// command in the server where the bot is.
-				server.upsertCommand(
-					command.getCommandName(),
-					command.getDescription()
-				)
-				.addOptions(command.getOptions())
-				.queue(
-					success -> {
-						System.out.println(success);
-					},
-					error -> {
-						System.out.println(error.getMessage());
-					});
-			}
-		}
-	}
-	
 	protected boolean validateCommandUse(SlashCommandInteractionEvent event) {
 		
 		// Obtain the administrator and developer role for further authentication

@@ -8,6 +8,7 @@ import java.util.List;
 
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.utils.FileUpload;
@@ -45,23 +46,22 @@ public class CalendarCmd extends InteractionModel implements CommandI {
 	}
 
 	@Override
-	public List<OptionData> getOptions() {
+	public List<OptionData> getOptions(Guild server) {
 		return List.of();
 	}
 	
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
-		event.reply(
+		event.reply(String.format(
 			"""
-			Hola """ + event.getUser().getAsMention() + """
+			Hola %s
 			Aquí adjunto el calendario académico de UPRM.
 			**Calendario Académico:** https://www.uprm.edu/decestu/calendario/
 			También puedes añadir este calendario a tu calendario personal.
 			Presta atención a la esquina inferior derecha del calendario.
 			se ve asi:
-			"""
-		).queue();
-		
-		event.getChannel().sendFiles(FileUpload.fromData(new File("assets/images/google_add_calendar.png"))).queue();
+			""", event.getUser().getAsMention()))
+		.addFiles(FileUpload.fromData(new File("assistant/images/google_add_calendar.png")))
+		.setEphemeral(event.isFromGuild()).queue();
 	}
 }
