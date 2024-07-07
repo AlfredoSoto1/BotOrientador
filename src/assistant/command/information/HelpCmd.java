@@ -30,6 +30,8 @@ public class HelpCmd extends InteractionModel implements CommandI {
 	private File insociic;
 	private HelpEmbed embed;
 	
+	private boolean isGlobal;
+	
 	public HelpCmd() {
 		this.embed = new HelpEmbed();
 	}
@@ -42,13 +44,12 @@ public class HelpCmd extends InteractionModel implements CommandI {
 	
 	@Override
 	public boolean isGlobal() {
-		return false;
+		return isGlobal;
 	}
 
 	@Override
-	@Deprecated
 	public void setGlobal(boolean isGlobal) {
-		// This is a server commmand
+		this.isGlobal = isGlobal;
 	}
 	
 	@Override
@@ -74,6 +75,13 @@ public class HelpCmd extends InteractionModel implements CommandI {
 		
 		int page = event.getOption("page").getAsInt();
 		
+		if (event.isFromGuild())
+			fromServer(page, event);
+		else
+			fromDM(page, event);
+	}
+	
+	private void fromServer(int page, SlashCommandInteractionEvent event) {
 		// Mentioned Roles in embedded message
 		Optional<Role> esoRole = super.getEffectiveRole(MemberPosition.ESTUDIANTE_ORIENTADOR, event.getGuild());
 		
@@ -87,11 +95,16 @@ public class HelpCmd extends InteractionModel implements CommandI {
 		if ("ECE".equalsIgnoreCase(department)) {
 			event.replyFiles(FileUpload.fromData(teamMade))
 				.setEmbeds(embed.buildHelp(color, imageUrl_TeamMade, esoRole.get(), page))
-				.setEphemeral(true).queue();
+				.setEphemeral(event.isFromGuild()).queue();
 		} else {
 			event.replyFiles(FileUpload.fromData(insociic))
 				.setEmbeds(embed.buildHelp(color, imageUrl_InsoCiic, esoRole.get(), page))
-				.setEphemeral(true).queue();
+				.setEphemeral(event.isFromGuild()).queue();
 		}
+	}
+	
+	private void fromDM(int page, SlashCommandInteractionEvent event) {
+		event.replyFiles(FileUpload.fromData(teamMade))
+			.setEmbeds(embed.buildHelpDM("Estudiante Orientador", page)).queue();
 	}
 }

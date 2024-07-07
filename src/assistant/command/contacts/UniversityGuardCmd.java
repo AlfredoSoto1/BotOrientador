@@ -5,10 +5,15 @@ package assistant.command.contacts;
 
 import java.awt.Color;
 import java.util.List;
+import java.util.Optional;
 
+import assistant.app.core.Application;
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
-import net.dv8tion.jda.api.EmbedBuilder;
+import assistant.embeds.contacts.ServicesEmbed;
+import assistant.rest.dto.DiscordServerDTO;
+import assistant.rest.dto.ServiceDTO;
+import assistant.rest.service.ServicesService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -19,10 +24,14 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
  */
 public class UniversityGuardCmd extends InteractionModel implements CommandI {
 
+	private ServicesEmbed embed;
+	private ServicesService service;
+	
 	private boolean isGlobal;
 
 	public UniversityGuardCmd() {
-		
+		this.embed = new ServicesEmbed();
+		this.service = Application.instance().getSpringContext().getBean(ServicesService.class);
 	}
 
 	@Override
@@ -52,76 +61,18 @@ public class UniversityGuardCmd extends InteractionModel implements CommandI {
 
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
+		// Obtain the service data related to the Transito y Vigilancia
+		Optional<ServiceDTO> result = service.getService("Transito y Vigilancia");
 		
-		EmbedBuilder embedBuilder = new EmbedBuilder();
-
-		embedBuilder.setColor(new Color(70, 150, 90));
-		embedBuilder.setTitle("Info Guardia Universitaria");
-
-		embedBuilder.addField(
-			"Nombre del Dept.", "Dpto. De Transito Y Vigilancia", false);
-		
-		embedBuilder.addField(
-			"Descripción",
-			"""
-			El departamento se compone de la Sección de Vigilancia, Oficina de Retén,
-			Oficina del Director y la Seccion de Trancito.
-			""", true);
-		
-		embedBuilder.addField(
-			"Servicios Provistos",
-			"""
-			Se destacan en: Orientación, escolta, vigilancia preventiva peatonal,
-			ciclistas y en vehículos de motor, coordinar el tránsito en diferentes
-			actividades, primeros auxilios, entre otros.
-			""", true);
-		
-		embedBuilder.addField("", "", false);
-		
-		embedBuilder.addField(
-			"Oficina", "Vagones al costado del Edificio del Dpto. de Enfermería", true);
-		
-		embedBuilder.addField(
-			"Teléfono(s)",
-			"""
-			• (787) 832-4040
-			""", true);
-		
-		embedBuilder.addField(
-			"Extensión(es)",
-			"""
-			• Retén Exts. 3263,3620
-			• Sección de Tránsito – Exts. 3275,3597
-			• Oficina Director – Exts. 2462, 3538, 2458
-			""", true);
-		
-		embedBuilder.addField(
-			"Horas de Trabajo",
-			"""
-			Lunes a Viernes | 7:45 A.M. a 11:45 A.M. | 1:00 P.M. a 4:30 P.M.
-			""", true);
-		
-		embedBuilder.addField(
-			"Localización en Google Maps",
-			"""
-			https://goo.gl/maps/q1poMfAh7rthfDah8
-			""", true);
-
-		embedBuilder.addField(
-			"Más Información Utíl",
-			"""
-			• Emergencias Médicas Municipal y Bomberos 787-834-8585 | Exts. 2061/2062
-			• Línea Directa: 787-265-1785/787-265-3872
-			• Policía Estatal 787-832-2020 (Linea Confidencial)/787-832-9696 (Comandancia Estatal)
-			• Policía Municipal 787-834-8585 Ext. 2025
-			""", false);
-
-		embedBuilder.addField(
-			"Enlaces Útiles",
-			"""
-			https://www.uprm.edu/transitoyvigilancia/
-			""", true);
-		
-		event.replyEmbeds(embedBuilder.build()).setEphemeral(event.isFromGuild()).queue();
+		// Check if the command was called from a server
+		if (event.isFromGuild()) {
+			DiscordServerDTO discordServer = super.getServerOwnerInfo(event.getGuild().getIdLong());
+			Color color = Color.decode("#" + discordServer.getColor());
+			
+			event.replyEmbeds(embed.buildInfoPanel(color, result.get()))
+				.setEphemeral(true).queue();
+		} else {
+			event.replyEmbeds(embed.buildInfoPanel(Color.GRAY, result.get())).queue();
+		}
 	}
 }

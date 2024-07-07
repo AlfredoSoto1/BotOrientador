@@ -3,25 +3,14 @@
  */
 package assistant.rest.dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.stereotype.Repository;
 
-import assistant.app.core.Application;
-import assistant.database.DatabaseConnection.RunnableSQL;
-import assistant.rest.dto.ContactDTO;
-import assistant.rest.dto.EmailDTO;
-import assistant.rest.dto.ExtensionDTO;
-import assistant.rest.dto.ServiceDTO;
-import assistant.rest.dto.SocialMediaDTO;
-import assistant.rest.dto.WebpageDTO;
+import assistant.database.SubTransactionResult;
+import assistant.database.Transaction;
+import assistant.database.TransactionError;
+import assistant.database.TransactionStatementType;
 
 /**
  * @author Alfredo
@@ -29,193 +18,122 @@ import assistant.rest.dto.WebpageDTO;
 @Repository
 public class ServicesDAO {
 
-	private final String SQL_SELECT_EXTENSION =
-		"""
-		select extid, ext
-			from extension
-			where fcontid = ?
-		""";
-	private final String SQL_SELECT_WEB =
-		"""
-		select webid, url, description
-			from webpage
-			where fcontid = ?
-		""";
-	private final String SQL_SELECT_SOCIAL =
-		"""
-		select socialid, platform, urlhandle
-			from socialmedia
-			where fcontid = ?
-		""";
-	
 	public ServicesDAO() {
 		
 	}
 	
-	public List<EmailDTO> getServiceEmails() {
-		final String SQL = 
+	public SubTransactionResult getServiceNames() {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
 			"""
-			SELECT  servid,
-					email
-				FROM service
-					INNER JOIN contact ON contid = fcontid
-			""";
-		List<EmailDTO> emails = new ArrayList<>();
+			SELECT name FROM service
+			""", List.of());
 		
-		RunnableSQL rq = connection -> {
-			PreparedStatement stmt = connection.prepareStatement(SQL);
-			
-			ResultSet result = stmt.executeQuery();
-			while(result.next()) {
-				EmailDTO email = new EmailDTO();
-				email.setId(result.getInt("servid"));
-				email.setEmail(result.getString("email"));
-				
-				emails.add(email);
-			}
-			result.close();
-			stmt.close();
-		};
+		transaction.prepare()
+			.executeThen(TransactionStatementType.SELECT_QUERY)
+			.commit();
 		
-		Application.instance().getDatabaseConnection().establishConnection(rq);
-		return emails;
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		return transaction.getLatestResult();
 	}
 	
-	public List<ServiceDTO> getAllServices(int offset, int limit) {
-		final String SQL = 
+	public SubTransactionResult getAllServices(int offset, int limit) {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
 			"""
-			select  servid,
-					abreviation,
-					fcontid,
-					service.name,
-					service.description,
-					office,
-					availability,
-					offering,
-					additional,
-					email
-				from service
-					inner join contact    on contid = fcontid
-					inner join department on depid  = fdepid
+			SELECT  servid,              service.name, 
+			        service.description, offering,
+			        availability,        additional,
+			        abreviation,         email,
+			        building.code,       building.name AS bname,
+			        contid, webid, socialid,
+			        COALESCE(webpage.url,           'No Webpage')     AS url,
+			        COALESCE(webpage.description,   'No Webpage')     AS web_title,
+			        COALESCE(socialmedia.platform,  'No Socialmedia') AS platform,
+			        COALESCE(socialmedia.urlhandle, 'No Socialmedia') AS urlhandle,
+			        CASE WHEN webpage.url          IS NULL THEN false ELSE true END AS has_webpage,
+			        CASE WHEN socialmedia.platform IS NULL THEN false ELSE true END AS has_socialmedia
+			    FROM service
+			        INNER JOIN department  ON fdepid = depid
+			        INNER JOIN building    ON department.fbuildid = buildid
+			        INNER JOIN contact     ON service.fcontid = contid
+			        LEFT  JOIN webpage     ON webpage.fcontid = contid
+			        LEFT  JOIN socialmedia ON socialmedia.fcontid = contid
 			
-			order by servid asc
-			offset ?
-			limit  ?;
-			""";
-		List<ServiceDTO> services = new ArrayList<>();
+			ORDER BY servid ASC
+			OFFSET ?
+			LIMIT  ?;
+			""", List.of(offset, limit));
 		
-		RunnableSQL rq = connection -> {
-			PreparedStatement stmt = connection.prepareStatement(SQL);
-			stmt.setInt(1, offset);
-			stmt.setInt(2, limit);
-			
-			ResultSet result = stmt.executeQuery();
-			while(result.next()) {
-				ServiceDTO service = new ServiceDTO();
-				service.setId(result.getInt("servid"));
-				service.setDepartment(result.getString("abreviation"));
-				service.setName(result.getString("name"));
-				service.setDescription(result.getString("description"));
-				service.setAvailability(result.getString("availability"));
-				
-				service.setOffering(result.getString("offering"));
-				service.setAdditional(result.getString("additional"));
-
-				ContactDTO contact = new ContactDTO();
-				contact.setId(result.getInt("fcontid"));
-				contact.setEmail(result.getString("email"));
-				service.setContact(contact);
-				
-				contactInfoSelect(connection, contact);
-				services.add(service);
-			}
-			result.close();
-			stmt.close();
-		};
+		transaction.prepare()
+			.executeThen(TransactionStatementType.SELECT_QUERY)
+			.commit();
 		
-		Application.instance().getDatabaseConnection().establishConnection(rq);
-		return services;
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		
+		return transaction.getLatestResult();
 	}
 	
-	public Optional<ServiceDTO> getService(EmailDTO email) {
-		final String SQL = 
+	public SubTransactionResult getService(String servicename) {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
 			"""
-			SELECT  servid,
-					abreviation,
-					fcontid,
-					service.name,
-					service.description,
-					office,
-					availability,
-					offering,
-					additional,
-					email
-				FROM service
-					INNER JOIN contact    ON contid = fcontid
-					INNER JOIN department ON depid  = fdepid
+			SELECT  servid,              service.name, 
+			        service.description, offering,
+			        availability,        additional,
+			        abreviation,         email,
+			        building.code,       building.name AS bname,
+			        contid, webid, socialid,
+			        COALESCE(webpage.url,           'No Webpage')     AS url,
+			        COALESCE(webpage.description,   'No Webpage')     AS web_title,
+			        COALESCE(socialmedia.platform,  'No Socialmedia') AS platform,
+			        COALESCE(socialmedia.urlhandle, 'No Socialmedia') AS urlhandle,
+			        CASE WHEN webpage.url          IS NULL THEN false ELSE true END AS has_webpage,
+			        CASE WHEN socialmedia.platform IS NULL THEN false ELSE true END AS has_socialmedia
+			    FROM service
+			        INNER JOIN department  ON fdepid = depid
+			        INNER JOIN building    ON department.fbuildid = buildid
+			        INNER JOIN contact     ON service.fcontid = contid
+			        LEFT  JOIN webpage     ON webpage.fcontid = contid
+			        LEFT  JOIN socialmedia ON socialmedia.fcontid = contid
 				WHERE
-					email = ?
-			""";
-		AtomicBoolean found = new AtomicBoolean(false);
-		ServiceDTO service = new ServiceDTO();
-		
-		RunnableSQL rq = connection -> {
-			PreparedStatement stmt = connection.prepareStatement(SQL);
-			stmt.setString(1, email.getEmail());
+					service.name = ?
 			
-			ResultSet result = stmt.executeQuery();
-			while(result.next()) {
-				service.setId(result.getInt("servid"));
-				service.setDepartment(result.getString("abreviation"));
-				service.setName(result.getString("name"));
-				service.setDescription(result.getString("description"));
-				service.setAvailability(result.getString("availability"));
-				
-				service.setOffering(result.getString("offering"));
-				service.setAdditional(result.getString("additional"));
-
-				ContactDTO contact = new ContactDTO();
-				contact.setId(result.getInt("fcontid"));
-				contact.setEmail(result.getString("email"));
-				service.setContact(contact);
-				
-				contactInfoSelect(connection, contact);
-				found.set(true);
-			}
-			result.close();
-			stmt.close();
-		};
+			""", List.of(servicename));
 		
-		Application.instance().getDatabaseConnection().establishConnection(rq);
-		return found.get() ? Optional.of(service) : Optional.empty();
-	}
-	
-	private void contactInfoSelect(Connection connection,  ContactDTO contact) throws SQLException {
-		PreparedStatement stmt_extensi = connection.prepareStatement(SQL_SELECT_EXTENSION);
-		PreparedStatement stmt_webpage = connection.prepareStatement(SQL_SELECT_WEB);
-		PreparedStatement stmt_socialm = connection.prepareStatement(SQL_SELECT_SOCIAL);
+		transaction.prepare()
+			.executeThen(TransactionStatementType.SELECT_QUERY)
+			.commit();
 		
-		stmt_extensi.setInt(1, contact.getId());
-		stmt_webpage.setInt(1, contact.getId());
-		stmt_socialm.setInt(1, contact.getId());
+		// Close transaction
+		transaction.forceClose();
 		
-		ResultSet result_extensi = stmt_extensi.executeQuery();
-		ResultSet result_webpage = stmt_webpage.executeQuery();
-		ResultSet result_socialm = stmt_socialm.executeQuery();
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
 		
-		while(result_extensi.next())
-			contact.addExtensions(new ExtensionDTO(result_extensi.getInt("extid"), result_extensi.getString("ext")));
-		while(result_webpage.next())
-			contact.addWebpages(new WebpageDTO(result_webpage.getInt("webid"), result_webpage.getString("url"), result_webpage.getString("description")));
-		while(result_socialm.next())
-			contact.addSocialmedias(new SocialMediaDTO(result_socialm.getInt("socialid"), result_socialm.getString("platform"), result_socialm.getString("urlhandle")));
-		
-		result_extensi.close();
-		result_webpage.close();
-		result_socialm.close();
-		
-		stmt_extensi.close();
-		stmt_webpage.close();
-		stmt_socialm.close();
+		return transaction.getLatestResult();
 	}
 }

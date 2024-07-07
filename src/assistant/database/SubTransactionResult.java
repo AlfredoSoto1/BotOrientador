@@ -128,10 +128,28 @@ public class SubTransactionResult {
             return result.getDate(columnName);
         case java.sql.Types.BOOLEAN:
             return result.getBoolean(columnName);
+        case java.sql.Types.OTHER:
+            // Handling JSON type (assuming JSON data is stored in `json` or `jsonb` columns)
+            if (isJsonType(result, columnName)) {
+                return result.getString(columnName);
+            } else {
+                return result.getObject(columnName);
+            }
         default:
         	return result.getObject(columnName);
         }
 	}
+	
+    private boolean isJsonType(ResultSet result, String columnName) throws SQLException {
+        try {
+            // Assuming JSON data type for the column, try to parse it as a JSON object
+            result.getString(columnName);
+            return true;
+        } catch (SQLException e) {
+            // If parsing fails, it is not JSON type
+            return false;
+        }
+    }
 	
 	@Override
 	public String toString() {

@@ -95,39 +95,21 @@ public class FacultyDAO {
 		
 		transaction.submitSQL(
 			"""
-			WITH faculty_selected AS (
-			    SELECT  facid,
-			            contid, 
-			            abreviation, 
-			            faculty.name,
-			            faculty.description, 
-			            jobentitlement, 
-			            office, 
-			            email 
-			        FROM faculty
-			            INNER JOIN contact    ON fcontid = contid
-			            INNER JOIN department ON fdepid  = depid
-			        WHERE
-			            abreviation = ?
-			), 
-			extension_selected AS (
-			    SELECT fcontid, extid, ext, true AS has_ext
-			        FROM extension
-			            INNER JOIN faculty_selected ON fcontid = contid
-			        WHERE fcontid = contid
-			),
-			web_selected AS (
-			    SELECT fcontid, webid, url, webpage.description, true AS has_web 
-			        FROM webpage
-			            INNER JOIN faculty_selected ON fcontid = contid
-					WHERE fcontid = contid
-			)
-			SELECT  *,
-			        COALESCE(web_selected.has_web, false) AS has_webpage,
-			        COALESCE(extension_selected.has_ext, false) AS has_extension
-			    FROM faculty_selected
-			        LEFT  JOIN web_selected       ON fcontid = contid
-			        INNER JOIN extension_selected ON extension_selected.fcontid = contid
+			SELECT  facid, extid,   webid, contid,
+			        faculty.name,   faculty.description,
+			        email, ext,     office, 
+			        jobentitlement, abreviation,
+			        webpage.url,    webpage.description AS web_title,
+			        CASE WHEN webpage.url   IS NULL THEN false ELSE true END AS has_webpage,
+			        CASE WHEN extension.ext IS NULL THEN false ELSE true END AS has_extension
+			         
+			    FROM faculty
+			        INNER JOIN contact    ON faculty.fcontid = contid
+			        LEFT  JOIN extension  ON extension.fcontid = contid
+			        LEFT  JOIN webpage    ON webpage.fcontid = contid
+			        INNER JOIN department ON fdepid = depid
+			    WHERE
+			        abreviation = ?
 				
 			OFFSET ?
 			LIMIT  ?
@@ -155,37 +137,19 @@ public class FacultyDAO {
 		
 		transaction.submitSQL(
 			"""
-			WITH faculty_selected AS (
-			    SELECT  facid,
-			            contid, 
-			            abreviation, 
-			            faculty.name,
-			            faculty.description, 
-			            jobentitlement, 
-			            office, 
-			            email 
-			        FROM faculty
-			            INNER JOIN contact    ON fcontid = contid
-			            INNER JOIN department ON fdepid  = depid
-			), 
-			extension_selected AS (
-			    SELECT fcontid, extid, ext, true AS has_ext
-			        FROM extension
-			            INNER JOIN faculty_selected ON fcontid = contid
-			        WHERE fcontid = contid
-			),
-			web_selected AS (
-			    SELECT fcontid, webid, url, webpage.description, true AS has_web 
-			        FROM webpage
-			            INNER JOIN faculty_selected ON fcontid = contid
-					WHERE fcontid = contid
-			)
-			SELECT  *,
-			        COALESCE(web_selected.has_web, false) AS has_webpage,
-			        COALESCE(extension_selected.has_ext, false) AS has_extension
-			    FROM faculty_selected
-			        LEFT  JOIN web_selected       ON fcontid = contid
-			        INNER JOIN extension_selected ON extension_selected.fcontid = contid
+			SELECT  facid, extid,   webid, contid,
+			        faculty.name,   faculty.description,
+			        email, ext,     office, 
+			        jobentitlement, abreviation,
+			        webpage.url,    webpage.description AS web_title,
+			        CASE WHEN webpage.url   IS NULL THEN false ELSE true END AS has_webpage,
+			        CASE WHEN extension.ext IS NULL THEN false ELSE true END AS has_extension
+			         
+			    FROM faculty
+			        INNER JOIN contact    ON faculty.fcontid = contid
+			        LEFT  JOIN extension  ON extension.fcontid = contid
+			        LEFT  JOIN webpage    ON webpage.fcontid = contid
+			        INNER JOIN department ON fdepid = depid
 			    WHERE
 			        email = ?
 			""", List.of(email.getEmail()));

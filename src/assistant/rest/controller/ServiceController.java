@@ -10,13 +10,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import assistant.app.settings.TokenHolder;
-import assistant.rest.dto.EmailDTO;
 import assistant.rest.service.ServicesService;
 
 /**
@@ -37,26 +35,26 @@ public class ServiceController {
 	
 	@GetMapping
 	public ResponseEntity<?> getAllServices(
-			@RequestBody EmailDTO email,
 			@RequestHeader("Authorization")   String token,
 			@RequestParam(defaultValue = "0") Integer page,
-			@RequestParam(defaultValue = "5") Integer size) {
+			@RequestParam(defaultValue = "5") Integer size,
+			@RequestParam(defaultValue = "None") String name) {
 		
 		if (TokenHolder.authenticateREST(token, tokenHolders))
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
 		
-		if(email.getEmail() == null)
+		if("None".equalsIgnoreCase(name))
 			return ResponseEntity.ok(service.getAllServices(page, size));
 		else
-			return ResponseEntity.of(service.getService(email));
+			return ResponseEntity.of(service.getService(name));
 	}
 	
-	@GetMapping("/email")
-	public ResponseEntity<?> getServiceEmails(@RequestHeader("Authorization") String token) {
+	@GetMapping("/name")
+	public ResponseEntity<?> getServiceNames(@RequestHeader("Authorization") String token) {
 		
 		if (TokenHolder.authenticateREST(token, tokenHolders))
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
 		
-		 return ResponseEntity.ok(service.getServiceEmails());
+		 return ResponseEntity.ok(service.getServiceNames());
 	}
 }

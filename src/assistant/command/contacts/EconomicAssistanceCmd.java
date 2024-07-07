@@ -5,10 +5,15 @@ package assistant.command.contacts;
 
 import java.awt.Color;
 import java.util.List;
+import java.util.Optional;
 
+import assistant.app.core.Application;
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
-import net.dv8tion.jda.api.EmbedBuilder;
+import assistant.embeds.contacts.ServicesEmbed;
+import assistant.rest.dto.DiscordServerDTO;
+import assistant.rest.dto.ServiceDTO;
+import assistant.rest.service.ServicesService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -19,10 +24,14 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
  */
 public class EconomicAssistanceCmd extends InteractionModel implements CommandI {
 	
+	private ServicesEmbed embed;
+	private ServicesService service;
+
 	private boolean isGlobal;
 	
 	public EconomicAssistanceCmd() {
-		
+		this.embed = new ServicesEmbed();
+		this.service = Application.instance().getSpringContext().getBean(ServicesService.class);
 	}
 	
 	@Override
@@ -52,54 +61,18 @@ public class EconomicAssistanceCmd extends InteractionModel implements CommandI 
 
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
-		EmbedBuilder embedBuilder = new EmbedBuilder();
-
-		embedBuilder.setColor(new Color(70, 150, 90));
-		embedBuilder.setTitle("Info Asistencia Económica");
-
-		embedBuilder.addField(
-			"Nombre del Dept.",
-			"""
-			Oficina de Asistencia Económica
-			""", false);
+		// Obtain the service data related to the Asistencia Económica
+		Optional<ServiceDTO> result = service.getService("Asistencia Económica");
 		
-		embedBuilder.addField(
-			"Oficina",
-			"""
-			Lobby Decanato de Estudiantes
-			""", true);
-		
-		embedBuilder.addField(
-			"Teléfono(s)",
-			"""
-			• (787) 832-4040
-			""", true);
-
-		embedBuilder.addField(
-			"Extensión(es)",
-			"""
-			• Ext. 3863
-			""", true);
-		
-		embedBuilder.addField(
-			"Horas de Trabajo",
-			"""
-			Lunes a Viernes | 7:45 – 11:45 A.M. | 1:00 – 4:30 P.M.
-			""", true);
-		
-		embedBuilder.addField(
-			"Localización en Google Maps",
-			"""
-			https://goo.gl/maps/pyAjRnaKZ1gE99PA7
-			""", true);
-		
-		embedBuilder.addField(
-			"Fechas Importantes (Prestamos, Beca, etc.)",
-			"""
-			https://www.uprm.edu/asistenciaeconomica/fechas-importantes/
-			""", true);
-		
-		event.replyEmbeds(embedBuilder.build()).setEphemeral(event.isFromGuild()).queue();
+		// Check if the command was called from a server
+		if (event.isFromGuild()) {
+			DiscordServerDTO discordServer = super.getServerOwnerInfo(event.getGuild().getIdLong());
+			Color color = Color.decode("#" + discordServer.getColor());
+			
+			event.replyEmbeds(embed.buildInfoPanel(color, result.get()))
+				.setEphemeral(true).queue();
+		} else {
+			event.replyEmbeds(embed.buildInfoPanel(Color.GRAY, result.get())).queue();
+		}
 	}
-
 }

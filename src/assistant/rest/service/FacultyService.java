@@ -80,7 +80,7 @@ public class FacultyService {
 			professor.setJobentitlement(result.getValue("jobentitlement", i));
 			
 			ContactDTO contact = new ContactDTO();
-			contact.setId(result.getValue("fcontid", i));
+			contact.setId(result.getValue("contid", i));
 			contact.setEmail(result.getValue("email", i));
 			
 			if ((boolean)result.getValue("has_webpage", i))
@@ -125,7 +125,7 @@ public class FacultyService {
 			professor.setJobentitlement(result.getValue("jobentitlement", i));
 			
 			ContactDTO contact = new ContactDTO();
-			contact.setId(result.getValue("fcontid", i));
+			contact.setId(result.getValue("contid", i));
 			contact.setEmail(result.getValue("email", i));
 			
 			if ((boolean)result.getValue("has_webpage", i))

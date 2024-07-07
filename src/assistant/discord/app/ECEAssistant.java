@@ -99,7 +99,7 @@ public class ECEAssistant extends BotApplication {
 		 * Add the commands that have hard-coded data
 		 */
 //		interactions.add(faq);
-		interactions.add(helpMenu);
+//		interactions.add(helpMenu);
 //		interactions.add(uprmMap);
 //		interactions.add(serverRules);
 //		interactions.add(calendar);
@@ -133,20 +133,17 @@ public class ECEAssistant extends BotApplication {
 		AcademicAdvisoryCmd academicAdvisory = new AcademicAdvisoryCmd();
 		EconomicAssistanceCmd economicAssistance = new EconomicAssistanceCmd();
 		
-		
 		dcsp.setGlobal(false);
-		department.setGlobal(false);
 		deanOfStudents.setGlobal(false);
 		universityGuard.setGlobal(false);
-		academicAdvisory.setGlobal(false);
 		economicAssistance.setGlobal(false);
 		
-//		interactions.add(dcsp);
-//		interactions.add(department);
-//		interactions.add(academicAdvisory);
-//		interactions.add(economicAssistance);
-//		interactions.add(universityGuard);
-//		interactions.add(deanOfStudents);
+		interactions.add(dcsp);
+		interactions.add(department);
+		interactions.add(academicAdvisory);
+		interactions.add(economicAssistance);
+		interactions.add(universityGuard);
+		interactions.add(deanOfStudents);
 	}
 	
 	private void prepareFilesCommands() {

@@ -21,8 +21,11 @@ public class ServiceDTO {
 
 	private String name;
 	private String description;
-	private String department;
 	private String availability;
+	private String departmentAbbreviation;
+	private String email;
+	private String buildingCode;
+	private String buildingName;
 	
 	private List<String> offering;
 	private Map<String, String[]> additional;
@@ -40,14 +43,6 @@ public class ServiceDTO {
 
 	public void setId(int id) {
 		this.id = id;
-	}
-
-	public String getDepartment() {
-		return department;
-	}
-
-	public void setDepartment(String department) {
-		this.department = department;
 	}
 
 	public ContactDTO getContact() {
@@ -117,5 +112,37 @@ public class ServiceDTO {
         } catch (Exception e) {
             e.printStackTrace();
         }
+	}
+
+	public String getDepartmentAbbreviation() {
+		return departmentAbbreviation;
+	}
+
+	public void setDepartmentAbbreviation(String departmentAbbreviation) {
+		this.departmentAbbreviation = departmentAbbreviation;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getBuildingCode() {
+		return buildingCode;
+	}
+
+	public void setBuildingCode(String buildingCode) {
+		this.buildingCode = buildingCode;
+	}
+
+	public String getBuildingName() {
+		return buildingName;
+	}
+
+	public void setBuildingName(String buildingName) {
+		this.buildingName = buildingName;
 	}
 }
