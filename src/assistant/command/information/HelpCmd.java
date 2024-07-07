@@ -4,36 +4,51 @@
 package assistant.command.information;
 
 import java.awt.Color;
+import java.io.File;
 import java.util.List;
+import java.util.Optional;
 
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
-import net.dv8tion.jda.api.EmbedBuilder;
+import assistant.discord.object.MemberPosition;
+import assistant.embeds.information.HelpEmbed;
+import assistant.rest.dto.DiscordServerDTO;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.utils.FileUpload;
 
 /**
  * @author Alfredo
  *
  */
 public class HelpCmd extends InteractionModel implements CommandI {
-	
-	private boolean isGlobal;
 
+	private File teamMade;
+	private File insociic;
+	private HelpEmbed embed;
+	
 	public HelpCmd() {
-		
+		this.embed = new HelpEmbed();
+	}
+	
+	@Override
+	public void onGuildInit(Guild server) {
+		this.teamMade = new File("assistant/images/Help_Banner_TEAM-MADE.png");
+		this.insociic = new File("assistant/images/Help_Banner_INSO_CIIC.png");
 	}
 	
 	@Override
 	public boolean isGlobal() {
-		return isGlobal;
+		return false;
 	}
 
 	@Override
+	@Deprecated
 	public void setGlobal(boolean isGlobal) {
-		this.isGlobal = isGlobal;
+		// This is a server commmand
 	}
 	
 	@Override
@@ -48,135 +63,35 @@ public class HelpCmd extends InteractionModel implements CommandI {
 
 	@Override
 	public List<OptionData> getOptions(Guild server) {
-		return List.of();
+		return List.of(
+			new OptionData(OptionType.INTEGER, "page", "Enter page of Help")
+				.setRequired(true)
+				.setMinValue(0));
 	}
 	
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
 		
+		int page = event.getOption("page").getAsInt();
+		
 		// Mentioned Roles in embedded message
-		Role esoRole = event.getGuild().getRolesByName("EstudianteOrientador", true).get(0);
+		Optional<Role> esoRole = super.getEffectiveRole(MemberPosition.ESTUDIANTE_ORIENTADOR, event.getGuild());
 		
-		/*
-		 * Embedded messages
-		 */
-		String help_title = "Lista de Comandos";
+		DiscordServerDTO discordServer = super.getServerOwnerInfo(event.getGuild().getIdLong());
+		String department = discordServer.getDepartment();
+		Color color = Color.decode("#" + discordServer.getColor());
 		
-		String help_1_title = "1) `/help`";
-		String help_1_description = 
-			"""
-			:mag:Muestra una lista de comandos disponibles.
-			""";
-		String help_2_title = "2) `/reglas`";
-		String help_2_description = 
-			"""
-			:scroll:Provee las reglas del servidor.
-			""";
-		String help_3_title = "3) `/map`";
-		String help_3_description = 
-			"""
-			:map:Provee un enlace a el Mapa de UPRM.
-			""";
-		String help_4_title = "4) `/links`";
-		String help_4_description = 
-			"""
-			:link:Provee un PDF con todos los links importantes del UPRM.
-			""";
-		String help_5_title = "5. `/calendario`";
-		String help_5_description = 
-			"""
-			:calendar_spiral:Provee un enlace rapido al Calendario Académico de UPRM.
-			""";
-		String help_6_title = "6) `/made-web`";
-		String help_6_description = 
-			"""
-			:globe_with_meridians:Provee el enlace para accesar a la página web de la consejera de **INEL/ICOM**, Madeline Rodríguez
-			""";
-		String help_7_title = "7. `/guia-prepistica`";
-		String help_7_description = 
-			"""
-			:straight_ruler:Guia para prepas.
-			""";
-		String help_8_title = "8. `/salon`";
-		String help_8_description = 
-			"""
-			Provee información sobre el edificio donde se puede encontrar ese salón.
-			""";
-		String help_9_title = "9. `/curriculo`";
-		String help_9_description = 
-			"""
-			Te proveera un PDF del curriculo de tu departamento.
-			""";
-		String help_10_title = "10. `/ls_projects'";
-		String help_10_description = 
-			"""
-			Provee información sobre proyectos e investigaciones relacionadas a **INEL/ICOM/INSO/CIIC**
-			""";
-		String help_11_title = "11. `/estudiantes-orientadores`";
-		String help_11_description = 
-			"""
-			Provee una lista los nombres de los %s de ese DEPT. 
-			Puedes escoger entre: **INEL, ICOM, INSO o CIIC**
-			""";
-		String help_12_title = "12. `/ls_student_orgs`";
-		String help_12_description = 
-			"""
-			Provee información sobre organizaciones estudiantiles relacionadas a 
-			**INEL/ICOM/INSO/CIIC**,
-			*(IEEE/EMC/HKN/RAS_CSS/COMP_SOC/CAS/PES/WIE/ACM_CSE/CAHSI/SHPE/ALPHA_AST/EMB/PHOTONICS)*
-			""";
-		String help_13_title = "13. `/contact`";
-		String help_13_description = 
-			"""
-			Mostrara una lista de todos los contactos que tengo disponible para ofrecerte. Ej:
-			**Asesoría académica**,
-			**Asistencia académica**,
-			**DCSP**,
-			**Decanato de Estudiantes**,
-			**Departamento (INEL/ICOM/INSO/CIIC)**,
-			**Guardia Universitaria**
-			""";
+		String imageUrl_TeamMade = "attachment://Help_Banner_TEAM-MADE.png";
+		String imageUrl_InsoCiic = "attachment://Help_Banner_INSO_CIIC.png";
 		
-		help_11_description = String.format(help_11_description, esoRole.getAsMention());
-		
-		EmbedBuilder embedBuilder = new EmbedBuilder();
-
-		embedBuilder.setColor(new Color(40, 130, 138));
-		embedBuilder.setTitle(help_title);
-
-		embedBuilder.addField(help_1_title, help_1_description, true);
-		embedBuilder.addField(help_2_title, help_2_description, true);
-		
-		embedBuilder.addBlankField(false);
-		
-		embedBuilder.addField(help_3_title, help_3_description, true);
-		embedBuilder.addField(help_4_title, help_4_description, true);
-		
-		embedBuilder.addBlankField(false);
-		
-		embedBuilder.addField(help_5_title, help_5_description, true);
-		embedBuilder.addField(help_6_title, help_6_description, true);
-		
-		embedBuilder.addBlankField(false);
-		
-		embedBuilder.addField(help_6_title, help_6_description, true);
-		embedBuilder.addField(help_7_title, help_7_description, true);
-		
-		embedBuilder.addBlankField(false);
-		
-		embedBuilder.addField(help_8_title, help_8_description, true);
-		embedBuilder.addField(help_9_title, help_9_description, true);
-		
-		embedBuilder.addBlankField(false);
-		
-		embedBuilder.addField(help_10_title, help_10_description, true);
-		embedBuilder.addField(help_11_title, help_11_description, true);
-		
-		embedBuilder.addBlankField(false);
-		
-		embedBuilder.addField(help_12_title, help_12_description, true);
-		embedBuilder.addField(help_13_title, help_13_description, true);
-		
-		event.replyEmbeds(embedBuilder.build()).queue();
+		if ("ECE".equalsIgnoreCase(department)) {
+			event.replyFiles(FileUpload.fromData(teamMade))
+				.setEmbeds(embed.buildHelp(color, imageUrl_TeamMade, esoRole.get(), page))
+				.setEphemeral(true).queue();
+		} else {
+			event.replyFiles(FileUpload.fromData(insociic))
+				.setEmbeds(embed.buildHelp(color, imageUrl_InsoCiic, esoRole.get(), page))
+				.setEphemeral(true).queue();
+		}
 	}
 }

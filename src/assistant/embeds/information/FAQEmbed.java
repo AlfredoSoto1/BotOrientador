@@ -29,6 +29,17 @@ public class FAQEmbed {
 			.setTitle("Frequently Asked Questions")
 			.setFooter(page + " of "+ maxPage);
 		
+		if (page > maxPage) {
+			embed.addField("Oh no! 404", String.format(
+				"""
+				Hmm creo que no hay más preguntas por acá,
+				si no encuentras una pregunta que entiendes que deberia
+				de estar aquí, por favor contacta a un estudiante orientador.
+				Trata con un rango de páginas de [0-%s]
+				""", maxPage), false);
+			return embed.build();
+		}
+		
 		for (int i = page * fieldsPerPage; i < (page + 1) * fieldsPerPage; i++) {
 			if (i >= fields.size())
 				continue;

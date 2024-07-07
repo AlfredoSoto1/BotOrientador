@@ -98,8 +98,8 @@ public class ECEAssistant extends BotApplication {
 		/*
 		 * Add the commands that have hard-coded data
 		 */
-		interactions.add(faq);
-//		interactions.add(helpMenu);
+//		interactions.add(faq);
+		interactions.add(helpMenu);
 //		interactions.add(uprmMap);
 //		interactions.add(serverRules);
 //		interactions.add(calendar);

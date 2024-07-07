@@ -33,6 +33,7 @@ public class FAQCmd extends InteractionModel implements CommandI {
 	public FAQCmd() {
 		this.embed = new FAQEmbed();
 	}
+	
 	@Override
 	public void onGuildInit(Guild server) {
 		this.teamMade = new File("assistant/images/FAQ_Banner_TEAM-MADE.png");
