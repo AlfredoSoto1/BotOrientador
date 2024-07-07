@@ -110,11 +110,11 @@ public class ECEAssistant extends BotApplication {
 		serverRules.setGlobal(false);
 		calendar.setGlobal(false);
 
-		faculty.setGlobal(false);
-		projects.setGlobal(false);
-		organizations.setGlobal(false);
 		eoInfo.setGlobal(false);
+
+		projects.setGlobal(true);
 		findBuilding.setGlobal(true);
+		organizations.setGlobal(true);
 		
 		/*
 		 * Add the commands that have hard-coded data
@@ -129,8 +129,8 @@ public class ECEAssistant extends BotApplication {
 		 * Add the commands that require database to
 		 * retrieve the data.
 		 */
-		interactions.add(faculty);
-		interactions.add(projects);
+//		interactions.add(faculty);
+//		interactions.add(projects);
 //		interactions.add(eoInfo);
 //		interactions.add(findBuilding);
 //		interactions.add(organizations);

@@ -28,16 +28,6 @@ public class ProjectsCmd extends InteractionModel implements CommandI {
 
 	private static final String COMMAND_LABEL = "select-projects";
 	
-//	private static final String OPTION_SELECTED_AIR = "air";
-//	private static final String OPTION_SELECTED_NASA = "nasa";
-//	private static final String OPTION_SELECTED_SEDS = "seds";
-//	private static final String OPTION_SELECTED_SOLAR = "solar";
-//	private static final String OPTION_SELECTED_ALPHA = "alpha";
-//	private static final String OPTION_SELECTED_RACING = "racing";
-//	private static final String OPTION_SELECTED_ROBOBOAT = "boat";
-//	private static final String OPTION_SELECTED_VANGUARD = "vanguard";
-//	private static final String OPTION_SELECTED_RUMARINO = "rumarino";
-	
 	private boolean isGlobal;
 	private ProjectsEmbed embed;
 	private ProjectsService service;
