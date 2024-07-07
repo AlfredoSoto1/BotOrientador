@@ -99,11 +99,11 @@ public class DiscordService {
 			return Optional.empty();
 		
 		DiscordRoleDTO role = new DiscordRoleDTO();
-		role.setId(result.getValue("droleid", 0));
-		role.setName(result.getValue("name", 0));
-		role.setEffectivename(result.getValue("effectivename", 0));
-		role.setRoleid(result.getValue("longroleid", 0));
-		role.setServerid(result.getValue("discserid", 0));
+		role.setId(result.getValue("droleid"));
+		role.setName(result.getValue("name"));
+		role.setEffectivename(result.getValue("effectivename"));
+		role.setRoleid(result.getValue("longroleid"));
+		role.setServerid(result.getValue("discserid"));
 		
 		return Optional.of(role);
 	}
@@ -141,9 +141,9 @@ public class DiscordService {
 		// Map all the results from DAO to DTO
 		for (int i = 0; i < result.rowCount(); i++) {
             InteractionStateDTO interactionState = new InteractionStateDTO();
-            interactionState.setState(result.getValue("state", 0));
-            interactionState.setServerId(result.getValue("discserid", 0));
-            interactionState.setType(InteractionState.asInteraction(result.getValue("type", 0)));
+            interactionState.setState(result.getValue("state", i));
+            interactionState.setServerId(result.getValue("discserid", i));
+            interactionState.setType(InteractionState.asInteraction(result.getValue("type", i)));
             sates.add(interactionState);
 		}
 		return sates;

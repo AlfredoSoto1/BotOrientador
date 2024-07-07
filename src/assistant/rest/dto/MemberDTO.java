@@ -31,6 +31,13 @@ public class MemberDTO {
 	public MemberDTO() {
 
 	}
+	
+	@Override
+	public String toString() {
+		return "MemberDTO [id=" + id + ", userId=" + userId + ", firstname=" + firstname + ", lastname=" + lastname
+				+ ", initial=" + initial + ", sex=" + sex + ", email=" + email + ", username=" + username + ", funfact="
+				+ funfact + ", program=" + program + ", verified=" + verified + "]";
+	}
 
 	public int getId() {
 		return id;

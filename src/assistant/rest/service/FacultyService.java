@@ -35,11 +35,9 @@ public class FacultyService {
 	
 	public long getRecordCount(String departmentAbbreviation) {
 		SubTransactionResult result = facultyDAO.getFacultyCount(departmentAbbreviation);
-		
 		if (result.isEmpty())
 			return 0;
-		
-		return result.getValue("count", 0);
+		return result.getValue("count");
 	}
 	
 	public List<EmailDTO> getFacultyEmails() {

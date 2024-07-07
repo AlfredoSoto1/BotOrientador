@@ -110,8 +110,6 @@ public class ECEAssistant extends BotApplication {
 		serverRules.setGlobal(false);
 		calendar.setGlobal(false);
 
-		eoInfo.setGlobal(false);
-
 		projects.setGlobal(true);
 		findBuilding.setGlobal(true);
 		organizations.setGlobal(true);
@@ -131,7 +129,7 @@ public class ECEAssistant extends BotApplication {
 		 */
 //		interactions.add(faculty);
 //		interactions.add(projects);
-//		interactions.add(eoInfo);
+		interactions.add(eoInfo);
 //		interactions.add(findBuilding);
 //		interactions.add(organizations);
 	}

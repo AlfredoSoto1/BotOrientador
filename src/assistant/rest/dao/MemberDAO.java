@@ -27,6 +27,101 @@ public class MemberDAO {
 		
 	}
 	
+	public SubTransactionResult queryMemberCount(MemberRetrievement retrievement, long server) {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
+			"""
+			WITH all_people AS (
+			    SELECT  orid         AS identifier,
+			            fname        AS firstname,
+			            lname        AS lastname,
+			            '-'          AS initial,
+			            '-'          AS sex,
+			            'orientador' AS type,
+			            fmemid
+			        FROM orientador
+			    
+			    UNION ALL
+			    SELECT  prepaid                 AS identifier,
+			            fname                   AS firstname, 
+			            flname || ' ' || mlname AS lastname,
+			            initial                 AS initial, 
+			            sex                     AS sex,
+			            'prepa'                 AS type, 
+			            fmemid
+			        FROM prepa
+			),
+			people_with_verification AS (
+			    SELECT  mb.memid,
+			            identifier,
+			            firstname,
+			            lastname,
+			            initial,
+			            sex,
+			            mb.email,
+			            pr.name                              AS program_name,
+			            COALESCE(jm.username, 'No username') AS username,
+			            COALESCE(jm.funfact,  'No fun fact') AS funfact,
+			            CASE WHEN jm.jmid IS NULL THEN FALSE ELSE TRUE END AS is_verified,
+			            type,
+			            discserid
+			        FROM all_people
+			            INNER JOIN member          AS mb ON fmemid     = memid
+			            INNER JOIN program         AS pr ON mb.fprogid = progid
+			            LEFT  JOIN joinedmember    AS jm ON jm.fmemid  = memid
+			            
+			            INNER JOIN department      AS dp ON dp.depid   = pr.fdepid 
+			            INNER JOIN serverownership AS so ON dp.depid   = so.fdepid
+			)
+			SELECT COUNT(*) AS count
+			    FROM people_with_verification
+			    WHERE
+			        (discserid = ? OR ? = -1) AND 
+			        (
+			            (? = 'EVERYONE')                                 OR 
+			            (? = 'ALL_PREPA'        AND type = 'prepa')      OR
+			            (? = 'ALL_ORIENTADOR'   AND type = 'orientador') OR
+			
+			            (? = 'ALL_VERIFIED'     AND is_verified = TRUE)  OR
+			            (? = 'ALL_NON_VERIFIED' AND is_verified = FALSE) OR
+			            
+			            (? = 'VERIFIED_PREPA'      AND is_verified = TRUE AND type = 'prepa')      OR
+			            (? = 'VERIFIED_ORIENTADOR' AND is_verified = TRUE AND type = 'orientador') OR
+			
+			            (? = 'NON_VERIFIED_PREPA'      AND is_verified = FALSE AND type = 'prepa')      OR
+			            (? = 'NON_VERIFIED_ORIENTADOR' AND is_verified = FALSE AND type = 'orientador')
+			        )
+			""", List.of(
+					server, server,
+					retrievement.name(),
+					retrievement.name(),
+					retrievement.name(),
+					retrievement.name(),
+					retrievement.name(),
+					retrievement.name(),
+					retrievement.name(),
+					retrievement.name(),
+					retrievement.name()
+				));
+		
+		transaction.prepare()
+			.executeThen(TransactionStatementType.SELECT_QUERY)
+			.commit();
+		
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		
+		return transaction.getLatestResult();
+	}
+	
 	public SubTransactionResult queryEmails(int offset, int limit, long server) {
 		@SuppressWarnings("resource")
 		Transaction transaction = new Transaction();

@@ -26,25 +26,6 @@ import assistant.rest.dto.TeamDTO;
 @Service
 public class TeamService {
 	
-	/**
-	 * FIXME: remove comment
-	 * 
-	 * THIS SHOULD BE MERGED WITH THE DISCORD REGISTRATION
-	 * 
-	 * This class must contain the important functions
-	 * that allow CRUD operations with the database.
-	 * This class is in charged of interacting with each table-entity
-	 * of the database.
-	 * 
-	 * This must be the only service that allows contact with the database
-	 * for such entities. If there is a special behavior/thing that relates
-	 * table CRUD operations that is not directly with the concept of entities,
-	 * then it should have its own Service-Class.
-	 * 
-	 * There will still be a controller for each special behavior and each entity
-	 * HTTP control system. Not all services are tide to a controller, this is
-	 * because not all services need to be exposed to the client when using the API.
-	 */
 	private final TeamDAO teamDAO;
 	
 	@Autowired

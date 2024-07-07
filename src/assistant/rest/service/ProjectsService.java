@@ -56,7 +56,7 @@ public class ProjectsService {
         for (int i = 0; i < result.rowCount(); i++) {
         	if (projects.containsKey(result.getValue("projecid", i))) {
         		ProjectDTO project = projects.get(result.getValue("projecid", i));
-        		project.addPlatforms(result.getValue("platform", i));
+        		project.addPlatforms(result.getValue("platform",  i));
     			project.addUrlhandle(result.getValue("urlhandle", i));
         		continue;
         	}
@@ -64,10 +64,10 @@ public class ProjectsService {
 			project.setId(result.getValue("projecid", i));
 			project.setName(result.getValue("name",   i));
 			project.setEmail(result.getValue("email", i));
-			project.setDescription(result.getValue("description",  i));
-			project.setWebsite(result.getValue("url",  i));
+			project.setDescription(result.getValue("description", i));
 			
-			project.addPlatforms(result.getValue("platform", i));
+			project.setWebsite(result.getValue("url", i));
+			project.addPlatforms(result.getValue("platform",  i));
 			project.addUrlhandle(result.getValue("urlhandle", i));
 			
 			projects.put(project.getId(), project);
@@ -97,10 +97,10 @@ public class ProjectsService {
 			project.setId(result.getValue("projecid", i));
 			project.setName(result.getValue("name",   i));
 			project.setEmail(result.getValue("email", i));
-			project.setDescription(result.getValue("description",  i));
-			project.setWebsite(result.getValue("url",  i));
+			project.setDescription(result.getValue("description", i));
 			
-			project.addPlatforms(result.getValue("platform", i));
+			project.setWebsite(result.getValue("url", i));
+			project.addPlatforms(result.getValue("platform",  i));
 			project.addUrlhandle(result.getValue("urlhandle", i));
 			
 			projects.put(project.getId(), project);

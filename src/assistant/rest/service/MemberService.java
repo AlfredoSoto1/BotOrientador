@@ -77,6 +77,18 @@ public class MemberService {
 	}
 	
 	/**
+	 * @param retrievement
+	 * @param server
+	 * @return count of members related to the retrievement in a server
+	 */
+	public long memberCount(MemberRetrievement retrievement, long server) {
+		SubTransactionResult result = memberDAO.queryMemberCount(retrievement, server);
+		if (result.isEmpty())
+			return 0;
+		return result.getValue("count");
+	}
+	
+	/**
 	 * @param page
 	 * @param size
 	 * @param retrievement
@@ -125,20 +137,20 @@ public class MemberService {
 		
 		// Map all the results from DAO to DTO
 		MemberDTO member = new MemberDTO();
-		member.setId(result.getValue("memid", 0));
-		member.setUserId(result.getValue("identifier", 0));
+		member.setId(result.getValue("memid"));
+		member.setUserId(result.getValue("identifier"));
 		
-		member.setFirstname(result.getValue("firstname", 0));
-		member.setLastname(result.getValue("lastname", 0));
-		member.setInitial(result.getValue("initial", 0));
-		member.setSex(result.getValue("sex", 0));
+		member.setFirstname(result.getValue("firstname"));
+		member.setLastname(result.getValue("lastname"));
+		member.setInitial(result.getValue("initial"));
+		member.setSex(result.getValue("sex"));
 		
-		member.setEmail(result.getValue("email", 0));
-		member.setProgram(MemberProgram.asProgram(result.getValue("program_name", 0)));
-		member.setFunfact(result.getValue("funfact", 0));
-		member.setUsername(result.getValue("username", 0));
+		member.setEmail(result.getValue("email"));
+		member.setProgram(MemberProgram.asProgram(result.getValue("program_name")));
+		member.setFunfact(result.getValue("funfact"));
+		member.setUsername(result.getValue("username"));
 
-		member.setVerified(result.getValue("is_verified", 0));
+		member.setVerified(result.getValue("is_verified"));
 		
 		return Optional.of(member);
 	}
@@ -155,16 +167,16 @@ public class MemberService {
 		
 		// Map all the results from DAO to DTO
 		TeamDTO team = new TeamDTO();
-		team.setId(result.getValue("teamid", 0));
-		team.setName(result.getValue("team_name", 0));
-		team.setOrgname(result.getValue("team_orgname", 0));
+		team.setId(result.getValue("teamid"));
+		team.setName(result.getValue("team_name"));
+		team.setOrgname(result.getValue("team_orgname"));
 		
 		DiscordRoleDTO role = new DiscordRoleDTO();
-		role.setId(result.getValue("droleid", 0));
-		role.setRoleid(result.getValue("longroleid", 0));
-		role.setServerid(result.getValue("discserid", 0));
-		role.setName(result.getValue("role_name", 0));
-		role.setEffectivename(result.getValue("effectivename", 0));
+		role.setId(result.getValue("droleid"));
+		role.setRoleid(result.getValue("longroleid"));
+		role.setServerid(result.getValue("discserid"));
+		role.setName(result.getValue("role_name"));
+		role.setEffectivename(result.getValue("effectivename"));
 		team.setTeamRole(role);
 		
 		return Optional.of(team);
