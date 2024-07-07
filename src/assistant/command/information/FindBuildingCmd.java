@@ -23,9 +23,8 @@ public class FindBuildingCmd extends InteractionModel implements CommandI {
 
 	private static final String COMMAND_LABEL = "location";
 	
-	private BuildingService service;
-	
 	private boolean isGlobal;
+	private BuildingService service;
 	
 	public FindBuildingCmd() {
 		this.service = Application.instance().getSpringContext().getBean(BuildingService.class);

@@ -4,7 +4,9 @@
 package assistant.rest.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,33 +29,87 @@ public class ProjectsService {
 		this.projectDAO = projectDAO;
 	}
 	
+	/**
+	 * @param page
+	 * @param size
+	 * @return Names of all the projects
+	 */
 	public List<String> getProjectNames(int page, int size) {
         SubTransactionResult result = projectDAO.queryProjectNames(page, size);
         
         List<String> names = new ArrayList<>();
         for (int i = 0; i < result.rowCount(); i++) {
-			ProjectDTO project = new ProjectDTO();
-			project.setId(result.getValue("projecid", i));
-			project.setName(result.getValue("name", i));
-			project.setDescription(result.getValue("description",  i));
-			project.setEmail(result.getValue("email", i));
-			names.add(result.getValue("gpin",  i));
+			names.add(result.getValue("name", i));
 		}
 		return names;
 	}
 	
+	/**
+	 * @param page
+	 * @param size
+	 * @return List of projects
+	 */
+	public List<ProjectDTO> getAllProjects(int page, int size) {
+        SubTransactionResult result = projectDAO.queryAllProjects(page, size);
+        
+        Map<Integer, ProjectDTO> projects = new HashMap<>();
+        for (int i = 0; i < result.rowCount(); i++) {
+        	if (projects.containsKey(result.getValue("projecid", i))) {
+        		ProjectDTO project = projects.get(result.getValue("projecid", i));
+        		project.addPlatforms(result.getValue("platform", i));
+    			project.addUrlhandle(result.getValue("urlhandle", i));
+        		continue;
+        	}
+			ProjectDTO project = new ProjectDTO();
+			project.setId(result.getValue("projecid", i));
+			project.setName(result.getValue("name",   i));
+			project.setEmail(result.getValue("email", i));
+			project.setDescription(result.getValue("description",  i));
+			project.setWebsite(result.getValue("url",  i));
+			
+			project.addPlatforms(result.getValue("platform", i));
+			project.addUrlhandle(result.getValue("urlhandle", i));
+			
+			projects.put(project.getId(), project);
+		}
+		return new ArrayList<>(projects.values());
+	}
+	
+	/**
+	 * @param name
+	 * @return Single project by name
+	 */
 	public Optional<ProjectDTO> getProject(String name) {
 		SubTransactionResult result = projectDAO.queryProject(name);
 		
 		if (result.isEmpty())
 			return Optional.empty();
 		
-		ProjectDTO project = new ProjectDTO();
-		project.setId(result.getValue("projecid", 0));
-		project.setName(result.getValue("name",   0));
-		project.setEmail(result.getValue("email", 0));
-		project.setDescription(result.getValue("description",  0));
-		
-		return Optional.of(project);
+        Map<Integer, ProjectDTO> projects = new HashMap<>();
+        for (int i = 0; i < result.rowCount(); i++) {
+        	if (projects.containsKey(result.getValue("projecid", i))) {
+        		ProjectDTO project = projects.get(result.getValue("projecid", i));
+        		project.addPlatforms(result.getValue("platform", i));
+    			project.addUrlhandle(result.getValue("urlhandle", i));
+        		continue;
+        	}
+			ProjectDTO project = new ProjectDTO();
+			project.setId(result.getValue("projecid", i));
+			project.setName(result.getValue("name",   i));
+			project.setEmail(result.getValue("email", i));
+			project.setDescription(result.getValue("description",  i));
+			project.setWebsite(result.getValue("url",  i));
+			
+			project.addPlatforms(result.getValue("platform", i));
+			project.addUrlhandle(result.getValue("urlhandle", i));
+			
+			projects.put(project.getId(), project);
+		}
+        
+        if (projects.size() != 1)
+        	return Optional.empty();
+        
+        Map.Entry<Integer, ProjectDTO> entry = projects.entrySet().iterator().next();
+		return Optional.of(entry.getValue());
 	}
 }

@@ -129,7 +129,7 @@ public class ECEAssistant extends BotApplication {
 		 * Add the commands that require database to
 		 * retrieve the data.
 		 */
-//		interactions.add(faculty);
+		interactions.add(faculty);
 		interactions.add(projects);
 //		interactions.add(eoInfo);
 //		interactions.add(findBuilding);
