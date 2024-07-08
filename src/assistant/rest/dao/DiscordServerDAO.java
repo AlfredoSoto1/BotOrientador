@@ -34,6 +34,30 @@ public class DiscordServerDAO {
 
 	}
 	
+	public SubTransactionResult queryProfanities() {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
+			"""
+			SELECT word FROM profanities
+			""", List.of());
+		
+		transaction.prepare()
+			.executeThen(TransactionStatementType.SELECT_QUERY)
+			.commit();
+		
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		return transaction.getLatestResult();
+	}
+	
 	public List<String> getEffectiveRoleNames() {
 		final String SQL = 
 			"""

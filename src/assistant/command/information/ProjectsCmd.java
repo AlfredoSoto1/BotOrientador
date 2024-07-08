@@ -68,14 +68,21 @@ public class ProjectsCmd extends InteractionModel implements CommandI {
 		
 		return List.of(
 			new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje un departamento", true)
-				.addChoices(choices)
-			);
+				.addChoices(choices));
 	}
-
+	
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
 		String selectedProject = event.getOption(COMMAND_LABEL).getAsString();
 		
+		if (event.isFromGuild()) {
+			fromServer(event, selectedProject);
+		} else {
+			fromDM(event, selectedProject);
+		}
+	}
+	
+	public void fromServer(SlashCommandInteractionEvent event, String selectedProject) {
 		DiscordServerDTO discordServer = super.getServerOwnerInfo(event.getGuild().getIdLong());
 		Color color = Color.decode("#" + discordServer.getColor());
 		
@@ -83,10 +90,20 @@ public class ProjectsCmd extends InteractionModel implements CommandI {
 		
 		if (project.isPresent()) {
 			event.replyEmbeds(embed.buildProject(color, project.get()))
-				.setEphemeral(event.isFromGuild()).queue();
+			.setEphemeral(event.isFromGuild()).queue();
 		} else {
 			event.reply("Hmm creo que el proyecto que me diste no existe en mi base de datos :confused:")
-				.setEphemeral(event.isFromGuild()).queue();
+			.setEphemeral(event.isFromGuild()).queue();
+		}
+	}
+
+	public void fromDM(SlashCommandInteractionEvent event, String selectedProject) {
+		Optional<ProjectDTO> project = service.getProject(selectedProject);
+		
+		if (project.isPresent()) {
+			event.replyEmbeds(embed.buildProject(Color.GRAY, project.get())).queue();
+		} else {
+			event.reply("Hmm creo que el proyecto que me diste no existe en mi base de datos :confused:").queue();
 		}
 	}
 }

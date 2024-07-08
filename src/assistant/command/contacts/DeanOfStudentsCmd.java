@@ -70,7 +70,7 @@ public class DeanOfStudentsCmd extends InteractionModel implements CommandI {
 			Color color = Color.decode("#" + discordServer.getColor());
 			
 			event.replyEmbeds(embed.buildInfoPanel(color, result.get()))
-				.setEphemeral(true).queue();
+				.setEphemeral(event.isFromGuild()).queue();
 		} else {
 			event.replyEmbeds(embed.buildInfoPanel(Color.GRAY, result.get())).queue();
 		}

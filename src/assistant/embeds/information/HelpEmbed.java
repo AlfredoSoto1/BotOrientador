@@ -25,6 +25,7 @@ public class HelpEmbed {
 		
 		EmbedBuilder embed = new EmbedBuilder()
 			.setImage(banner)
+			.setColor(color)
 			.setTitle("Lista de commandos")
 			.setFooter(page + " of "+ maxPage);
 		

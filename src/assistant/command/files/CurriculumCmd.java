@@ -61,13 +61,11 @@ public class CurriculumCmd extends InteractionModel implements CommandI {
 		if ("ECE".equalsIgnoreCase(department))
 			return List.of(
 				new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje un programa de estudio", true)
-					.setRequired(true)
 					.addChoice("INEL - Electrical Engineering", OPTION_CHOICE_INEL)
 					.addChoice("ICOM - Computer Engineering",   OPTION_CHOICE_ICOM));
 		else
 			return List.of(
 				new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje un programa de estudio", true)
-					.setRequired(true)
 					.addChoice("INSO - Software Engineering",           OPTION_CHOICE_INSO)
 					.addChoice("CIIC - Computer Science & Engineering", OPTION_CHOICE_CIIC));
 	}
@@ -78,25 +76,25 @@ public class CurriculumCmd extends InteractionModel implements CommandI {
 		switch(event.getOption(COMMAND_LABEL).getAsString()) {
 		case OPTION_CHOICE_INEL:
 			File INELcurriculum = new File("assistant/curriculos/INEL.pdf");
-			event.reply("Here is the Electrical Engineering Curriculum")
+			event.reply("> Here is the Electrical Engineering Curriculum")
 				.addFiles(FileUpload.fromData(INELcurriculum))
 				.setEphemeral(true).queue();
 			break;
 		case OPTION_CHOICE_ICOM:
 			File ICOMcurriculum = new File("assistant/curriculos/ICOM.pdf");
-			event.reply("Here is the Computer Engineering Curriculum")
+			event.reply("> Here is the Computer Engineering Curriculum")
 				.addFiles(FileUpload.fromData(ICOMcurriculum))
 				.setEphemeral(true).queue();
 			break;
 		case OPTION_CHOICE_INSO:
 			File INSOcurriculum = new File("assistant/curriculos/INSO.pdf");
-			event.reply("Here is the Software Engineering Curriculum")
+			event.reply("> Here is the Software Engineering Curriculum")
 				.addFiles(FileUpload.fromData(INSOcurriculum))
 				.setEphemeral(true).queue();
 			break;
 		case OPTION_CHOICE_CIIC:
 			File CIICcurriculum = new File("assistant/curriculos/CIIC.pdf");
-			event.reply("Here is the Computer Science & Engineering Curriculum")
+			event.reply("> Here is the Computer Science & Engineering Curriculum")
 				.addFiles(FileUpload.fromData(CIICcurriculum))
 				.setEphemeral(true).queue();
 			break;

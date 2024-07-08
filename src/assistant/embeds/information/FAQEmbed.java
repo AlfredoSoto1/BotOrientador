@@ -9,14 +9,13 @@ import java.util.List;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.MessageEmbed.Field;
-import net.dv8tion.jda.api.entities.Role;
 
 /**
  * @author Alfredo
  */
 public class FAQEmbed {
 	
-	public MessageEmbed buildFAQ(Color color, String banner, Role bdeRole, Role esoRole, int page) {
+	public MessageEmbed buildFAQ(Color color, String banner, String bdeRole, String esoRole, int page) {
 		
 		List<Field> fields = getFieldPage(bdeRole, esoRole);
 		
@@ -48,12 +47,43 @@ public class FAQEmbed {
 		return embed.build();
 	}
 	
-	private List<Field> getFieldPage(Role bdeRole, Role esoRole) {
+	public MessageEmbed buildFAQDM(Color color, String bdeRole, String esoRole, int page) {
+		
+		List<Field> fields = getFieldPage(bdeRole, esoRole);
+		
+		int fieldsPerPage = 4;
+		int maxPage = fields.size() / fieldsPerPage;
+		
+		EmbedBuilder embed = new EmbedBuilder()
+			.setColor(color)
+			.setTitle("Frequently Asked Questions")
+			.setFooter(page + " of "+ maxPage);
+		
+		if (page > maxPage) {
+			embed.addField("Oh no! 404", String.format(
+				"""
+				Hmm creo que no hay más preguntas por acá,
+				si no encuentras una pregunta que entiendes que deberia
+				de estar aquí, por favor contacta a un estudiante orientador.
+				Trata con un rango de páginas de [0-%s]
+				""", maxPage), false);
+			return embed.build();
+		}
+		
+		for (int i = page * fieldsPerPage; i < (page + 1) * fieldsPerPage; i++) {
+			if (i >= fields.size())
+				continue;
+			embed.addField(fields.get(i));
+		}
+		return embed.build();
+	}
+	
+	private List<Field> getFieldPage(String bdeRole, String esoRole) {
 		return List.of(
 			new Field("1. ¿Cómo puedo adiestrarme mejor en Discord?", String.format(
 						"""
 						Puede leer el PDF que se le proveyó o comunicarse con algunos de los %s.
-						""", bdeRole.getAsMention()), false),
+						""", bdeRole), false),
 					
 			new Field("2. ¿Por qué no puedo ver los canales de otros grupos?", 
 						"""
@@ -64,7 +94,7 @@ public class FAQEmbed {
 			new Field("3. Tengo una idea para el bot. ¿Con quién me puedo contactar?", String.format(
 						"""
 						Con los %s o los %s.
-						""", bdeRole.getAsMention(), esoRole.getAsMention()), false),
+						""", bdeRole, esoRole), false),
 					
 			new Field("4. ¿Cómo consigo los comandos para el bot?",
 						"""
@@ -77,7 +107,7 @@ public class FAQEmbed {
 						con el lenguaje Python. Pero para esta nueva versión con la que estas interactuando 
 						está programado en Java!! Cualquier pregunta le pueden escribir a Alfredo o a cualquier 
 						%s. Ellos te pueden explicar y enseñar algunos detalles de como se hizo si estas interesad@!
-						""", bdeRole.getAsMention()), false),
+						""", bdeRole), false),
 			
 			new Field("6. Me siento indeciso sobre mi departamento. ¿Con quién hablo?",
 						"""

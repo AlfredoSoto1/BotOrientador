@@ -30,6 +30,8 @@ public class FAQCmd extends InteractionModel implements CommandI {
 	private File insociic;
 	private FAQEmbed embed;
 	
+	private boolean isGlobal;
+	
 	public FAQCmd() {
 		this.embed = new FAQEmbed();
 	}
@@ -42,13 +44,12 @@ public class FAQCmd extends InteractionModel implements CommandI {
 	
 	@Override
 	public boolean isGlobal() {
-		return false;
+		return isGlobal;
 	}
 
 	@Override
-	@Deprecated
 	public void setGlobal(boolean isGlobal) {
-		// This is a server command
+		this.isGlobal = isGlobal;
 	}
 	
 	@Override
@@ -64,14 +65,20 @@ public class FAQCmd extends InteractionModel implements CommandI {
 	@Override
 	public List<OptionData> getOptions(Guild server) {
 		return List.of(
-			new OptionData(OptionType.INTEGER, "page", "Enter page of FAQ")
-				.setRequired(true)
+			new OptionData(OptionType.INTEGER, "page", "Enter page of FAQ", true)
 				.setMinValue(0));
 	}
 	
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
-		
+		if (event.isFromGuild()) {
+			fromServer(event);
+		} else {
+			fromDM(event);
+		}
+	}
+	
+	private void fromServer(SlashCommandInteractionEvent event) {
 		int page = event.getOption("page").getAsInt();
 		
 		// Mentioned Roles in embedded message
@@ -87,12 +94,17 @@ public class FAQCmd extends InteractionModel implements CommandI {
 		
 		if ("ECE".equalsIgnoreCase(department)) {
 			event.replyFiles(FileUpload.fromData(teamMade))
-				.setEmbeds(embed.buildFAQ(color, imageUrl_TeamMade, bdeRole.get(), esoRole.get(), page))
+				.setEmbeds(embed.buildFAQ(color, imageUrl_TeamMade, bdeRole.get().getAsMention(), esoRole.get().getAsMention(), page))
 				.setEphemeral(true).queue();
 		} else {
 			event.replyFiles(FileUpload.fromData(insociic))
-				.setEmbeds(embed.buildFAQ(color, imageUrl_InsoCiic, bdeRole.get(), esoRole.get(), page))
+				.setEmbeds(embed.buildFAQ(color, imageUrl_InsoCiic, bdeRole.get().getAsMention(), esoRole.get().getAsMention(), page))
 				.setEphemeral(true).queue();
 		}
+	}
+	
+	private void fromDM(SlashCommandInteractionEvent event) {
+		int page = event.getOption("page").getAsInt();
+		event.replyEmbeds(embed.buildFAQDM(Color.GRAY, "BotDeveloper", "EstudianteOrientador", page)).queue();
 	}
 }

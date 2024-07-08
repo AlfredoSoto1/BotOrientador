@@ -211,7 +211,7 @@ public class VerificationCmd extends InteractionModel implements CommandI {
         memberDTO.ifPresent(member -> {
         	// Set the funfacts and the username
         	member.setFunfact(funfacts);
-        	member.setUsername(event.getMember().getEffectiveName());
+        	member.setUsername(event.getMember().getUser().getName());
         });
         
 		// Check member verification

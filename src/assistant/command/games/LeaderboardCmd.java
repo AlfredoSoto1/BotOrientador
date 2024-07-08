@@ -1,0 +1,86 @@
+/**
+ * 
+ */
+package assistant.command.games;
+
+import java.awt.Color;
+import java.util.List;
+import java.util.Optional;
+
+import assistant.app.core.Application;
+import assistant.discord.interaction.CommandI;
+import assistant.discord.interaction.InteractionModel;
+import assistant.embeds.games.LevelUpEmbed;
+import assistant.rest.dto.DiscordServerDTO;
+import assistant.rest.dto.UserRankDTO;
+import assistant.rest.service.GameService;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+
+/**
+ * @author Alfredo
+ */
+public class LeaderboardCmd extends InteractionModel implements CommandI {
+
+	private LevelUpEmbed embed;
+	private GameService service;
+	
+	public LeaderboardCmd() {
+		this.embed = new LevelUpEmbed();
+		this.service = Application.instance().getSpringContext().getBean(GameService.class);
+	}
+	
+	@Override
+	public boolean isGlobal() {
+		return false;
+	}
+
+	@Override
+	@Deprecated
+	public void setGlobal(boolean isGlobal) {
+		// Server only command
+	}
+
+	@Override
+	public String getCommandName() {
+		return "rank";
+	}
+
+	@Override
+	public String getDescription() {
+		return "user ranking";
+	}
+
+	@Override
+	public List<OptionData> getOptions(Guild server) {
+		return List.of(
+			new OptionData(OptionType.STRING, "insights", "insights of user data", true)
+				.addChoice("level", "level")
+				.addChoice("leaderboard", "leaderboard"));
+	}
+
+	@Override
+	public void execute(SlashCommandInteractionEvent event) {
+		DiscordServerDTO discordServer = super.getServerOwnerInfo(event.getGuild().getIdLong());
+		Color color = Color.decode("#" + discordServer.getColor());
+		
+		String option = event.getOption("insights").getAsString();
+		
+		if ("level".equals(option)) {
+			Optional<UserRankDTO> userData = service.getUserLeaderboardPosition(event.getUser().getName(), event.getGuild().getIdLong());
+			
+			if (userData.isPresent()) {
+				// Show the level of the user
+				event.replyEmbeds(embed.buildLeaderboardPosition(color, userData.get(), event.getUser().getAvatarUrl())).queue();
+			} else {
+				event.reply("Hmm no te en cuentro en mi base de datos para poder enceñarte tu nivel :pensive:")
+					.setEphemeral(true).queue();
+			}
+		} else if ("leaderboard".equals(option))  {
+			List<UserRankDTO> leaderboard = service.getLeaderboard(event.getGuild().getIdLong());
+			event.replyEmbeds(embed.buildLeaderboard(color, leaderboard)).queue();
+		}
+	}
+}

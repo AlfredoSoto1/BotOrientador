@@ -36,6 +36,15 @@ public class DiscordService {
 		return new File(path);
 	}
 	
+	public List<String> getProfanities() {
+		SubTransactionResult result = dregistrationDAO.queryProfanities();
+		
+		List<String> words = new ArrayList<>();
+		for (int i = 0;i < result.rowCount(); i++)
+			words.add(result.getValue("word", i));
+		return words;
+	}
+	
 	/**
 	 * @param page
 	 * @param size

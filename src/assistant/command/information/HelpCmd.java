@@ -65,16 +65,13 @@ public class HelpCmd extends InteractionModel implements CommandI {
 	@Override
 	public List<OptionData> getOptions(Guild server) {
 		return List.of(
-			new OptionData(OptionType.INTEGER, "page", "Enter page of Help")
-				.setRequired(true)
+			new OptionData(OptionType.INTEGER, "page", "Enter page of Help", true)
 				.setMinValue(0));
 	}
 	
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
-		
 		int page = event.getOption("page").getAsInt();
-		
 		if (event.isFromGuild())
 			fromServer(page, event);
 		else
@@ -104,7 +101,6 @@ public class HelpCmd extends InteractionModel implements CommandI {
 	}
 	
 	private void fromDM(int page, SlashCommandInteractionEvent event) {
-		event.replyFiles(FileUpload.fromData(teamMade))
-			.setEmbeds(embed.buildHelpDM("Estudiante Orientador", page)).queue();
+		event.replyEmbeds(embed.buildHelpDM("Estudiante Orientador", page)).queue();
 	}
 }

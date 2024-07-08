@@ -70,14 +70,20 @@ public class OrgsCmd extends InteractionModel implements CommandI {
 		
 		return List.of(
 			new OptionData(OptionType.STRING, COMMAND_LABEL, "Escoje una organización", true)
-				.addChoices(choices)
-			);
+				.addChoices(choices));
 	}
 
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
 		String selectedProject = event.getOption(COMMAND_LABEL).getAsString();
-		
+		if (event.isFromGuild()) {
+			fromServer(event, selectedProject);
+		} else {
+			fromDM(event, selectedProject);
+		}
+	}
+	
+	private void fromServer(SlashCommandInteractionEvent event, String selectedProject) {
 		DiscordServerDTO discordServer = super.getServerOwnerInfo(event.getGuild().getIdLong());
 		Color color = Color.decode("#" + discordServer.getColor());
 		
@@ -89,6 +95,16 @@ public class OrgsCmd extends InteractionModel implements CommandI {
 		} else {
 			event.reply("Hmm creo que la organización que me diste no existe en mi base de datos :confused:")
 				.setEphemeral(event.isFromGuild()).queue();
+		}
+	}
+	
+	private void fromDM(SlashCommandInteractionEvent event, String selectedProject) {
+		Optional<OrganizationDTO> project = service.getOrganization(selectedProject);
+		
+		if (project.isPresent()) {
+			event.replyEmbeds(embed.buildOrganization(Color.GRAY, project.get())).queue();
+		} else {
+			event.reply("Hmm creo que la organización que me diste no existe en mi base de datos :confused:").queue();
 		}
 	}
 }

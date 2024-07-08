@@ -15,6 +15,9 @@ import assistant.command.contacts.EconomicAssistanceCmd;
 import assistant.command.contacts.UniversityGuardCmd;
 import assistant.command.files.CurriculumCmd;
 import assistant.command.files.FreshmanGuideCmd;
+import assistant.command.games.GamesCmd;
+import assistant.command.games.LeaderboardCmd;
+import assistant.command.games.ProfanityMessenger;
 import assistant.command.information.CalendarCmd;
 import assistant.command.information.EOInfoCmd;
 import assistant.command.information.FAQCmd;
@@ -138,12 +141,12 @@ public class ECEAssistant extends BotApplication {
 		universityGuard.setGlobal(false);
 		economicAssistance.setGlobal(false);
 		
-		interactions.add(dcsp);
-		interactions.add(department);
-		interactions.add(academicAdvisory);
-		interactions.add(economicAssistance);
-		interactions.add(universityGuard);
-		interactions.add(deanOfStudents);
+//		interactions.add(dcsp);
+//		interactions.add(department);
+//		interactions.add(academicAdvisory);
+//		interactions.add(economicAssistance);
+//		interactions.add(universityGuard);
+//		interactions.add(deanOfStudents);
 	}
 	
 	private void prepareFilesCommands() {
@@ -165,6 +168,8 @@ public class ECEAssistant extends BotApplication {
 		interactions.add(new VerificationCmd());
 		interactions.add(new WelcomeMessenger());
 		interactions.add(new RoleSelectionCmd());
-//		interactions.add(new GamesCmd());
+		interactions.add(new GamesCmd());
+		interactions.add(new LeaderboardCmd());
+		interactions.add(new ProfanityMessenger());
 	}
 }
