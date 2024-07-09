@@ -10,20 +10,24 @@ import java.util.Optional;
 import assistant.app.core.Application;
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
+import assistant.discord.interaction.MessengerI;
 import assistant.embeds.contacts.ServicesEmbed;
 import assistant.rest.dto.DiscordServerDTO;
 import assistant.rest.dto.ServiceDTO;
 import assistant.rest.service.GameService;
 import assistant.rest.service.ServicesService;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.react.GenericMessageReactionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 /**
  * @author Alfredo
  *
  */
-public class AcademicAdvisoryCmd extends InteractionModel implements CommandI {
+public class AcademicAdvisoryCmd extends InteractionModel implements CommandI, MessengerI {
 
 	private ServicesEmbed embed;
 	private ServicesService service;
@@ -81,5 +85,26 @@ public class AcademicAdvisoryCmd extends InteractionModel implements CommandI {
 		
 		// Update the user points stats when he uses the command
 		commandEventService.updateCommandUserCount(this.getCommandName(), event.getUser().getName(), event.getGuild().getIdLong());
+	}
+
+	@Override
+	public List<Long> getMessageID() {
+		return List.of();
+	}
+
+	@Override
+	public void memberJoin(GuildMemberJoinEvent event) {
+		// Do nothing
+	}
+
+	@Override
+	public void messageReceived(MessageReceivedEvent event) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onMessageReaction(GenericMessageReactionEvent event) {
+		// Do nothing
 	}
 }
