@@ -104,6 +104,10 @@ public class GamesCmd extends InteractionModel implements CommandI, MessengerI {
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
 		// Do Nothing
+		event.reply("lol").queue();
+		
+		// Update the user points stats when he uses the command
+		service.updateCommandUserCount(this.getCommandName(), event.getUser().getName(), event.getGuild().getIdLong());
 	}
 	
 	@Override
@@ -118,6 +122,24 @@ public class GamesCmd extends InteractionModel implements CommandI, MessengerI {
         
 		String userMessage = message.getContentRaw();
 		
+		// Handle predefined message responses
+		handlePredefinedMessages(userMessage, channel);
+		
+		// Give one point of XP for every message sent
+		processUserXP(message, channel, event.getGuild());
+	}
+
+	@Override
+	public List<Long> getMessageID() {
+		return List.of();
+	}
+
+	@Override
+	public void onMessageReaction(GenericMessageReactionEvent event) {
+		// Do Nothing
+	}
+	
+	private void handlePredefinedMessages(String userMessage, TextChannel channel) {
 		if (userMessage.equalsIgnoreCase("ping")) {
 			channel.sendMessage("pong").queue();
 		} else if (userMessage.equalsIgnoreCase("pong")) {
@@ -131,27 +153,23 @@ public class GamesCmd extends InteractionModel implements CommandI, MessengerI {
 		} else if (userMessage.contains("bye") || userMessage.contains("adios") || userMessage.contains("me voy")) {
 			channel.sendMessage(SAD_GIFS[random.nextInt(0, SAD_GIFS.length)]).queue();
 		}
-		
+	}
+	
+	private void processUserXP(Message message, TextChannel channel, Guild server) {
 		// Give one point of XP for every message they send
-		Optional<UserRankDTO> userRank = service.giveXP(message.getAuthor().getName(), 1, event.getGuild().getIdLong());
-		
-		if (userRank.isPresent()) {
-			if (userRank.get().isHasLevelup()) {
-				channel.sendMessageFormat(
-					LEVELING_MESSAGES[random.nextInt(0, LEVELING_MESSAGES.length)], 
-					message.getAuthor().getAsMention(),
-					userRank.get().getLevel()).queue();
-			}
-		}
-	}
+		// Obtain the previous user rank before updating if it exists
+		Optional<UserRankDTO> userRank = service.giveXP(message.getAuthor().getName(), 1, server.getIdLong());
 
-	@Override
-	public List<Long> getMessageID() {
-		return List.of();
-	}
-
-	@Override
-	public void onMessageReaction(GenericMessageReactionEvent event) {
-		// Do Nothing
+		userRank.ifPresent(rank -> {
+			if (!rank.isHasLevelup())
+				return;
+			
+			String levelUpMessage = String.format(
+				LEVELING_MESSAGES[random.nextInt(0, LEVELING_MESSAGES.length)], 
+				message.getAuthor().getAsMention(),
+				userRank.get().getLevel());
+			
+			channel.sendMessageFormat(levelUpMessage).queue();
+		});
 	}
 }

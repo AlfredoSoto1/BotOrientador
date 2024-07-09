@@ -4,11 +4,13 @@ import java.awt.Color;
 import java.util.List;
 import java.util.Optional;
 
+import assistant.app.core.Application;
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
 import assistant.discord.object.MemberPosition;
 import assistant.embeds.information.RulesEmbed;
 import assistant.rest.dto.DiscordServerDTO;
+import assistant.rest.service.GameService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -22,11 +24,13 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 public class RulesCmd extends InteractionModel implements CommandI {
 
 	private RulesEmbed embed;
+	private GameService commandEventService;
 	
 	private boolean isGlobal;
 	
 	public RulesCmd() {
 		this.embed = new RulesEmbed();
+		this.commandEventService = Application.instance().getSpringContext().getBean(GameService.class);
 	}
 	
 	@Override
@@ -92,6 +96,9 @@ public class RulesCmd extends InteractionModel implements CommandI {
 			embed.buildBotUsageRules(color, 
 				bdeRole.get().getAsMention(),
 				esoRole.get().getAsMention())).queue();
+		
+		// Update the user points stats when he uses the command
+		commandEventService.updateCommandUserCount(this.getCommandName(), event.getUser().getName(), event.getGuild().getIdLong());
 	}
 	
 	private void fromDM(SlashCommandInteractionEvent event) {

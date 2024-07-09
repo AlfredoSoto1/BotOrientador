@@ -6,8 +6,10 @@ package assistant.command.links;
 import java.io.File;
 import java.util.List;
 
+import assistant.app.core.Application;
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
+import assistant.rest.service.GameService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -19,8 +21,10 @@ import net.dv8tion.jda.api.utils.FileUpload;
  */
 public class MadeWebCmd extends InteractionModel implements CommandI {
 
+	private GameService commandEventService;
+	
 	public MadeWebCmd() {
-		
+		this.commandEventService = Application.instance().getSpringContext().getBean(GameService.class);
 	}
 	
 	@Override
@@ -57,5 +61,8 @@ public class MadeWebCmd extends InteractionModel implements CommandI {
 			https://sites.google.com/upr.edu/maderodriguez/
 			""")
 		.addFiles(FileUpload.fromData(new File("assets/images/MadeWeb.png"))).queue();
+		
+		// Update the user points stats when he uses the command
+		commandEventService.updateCommandUserCount(this.getCommandName(), event.getUser().getName(), event.getGuild().getIdLong());
 	}
 }

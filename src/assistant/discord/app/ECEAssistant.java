@@ -101,21 +101,21 @@ public class ECEAssistant extends BotApplication {
 		/*
 		 * Add the commands that have hard-coded data
 		 */
-//		interactions.add(faq);
-//		interactions.add(helpMenu);
-//		interactions.add(uprmMap);
-//		interactions.add(serverRules);
-//		interactions.add(calendar);
+		interactions.add(faq);
+		interactions.add(helpMenu);
+		interactions.add(uprmMap);
+		interactions.add(serverRules);
+		interactions.add(calendar);
 		
 		/*
 		 * Add the commands that require database to
 		 * retrieve the data.
 		 */
-//		interactions.add(faculty);
-//		interactions.add(projects);
-//		interactions.add(eoInfo);
-//		interactions.add(findBuilding);
-//		interactions.add(organizations);
+		interactions.add(faculty);
+		interactions.add(projects);
+		interactions.add(eoInfo);
+		interactions.add(findBuilding);
+		interactions.add(organizations);
 	}
 	
 	private void prepareLinksCommands() {
@@ -124,8 +124,8 @@ public class ECEAssistant extends BotApplication {
 		
 		usefulLinks.setGlobal(false);
 
-//		interactions.add(madeWeb);
-//		interactions.add(usefulLinks);
+		interactions.add(madeWeb);
+		interactions.add(usefulLinks);
 	}
 	
 	private void prepareContactsCommands() {
@@ -141,22 +141,22 @@ public class ECEAssistant extends BotApplication {
 		universityGuard.setGlobal(false);
 		economicAssistance.setGlobal(false);
 		
-//		interactions.add(dcsp);
-//		interactions.add(department);
-//		interactions.add(academicAdvisory);
-//		interactions.add(economicAssistance);
-//		interactions.add(universityGuard);
-//		interactions.add(deanOfStudents);
+		interactions.add(dcsp);
+		interactions.add(department);
+		interactions.add(academicAdvisory);
+		interactions.add(economicAssistance);
+		interactions.add(universityGuard);
+		interactions.add(deanOfStudents);
 	}
 	
 	private void prepareFilesCommands() {
 		CurriculumCmd curriculum = new CurriculumCmd();
 		FreshmanGuideCmd freshmanGuide = new FreshmanGuideCmd();
 		
-//		freshmanGuide.setGlobal(true);
-//		
-//		interactions.add(curriculum);
-//		interactions.add(freshmanGuide);
+		freshmanGuide.setGlobal(true);
+		
+		interactions.add(curriculum);
+		interactions.add(freshmanGuide);
 	}
 	
 	private void prepareModeratorCommands() {

@@ -13,6 +13,7 @@ import assistant.embeds.information.FacultyEmbed;
 import assistant.rest.dto.DiscordServerDTO;
 import assistant.rest.dto.FacultyDTO;
 import assistant.rest.service.FacultyService;
+import assistant.rest.service.GameService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -26,10 +27,12 @@ public class FacultyCmd extends InteractionModel implements CommandI {
 
 	private FacultyEmbed embed;
 	private FacultyService service;
+	private GameService commandEventService;
 	
 	public FacultyCmd() {
 		this.embed = new FacultyEmbed();
 		this.service = Application.instance().getSpringContext().getBean(FacultyService.class);
+		this.commandEventService = Application.instance().getSpringContext().getBean(GameService.class);
 	}
 	
 	@Override
@@ -85,5 +88,8 @@ public class FacultyCmd extends InteractionModel implements CommandI {
 		
 		event.replyEmbeds(embed.buildFaculty(color, department, faculty, page, maxPages))
 			.setEphemeral(true).queue();
+		
+		// Update the user points stats when he uses the command
+		commandEventService.updateCommandUserCount(this.getCommandName(), event.getUser().getName(), event.getGuild().getIdLong());
 	}
 }

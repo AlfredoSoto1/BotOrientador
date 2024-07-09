@@ -17,6 +17,74 @@ import assistant.database.TransactionStatementType;
  */
 @Repository
 public class GameDAO {
+	
+	public SubTransactionResult queryUpdateCommandUserCount(String commandName, String user, long server) {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		// Add all transaction parameter fields
+		transaction.submitSQL(
+				"""
+				UPDATE advancement
+					SET
+					    commands_used = commands_used + 1
+					FROM joinedmember
+					        INNER JOIN serverownership ON fseoid = seoid
+					WHERE
+					    fjmid     = jmid AND
+					    username  = ?    AND
+					    discserid = ?
+				""", 
+				List.of(user, server))
+			.submitSQL(
+				"""
+				WITH server_command AS (
+				    INSERT INTO commands (fseoid, name, usage)
+				    SELECT seoid, ?, 1
+				        FROM serverownership
+				    WHERE
+				        discserid = ? AND
+				        NOT EXISTS (
+				            SELECT 1 
+				                FROM commands
+				                    INNER JOIN serverownership ON fseoid = seoid
+				                WHERE discserid = ? AND name = ?
+				        )
+				    RETURNING comid
+				),
+				needs_to_update AS (
+				    SELECT CASE WHEN count(*) > 0 THEN true ELSE false END AS created 
+				        FROM server_command
+				)
+				UPDATE commands
+				    SET
+				        usage = usage + 1
+				    FROM serverownership
+				    WHERE
+				        commands.fseoid = seoid AND
+				        commands.name   = ?     AND 
+				        discserid       = ?     AND
+				        (SELECT created FROM needs_to_update LIMIT 1) = false
+				""", 
+				List.of(commandName, server, server, commandName, commandName, server));
+		
+		// Prepare transaction and execute by parts
+		transaction.prepare()
+			.executeThen(TransactionStatementType.UPDATE_QUERY)
+			.executeThen(TransactionStatementType.UPDATE_QUERY)
+			.commit();
+		
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		
+		return transaction.getLatestResult();
+	}
 
 	public SubTransactionResult queryUpdateXP(String user, int quantity, long server) {
 		@SuppressWarnings("resource")

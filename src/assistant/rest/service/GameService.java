@@ -27,6 +27,10 @@ public class GameService {
 		this.gameDAO = gameDAO;
 	}
 	
+	public void updateCommandUserCount(String commandName, String user, long server) {
+		gameDAO.queryUpdateCommandUserCount(commandName, user, server);
+	}
+	
 	public Optional<UserRankDTO> giveXP(String user, int quantity, long server) {
 		SubTransactionResult result = gameDAO.queryUpdateXP(user, quantity, server);
 		

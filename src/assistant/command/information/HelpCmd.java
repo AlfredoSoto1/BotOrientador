@@ -8,11 +8,13 @@ import java.io.File;
 import java.util.List;
 import java.util.Optional;
 
+import assistant.app.core.Application;
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
 import assistant.discord.object.MemberPosition;
 import assistant.embeds.information.HelpEmbed;
 import assistant.rest.dto.DiscordServerDTO;
+import assistant.rest.service.GameService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -30,10 +32,13 @@ public class HelpCmd extends InteractionModel implements CommandI {
 	private File insociic;
 	private HelpEmbed embed;
 	
+	private GameService commandEventService;
+	
 	private boolean isGlobal;
 	
 	public HelpCmd() {
 		this.embed = new HelpEmbed();
+		this.commandEventService = Application.instance().getSpringContext().getBean(GameService.class);
 	}
 	
 	@Override
@@ -98,6 +103,9 @@ public class HelpCmd extends InteractionModel implements CommandI {
 				.setEmbeds(embed.buildHelp(color, imageUrl_InsoCiic, esoRole.get(), page))
 				.setEphemeral(event.isFromGuild()).queue();
 		}
+		
+		// Update the user points stats when he uses the command
+		commandEventService.updateCommandUserCount(this.getCommandName(), event.getUser().getName(), event.getGuild().getIdLong());
 	}
 	
 	private void fromDM(int page, SlashCommandInteractionEvent event) {

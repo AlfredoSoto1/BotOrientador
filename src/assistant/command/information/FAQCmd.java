@@ -8,11 +8,13 @@ import java.io.File;
 import java.util.List;
 import java.util.Optional;
 
+import assistant.app.core.Application;
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
 import assistant.discord.object.MemberPosition;
 import assistant.embeds.information.FAQEmbed;
 import assistant.rest.dto.DiscordServerDTO;
+import assistant.rest.service.GameService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -30,10 +32,13 @@ public class FAQCmd extends InteractionModel implements CommandI {
 	private File insociic;
 	private FAQEmbed embed;
 	
+	private GameService commandEventService;
+	
 	private boolean isGlobal;
 	
 	public FAQCmd() {
 		this.embed = new FAQEmbed();
+		this.commandEventService = Application.instance().getSpringContext().getBean(GameService.class);
 	}
 	
 	@Override
@@ -101,6 +106,9 @@ public class FAQCmd extends InteractionModel implements CommandI {
 				.setEmbeds(embed.buildFAQ(color, imageUrl_InsoCiic, bdeRole.get().getAsMention(), esoRole.get().getAsMention(), page))
 				.setEphemeral(true).queue();
 		}
+		
+		// Update the user points stats when he uses the command
+		commandEventService.updateCommandUserCount(this.getCommandName(), event.getUser().getName(), event.getGuild().getIdLong());
 	}
 	
 	private void fromDM(SlashCommandInteractionEvent event) {

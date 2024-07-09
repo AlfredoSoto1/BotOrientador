@@ -13,6 +13,7 @@ import assistant.discord.object.MemberRetrievement;
 import assistant.embeds.information.EOEmbed;
 import assistant.rest.dto.DiscordServerDTO;
 import assistant.rest.dto.MemberDTO;
+import assistant.rest.service.GameService;
 import assistant.rest.service.MemberService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -27,10 +28,12 @@ public class EOInfoCmd extends InteractionModel implements CommandI {
 
 	private EOEmbed embed;
 	private MemberService service;
+	private GameService commandEventService;
 	
 	public EOInfoCmd() {
 		this.embed = new EOEmbed();
 		this.service = Application.instance().getSpringContext().getBean(MemberService.class);
+		this.commandEventService = Application.instance().getSpringContext().getBean(GameService.class);
 	}
 	
 	@Override
@@ -87,5 +90,8 @@ public class EOInfoCmd extends InteractionModel implements CommandI {
 		
 		event.replyEmbeds(embed.buildEO(color, department, member, page, maxPages))
 			.setEphemeral(true).queue();
+		
+		// Update the user points stats when he uses the command
+		commandEventService.updateCommandUserCount(this.getCommandName(), event.getUser().getName(), event.getGuild().getIdLong());
 	}
 }

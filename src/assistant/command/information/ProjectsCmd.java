@@ -14,6 +14,7 @@ import assistant.discord.interaction.InteractionModel;
 import assistant.embeds.information.ProjectsEmbed;
 import assistant.rest.dto.DiscordServerDTO;
 import assistant.rest.dto.ProjectDTO;
+import assistant.rest.service.GameService;
 import assistant.rest.service.ProjectsService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -30,12 +31,15 @@ public class ProjectsCmd extends InteractionModel implements CommandI {
 	private static final String COMMAND_LABEL = "select-projects";
 	
 	private boolean isGlobal;
+	
 	private ProjectsEmbed embed;
 	private ProjectsService service;
+	private GameService commandEventService;
 	
 	public ProjectsCmd() {
 		this.embed = new ProjectsEmbed();
 		this.service = Application.instance().getSpringContext().getBean(ProjectsService.class);
+		this.commandEventService = Application.instance().getSpringContext().getBean(GameService.class);
 	}
 
 	@Override
@@ -90,11 +94,14 @@ public class ProjectsCmd extends InteractionModel implements CommandI {
 		
 		if (project.isPresent()) {
 			event.replyEmbeds(embed.buildProject(color, project.get()))
-			.setEphemeral(event.isFromGuild()).queue();
+				.setEphemeral(event.isFromGuild()).queue();
 		} else {
 			event.reply("Hmm creo que el proyecto que me diste no existe en mi base de datos :confused:")
-			.setEphemeral(event.isFromGuild()).queue();
+				.setEphemeral(event.isFromGuild()).queue();
 		}
+
+		// Update the user points stats when he uses the command
+		commandEventService.updateCommandUserCount(this.getCommandName(), event.getUser().getName(), event.getGuild().getIdLong());
 	}
 
 	public void fromDM(SlashCommandInteractionEvent event, String selectedProject) {

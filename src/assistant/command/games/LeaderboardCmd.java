@@ -26,10 +26,12 @@ public class LeaderboardCmd extends InteractionModel implements CommandI {
 
 	private LevelUpEmbed embed;
 	private GameService service;
+	private GameService commandEventService;
 	
 	public LeaderboardCmd() {
 		this.embed = new LevelUpEmbed();
 		this.service = Application.instance().getSpringContext().getBean(GameService.class);
+		this.commandEventService = Application.instance().getSpringContext().getBean(GameService.class);
 	}
 	
 	@Override
@@ -82,5 +84,8 @@ public class LeaderboardCmd extends InteractionModel implements CommandI {
 			List<UserRankDTO> leaderboard = service.getLeaderboard(event.getGuild().getIdLong());
 			event.replyEmbeds(embed.buildLeaderboard(color, leaderboard)).queue();
 		}
+		
+		// Update the user points stats when he uses the command
+		commandEventService.updateCommandUserCount(this.getCommandName(), event.getUser().getName(), event.getGuild().getIdLong());
 	}
 }

@@ -14,6 +14,7 @@ import assistant.discord.interaction.InteractionModel;
 import assistant.embeds.information.OrganizationsEmbed;
 import assistant.rest.dto.DiscordServerDTO;
 import assistant.rest.dto.OrganizationDTO;
+import assistant.rest.service.GameService;
 import assistant.rest.service.OrganizationsService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -31,12 +32,14 @@ public class OrgsCmd extends InteractionModel implements CommandI {
 	
 	private OrganizationsEmbed embed;
 	private OrganizationsService service;
+	private GameService commandEventService;
 	
 	private boolean isGlobal;
 
 	public OrgsCmd() {
 		this.embed = new OrganizationsEmbed();
 		this.service = Application.instance().getSpringContext().getBean(OrganizationsService.class);
+		this.commandEventService = Application.instance().getSpringContext().getBean(GameService.class);
 	}
 	
 	@Override
@@ -96,6 +99,9 @@ public class OrgsCmd extends InteractionModel implements CommandI {
 			event.reply("Hmm creo que la organización que me diste no existe en mi base de datos :confused:")
 				.setEphemeral(event.isFromGuild()).queue();
 		}
+		
+		// Update the user points stats when he uses the command
+		commandEventService.updateCommandUserCount(this.getCommandName(), event.getUser().getName(), event.getGuild().getIdLong());
 	}
 	
 	private void fromDM(SlashCommandInteractionEvent event, String selectedProject) {

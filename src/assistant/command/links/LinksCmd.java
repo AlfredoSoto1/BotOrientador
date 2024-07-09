@@ -6,8 +6,10 @@ package assistant.command.links;
 import java.awt.Color;
 import java.util.List;
 
+import assistant.app.core.Application;
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
+import assistant.rest.service.GameService;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -19,10 +21,12 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
  */
 public class LinksCmd extends InteractionModel implements CommandI {
 
+	private GameService commandEventService;
+	
 	private boolean isGlobal;
 	
 	public LinksCmd() {
-		
+		this.commandEventService = Application.instance().getSpringContext().getBean(GameService.class);
 	}
 	
 	@Override
@@ -103,6 +107,11 @@ public class LinksCmd extends InteractionModel implements CommandI {
 			""", false);
 
 		event.replyEmbeds(embedBuider.build()).queue();
+		
+		if (event.isFromGuild()) {
+			// Update the user points stats when he uses the command
+			commandEventService.updateCommandUserCount(this.getCommandName(), event.getUser().getName(), event.getGuild().getIdLong());
+		}
 	}
 
 }
