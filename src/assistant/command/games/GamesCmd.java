@@ -10,6 +10,7 @@ import java.util.Random;
 import assistant.app.core.Application;
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
+import assistant.discord.interaction.KeywordResponder;
 import assistant.discord.interaction.MessengerI;
 import assistant.rest.dto.UserRankDTO;
 import assistant.rest.service.GameService;
@@ -20,6 +21,8 @@ import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.GenericMessageReactionEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 /**
@@ -38,10 +41,7 @@ public class GamesCmd extends InteractionModel implements CommandI, MessengerI {
 			"https://tenor.com/view/sus-cat-2-suspicious-cat-the-cat-looks-suspiciously-cat-sits-in-front-of-food-the-ginger-cat-is-watching-gif-14890167989997543813",
 			"https://tenor.com/view/the-rock-rock-gif-21708339",
 			"https://tenor.com/view/the-rock-sus-the-rock-meme-the-rock-sus-meme-gif-23972805",
-	};
-	
-	private static final String[] YES_GIFS = {
-			"https://tenor.com/view/yes-yay-shaqoneal-excited-dance-gif-8818184967646032189",
+			"https://tenor.com/view/damn-shookt-shocked-gif-5580082",
 	};
 	
 	private static final String[] SAD_GIFS = {
@@ -65,13 +65,16 @@ public class GamesCmd extends InteractionModel implements CommandI, MessengerI {
 		    "%s ¡Alcanzaste el nivel %s! ¡Qué logro tan emocionante! :video_game:",
 		    "%s ¡Subiste al nivel %s! ¡Estás en camino hacia la cima! :trophy:"
 	};
-
 	
 	private Random random;
 	private GameService service;
+	private KeywordResponder responder;
+	
+	private boolean smartResponseEnabled = true;
 	
 	public GamesCmd() {
 		this.random = new Random(System.currentTimeMillis());
+		this.responder = new KeywordResponder();
 		this.service = Application.instance().getSpringContext().getBean(GameService.class);
 	}
 	
@@ -98,14 +101,32 @@ public class GamesCmd extends InteractionModel implements CommandI, MessengerI {
 
 	@Override
 	public List<OptionData> getOptions(Guild server) {
-		return List.of();
+		return List.of(new OptionData(OptionType.STRING, "disable-smart-response", "disables/enables smart response", false)
+			.addChoice("enable", "enable")
+			.addChoice("disable", "disable"));
 	}
 
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
-		// Do Nothing
-		event.reply("lol").queue();
+		OptionMapping option = event.getOption("disable-smart-response");
 		
+		if (option == null) {
+			// Do Nothing
+			event.reply("lol").queue();
+		} else if ("enable".equalsIgnoreCase(option.getAsString())) {
+			if(!super.validateCommandUse(event))
+				return;
+			smartResponseEnabled = true;
+			event.reply("enabled smart response").setEphemeral(true).queue();
+		} else if ("disable".equalsIgnoreCase(option.getAsString())) {
+			if(!super.validateCommandUse(event))
+				return;
+			smartResponseEnabled = false;
+			event.reply("disabled smart response").setEphemeral(true).queue();
+		} else {
+			event.reply("lol").queue();
+		}
+
 		// Update the user points stats when he uses the command
 		service.updateCommandUserCount(this.getCommandName(), event.getUser().getName(), event.getGuild().getIdLong());
 	}
@@ -123,7 +144,7 @@ public class GamesCmd extends InteractionModel implements CommandI, MessengerI {
 		String userMessage = message.getContentRaw();
 		
 		// Handle predefined message responses
-		handlePredefinedMessages(userMessage, channel);
+		handlePredefinedMessages(userMessage, channel, message);
 		
 		// Give one point of XP for every message sent
 		processUserXP(message, channel, event.getGuild());
@@ -139,20 +160,31 @@ public class GamesCmd extends InteractionModel implements CommandI, MessengerI {
 		// Do Nothing
 	}
 	
-	private void handlePredefinedMessages(String userMessage, TextChannel channel) {
+	private void handlePredefinedMessages(String userMessage, TextChannel channel, Message message) {
+		
 		if (userMessage.equalsIgnoreCase("ping")) {
-			channel.sendMessage("pong").queue();
-		} else if (userMessage.equalsIgnoreCase("pong")) {
-			channel.sendMessage("ping").queue();
-		} else if (userMessage.contains("parkour")) {
-			channel.sendMessage(PARKOUR_GIFS[random.nextInt(0, PARKOUR_GIFS.length)]).queue();
-		} else if (userMessage.contains("good night") || userMessage.contains("gn") || userMessage.contains("noches")) {
-			channel.sendMessage(GN_GIFS[random.nextInt(0, GN_GIFS.length)]).queue();
-		} else if (userMessage.contains("sus") || userMessage.contains("random") || userMessage.contains("raro") || userMessage.contains("que cosa")) {
-			channel.sendMessage(SUS_GIFS[random.nextInt(0, SUS_GIFS.length)]).queue();
-		} else if (userMessage.contains("bye") || userMessage.contains("adios") || userMessage.contains("me voy")) {
-			channel.sendMessage(SAD_GIFS[random.nextInt(0, SAD_GIFS.length)]).queue();
+		    channel.sendMessage("pong").queue();
+		} if (userMessage.equalsIgnoreCase("pong")) {
+		    channel.sendMessage("ping").queue();
+		} if (userMessage.matches(".*\\bparkour\\b.*")) {
+		    channel.sendMessage(PARKOUR_GIFS[random.nextInt(PARKOUR_GIFS.length)]).queue();
+		} if (userMessage.matches(".*\\b(good night|gn|noches)\\b.*")) {
+		    channel.sendMessage(GN_GIFS[random.nextInt(GN_GIFS.length)]).queue();
+		} if (userMessage.matches(".*\\b(sus|random|raro|que cosa)\\b.*")) {
+		    channel.sendMessage(SUS_GIFS[random.nextInt(SUS_GIFS.length)]).queue();
+		} if (userMessage.matches(".*\\b(bye|adios|me voy)\\b.*")) {
+		    channel.sendMessage(SAD_GIFS[random.nextInt(SAD_GIFS.length)]).queue();
 		}
+
+		if (!smartResponseEnabled)
+			return;
+		
+		String response = responder.generateResponse(userMessage);
+		
+		if (response.isEmpty() || response.isBlank())
+			return;
+		
+	    channel.sendMessage(message.getAuthor().getAsMention() + " " + response).queue();
 	}
 	
 	private void processUserXP(Message message, TextChannel channel, Guild server) {

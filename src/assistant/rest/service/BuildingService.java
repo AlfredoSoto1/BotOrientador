@@ -3,6 +3,7 @@
  */
 package assistant.rest.service;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import assistant.database.SubTransactionResult;
 import assistant.rest.dao.BuildingDAO;
 import assistant.rest.dto.BuildingDTO;
+import assistant.rest.dto.LabDTO;
 
 /**
  * @author Alfredo
@@ -33,7 +35,45 @@ public class BuildingService {
 	 * @return List of buildings
 	 */
 	public List<BuildingDTO> getAllBuilding(int page, int size) {
-		return buildingDAO.getAll(page * size, size);
+		SubTransactionResult result = buildingDAO.queryAllBuildings(page, size);
+		
+		List<BuildingDTO> buildings = new ArrayList<>();
+		for (int i = 0; i < result.rowCount();i++) {
+			BuildingDTO building = new BuildingDTO();
+			building.setId(result.getValue("buildid", i));
+			building.setCode(result.getValue("code", i));
+			building.setName(result.getValue("name", i));
+			building.setGpin(result.getValue("gpin", i));
+			buildings.add(building);
+		}
+		return buildings;
+	}
+	
+	public List<LabDTO> getLabsFrom(String buildingCode) {
+		// Find the building and validate its existance
+		Optional<BuildingDTO> building = this.findBuilding(buildingCode);
+		
+		// If no matching building found, return empty
+		if (building.isEmpty())
+			return List.of();
+		
+		// For the building found, look for all
+		// the labs in that building. We use the code from
+		// the previous result because that will give the code
+		// of the building that matches the ones from the database.
+		// This is done so that we dont have to validate the building code again.
+		SubTransactionResult result = buildingDAO.queryBuildingLab(building.get().getCode());
+		
+		List<LabDTO> labs = new ArrayList<>();
+		for (int i = 0; i < result.rowCount();i++) {
+			LabDTO lab = new LabDTO();
+			lab.setId(result.getValue("labid",  i));
+			lab.setName(result.getValue("name", i));
+			lab.setCode(result.getValue("code", i));
+			lab.setBuildingName(result.getValue("building_name", i));
+			labs.add(lab);
+		}
+		return labs;
 	}
 	
 	/**
@@ -49,7 +89,7 @@ public class BuildingService {
     	String letters = roomCode.replaceAll("^([A-Za-z]+).*", "$1");
     	String numbers = roomCode.substring(letters.length());
 
-        SubTransactionResult result = buildingDAO.findBuilding(roomCode, letters);
+        SubTransactionResult result = buildingDAO.queryBuilding(roomCode, letters);
         
         List<BuildingDTO> matchingBuildings = new LinkedList<>();
         for (int i = 0; i < result.rowCount(); i++) {
@@ -98,4 +138,8 @@ public class BuildingService {
 //    	}
     	return Optional.empty();
     }
+
+	public boolean insertLab(LabDTO lab) {
+		return !buildingDAO.insertLab(lab).isEmpty();
+	}
 }

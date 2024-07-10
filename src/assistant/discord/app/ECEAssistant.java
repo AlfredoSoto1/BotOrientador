@@ -23,6 +23,7 @@ import assistant.command.information.EOInfoCmd;
 import assistant.command.information.FAQCmd;
 import assistant.command.information.FacultyCmd;
 import assistant.command.information.FindBuildingCmd;
+import assistant.command.information.FindLabCmd;
 import assistant.command.information.HelpCmd;
 import assistant.command.information.OrgsCmd;
 import assistant.command.information.ProjectsCmd;
@@ -79,6 +80,7 @@ public class ECEAssistant extends BotApplication {
 		OrgsCmd organizations = new OrgsCmd();
 		EOInfoCmd eoInfo = new EOInfoCmd();
 		FindBuildingCmd findBuilding = new FindBuildingCmd();
+		FindLabCmd findLab = new FindLabCmd();
 		
 		/*
 		 * Require to update since its hard coded data
@@ -96,6 +98,7 @@ public class ECEAssistant extends BotApplication {
 
 		projects.setGlobal(true);
 		findBuilding.setGlobal(true);
+		findLab.setGlobal(false);
 		organizations.setGlobal(true);
 		
 		/*
@@ -115,6 +118,7 @@ public class ECEAssistant extends BotApplication {
 		interactions.add(projects);
 		interactions.add(eoInfo);
 		interactions.add(findBuilding);
+		interactions.add(findLab);
 		interactions.add(organizations);
 	}
 	

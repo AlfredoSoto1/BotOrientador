@@ -5,7 +5,6 @@ package assistant.rest.dao;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -18,6 +17,7 @@ import assistant.database.Transaction;
 import assistant.database.TransactionError;
 import assistant.database.TransactionStatementType;
 import assistant.rest.dto.BuildingDTO;
+import assistant.rest.dto.LabDTO;
 
 /**
  * @author Alfredo
@@ -29,40 +29,68 @@ public class BuildingDAO {
 		
 	}
 	
-	public List<BuildingDTO> getAll(int offset, int limit) {
-		final String SQL = 
+	public SubTransactionResult queryBuildingLab(String buildingCode) {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
+			"""
+			SELECT  labid,
+			        lab.name,
+			        lab.code,
+			        building.name AS building_name
+			    FROM lab
+			        INNER JOIN building ON fbuildid = buildid
+			    WHERE
+			        building.code = ?
+			""", List.of(buildingCode));
+		
+		transaction.prepare()
+			.executeThen(TransactionStatementType.SELECT_QUERY)
+			.commit();
+		
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		
+		return transaction.getLatestResult();
+	}
+	
+	public SubTransactionResult queryAllBuildings(int offset, int limit) {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
 			"""
 			SELECT buildid, code, name, gpin
 				FROM building
 			ORDER BY buildid
 			OFFSET ?
 			LIMIT  ?
-			""";
-		List<BuildingDTO> buildings = new ArrayList<>();
+			""", List.of(offset, limit));
 		
-		RunnableSQL rq = connection -> {
-			PreparedStatement stmt = connection.prepareStatement(SQL);
-			stmt.setInt(1, offset);
-			stmt.setInt(2, limit);
-			
-			ResultSet result = stmt.executeQuery();
-			while(result.next()) {
-				BuildingDTO building = new BuildingDTO();
-				building.setId(result.getInt("buildid"));
-				building.setCode(result.getString("code"));
-				building.setName(result.getString("name"));
-				building.setGpin(result.getString("gpin"));
-				buildings.add(building);
-			}
-			result.close();
-			stmt.close();
-		};
+		transaction.prepare()
+			.executeThen(TransactionStatementType.SELECT_QUERY)
+			.commit();
 		
-		Application.instance().getDatabaseConnection().establishConnection(rq);
-		return buildings;
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		
+		return transaction.getLatestResult();
 	}
 	
-	public SubTransactionResult findBuilding(String code, String possibleMatch) {
+	public SubTransactionResult queryBuilding(String code, String possibleMatch) {
 		@SuppressWarnings("resource")
 		Transaction transaction = new Transaction();
 		
@@ -152,18 +180,56 @@ public class BuildingDAO {
 		Application.instance().getDatabaseConnection().establishConnection(rq);
 	}
 	
-	public void deleteBuilding(int id) {
-		final String SQL = 
+	public void deleteBuilding(String code) {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
 			"""
-			delete from building 
-				where buildid = ?
-			""";
-		RunnableSQL rq = connection -> {
-			PreparedStatement stmt = connection.prepareStatement(SQL);
-			stmt.setInt(1, id);
-			stmt.executeUpdate();
-			stmt.close();
-		};
-		Application.instance().getDatabaseConnection().establishConnection(rq);
+			DELETE FROM building 
+				WHERE code = ?
+			""", List.of(code));
+		
+		transaction.prepare()
+		.executeThen(TransactionStatementType.UPDATE_QUERY)
+		.commit();
+		
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+	}
+	
+	public SubTransactionResult insertLab(LabDTO lab) {
+		@SuppressWarnings("resource")
+		Transaction transaction = new Transaction();
+		
+		transaction.submitSQL(
+			"""
+			INSERT INTO lab (name, code, fbuildid)
+			    SELECT ?, ?, buildid
+			    FROM building
+			        WHERE
+			            building.code = ?
+			RETURNING labid
+			""", List.of(lab.getName(), lab.getCode(), lab.getBuildingCode()));
+		
+		transaction.prepare()
+			.executeThen(TransactionStatementType.MIXED_QUERY)
+			.commit();
+		
+		// Close transaction
+		transaction.forceClose();
+		
+		// Display errors
+		for (TransactionError error : transaction.catchErrors()) {
+			System.err.println(error);
+			System.err.println("==============================");
+		}
+		return transaction.getLatestResult();
 	}
 }

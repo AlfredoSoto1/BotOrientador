@@ -6,6 +6,16 @@ package assistant.database;
 /**
  * @author Alfredo
  */
-public record TransactionError(String message) {
+public class TransactionError {
 
+	private String message;
+	
+	public TransactionError(String message) {
+		this.message = message;
+	}
+	
+	@Override
+	public String toString() {
+		return message;
+	}
 }

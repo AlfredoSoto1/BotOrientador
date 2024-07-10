@@ -1,7 +1,7 @@
 /**
  * 
  */
-package assistant.command.links;
+package assistant.command.information;
 
 import java.awt.Color;
 import java.util.List;
@@ -9,26 +9,33 @@ import java.util.List;
 import assistant.app.core.Application;
 import assistant.discord.interaction.CommandI;
 import assistant.discord.interaction.InteractionModel;
-import assistant.embeds.information.LinksEmbed;
+import assistant.embeds.information.LabEmbed;
 import assistant.rest.dto.DiscordServerDTO;
+import assistant.rest.dto.LabDTO;
+import assistant.rest.service.BuildingService;
 import assistant.rest.service.GameService;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 
 /**
  * @author Alfredo
  *
  */
-public class LinksCmd extends InteractionModel implements CommandI {
+public class FindLabCmd extends InteractionModel implements CommandI {
 
-	private LinksEmbed embed;
-	private GameService commandEventService;
+	private static final String COMMAND_LABEL = "location";
 	
+	private LabEmbed embed;
+	private BuildingService service;
+	private GameService commandEventService;
+
 	private boolean isGlobal;
 	
-	public LinksCmd() {
-		this.embed = new LinksEmbed();
+	public FindLabCmd() {
+		this.embed = new LabEmbed();
+		this.service = Application.instance().getSpringContext().getBean(BuildingService.class);
 		this.commandEventService = Application.instance().getSpringContext().getBean(GameService.class);
 	}
 	
@@ -44,32 +51,40 @@ public class LinksCmd extends InteractionModel implements CommandI {
 	
 	@Override
 	public String getCommandName() {
-		return "links";
+		return "lab";
 	}
 
 	@Override
 	public String getDescription() {
-		return "Una lista de links importantes";
+		return "Obten información acerca de donde queda un lab de estudio";
 	}
 
 	@Override
 	public List<OptionData> getOptions(Guild server) {
-		return List.of();
+		return List.of(
+			new OptionData(OptionType.STRING, COMMAND_LABEL, "Dispone la localización del lab en el que se encuentra", true));
 	}
 
 	@Override
 	public void execute(SlashCommandInteractionEvent event) {
-		if (event.isFromGuild())
+		if (event.isFromGuild()) {
 			fromServer(event);
-		else
+		} else {
 			fromDM(event);
+		}
 	}
 	
 	private void fromServer(SlashCommandInteractionEvent event) {
 		DiscordServerDTO discordServer = super.getServerOwnerInfo(event.getGuild().getIdLong());
 		Color color = Color.decode("#" + discordServer.getColor());
 		
-		event.replyEmbeds(embed.buildLinks(color))
+		// Obtain building codification from command
+		String roomCode = event.getOption(COMMAND_LABEL).getAsString();
+		
+		// Look for the building associated to the room code provided
+		List<LabDTO> labs = service.getLabsFrom(roomCode);
+		
+		event.replyEmbeds(embed.buildLab(color, roomCode, labs))
 			.setEphemeral(true).queue();
 		
 		// Update the user points stats when he uses the command
@@ -77,6 +92,13 @@ public class LinksCmd extends InteractionModel implements CommandI {
 	}
 	
 	private void fromDM(SlashCommandInteractionEvent event) {
-		event.replyEmbeds(embed.buildLinks(Color.GRAY)).queue();
+		// Obtain building codification from command
+		String roomCode = event.getOption(COMMAND_LABEL).getAsString();
+		
+		// Get the labs from given code
+		List<LabDTO> labs = service.getLabsFrom(roomCode);
+		
+		// Reply in form of embed
+		event.replyEmbeds(embed.buildLab(Color.GRAY, roomCode, labs)).queue();
 	}
 }

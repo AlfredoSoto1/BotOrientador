@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import assistant.app.settings.TokenHolder;
 import assistant.rest.dto.BuildingDTO;
+import assistant.rest.dto.LabDTO;
 import assistant.rest.service.BuildingService;
 
 /**
@@ -73,6 +74,21 @@ public class BuildingController {
         int recordID = service.insertBuilding(building);
         if (recordID > 0) {
             return ResponseEntity.status(HttpStatus.CREATED).body(recordID);
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to insert");
+        }
+    }
+    
+    @PostMapping("/lab")
+    public ResponseEntity<?> addLab(
+    		@RequestBody LabDTO lab,
+    		@RequestHeader("Authorization") String token) {
+    	
+    	if (TokenHolder.authenticateREST(token, tokenHolders))
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Incorrect token");
+    	
+        if (service.insertLab(lab)) {
+            return ResponseEntity.status(HttpStatus.CREATED).body("Lab Inserted");
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to insert");
         }

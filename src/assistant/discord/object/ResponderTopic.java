@@ -1,0 +1,21 @@
+/**
+ * 
+ */
+package assistant.discord.object;
+
+/**
+ * @author Alfredo
+ */
+public enum ResponderTopic {
+	MATRICULA_CONFIRMATION,
+	MATRICULA_CONFIRMATION_AJUSTE,
+    MATRICULA_TICKET,
+    PARKING, 
+    DOWNLOAD_SOFTWARE, 
+    BUILDING, 
+    SERVICIOS_MEDICOS, 
+    CLASSES,
+    PROFESSOR,
+    CLASSES_CODE,
+    UNKNOWN, MOODLE, RUMAD, CONSEJERO, QUIMICA, ASISTENCIA_ECONOMICA, LIBRO
+}
