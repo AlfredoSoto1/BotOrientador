@@ -15,13 +15,8 @@ import assistant.app.core.DebugConfiguration;
  * TODO: 
  *  
  *  Tomorrow
- *  - Add lab search just like building command
  *  - Add food location search and listing command
  *  
- *  Tomorrow/miercoles
- *  - Add question matching from random received message
- *    to respond accordingly
- * 	
  *  - Merge to master and test
  *  - Complete the Jar file and run in PI
  */
