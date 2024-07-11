@@ -23,7 +23,6 @@ public class AssistantCmd extends InteractionModel implements CommandI {
 	private static final String COMMAND_LABEL = "service";
 	
 	private BotApplication bot;
-	private boolean isGlobal;
 	
 	public AssistantCmd(BotApplication bot) {
 		this.bot = bot;
@@ -31,12 +30,13 @@ public class AssistantCmd extends InteractionModel implements CommandI {
 	
 	@Override
 	public boolean isGlobal() {
-		return isGlobal;
+		return false;
 	}
 	
 	@Override
+	@Deprecated
 	public void setGlobal(boolean isGlobal) {
-		this.isGlobal = isGlobal;
+		// Server only command
 	}
 
 	@Override

@@ -91,14 +91,14 @@ public class ECEAssistant extends BotApplication {
 		RulesCmd serverRules = new RulesCmd();
 		CalendarCmd calendar = new CalendarCmd();
 
-		helpMenu.setGlobal(false);
-		uprmMap.setGlobal(false);
-		serverRules.setGlobal(false);
-		calendar.setGlobal(false);
+		helpMenu.setGlobal(true);
+		uprmMap.setGlobal(true);
+		serverRules.setGlobal(true);
+		calendar.setGlobal(true);
 
 		projects.setGlobal(true);
 		findBuilding.setGlobal(true);
-		findLab.setGlobal(false);
+		findLab.setGlobal(true);
 		organizations.setGlobal(true);
 		
 		/*
@@ -126,7 +126,7 @@ public class ECEAssistant extends BotApplication {
 		LinksCmd usefulLinks = new LinksCmd();
 		MadeWebCmd madeWeb = new MadeWebCmd();
 		
-		usefulLinks.setGlobal(false);
+		usefulLinks.setGlobal(true);
 
 		interactions.add(madeWeb);
 		interactions.add(usefulLinks);
@@ -140,10 +140,10 @@ public class ECEAssistant extends BotApplication {
 		AcademicAdvisoryCmd academicAdvisory = new AcademicAdvisoryCmd();
 		EconomicAssistanceCmd economicAssistance = new EconomicAssistanceCmd();
 		
-		dcsp.setGlobal(false);
-		deanOfStudents.setGlobal(false);
-		universityGuard.setGlobal(false);
-		economicAssistance.setGlobal(false);
+		dcsp.setGlobal(true);
+		deanOfStudents.setGlobal(true);
+		universityGuard.setGlobal(true);
+		economicAssistance.setGlobal(true);
 		
 		interactions.add(dcsp);
 		interactions.add(department);

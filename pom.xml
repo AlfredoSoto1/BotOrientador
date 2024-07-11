@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>BotOrientador</groupId>
 	<artifactId>BotOrientador</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>2024.10.0-SNAPSHOT</version>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -35,13 +35,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>webapplication</groupId>
-			<artifactId>WebApplication</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
 		<!-- Application Dependencies -->
@@ -67,8 +61,6 @@
 		</dependency>
 
 		<!-- Database Dependencies -->
-
-		<!-- For accessing a database we have two options, either a postgres database or a Microsoft access DB file -->
 
 		<!-- PostgreSQL -->
 		<dependency>
@@ -107,15 +99,41 @@
 			</resource>
 		</resources>
 		<plugins>
+			
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<release>21</release>
+					<release>22</release>
 				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+
+			<!-- Maven Assembly Plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>assistant.app.entry.AssistantAppEntry</mainClass> <!-- Replace with your main class -->
+						</manifest>
+					</archive>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

@@ -99,7 +99,7 @@ public class HelpEmbed {
 				> **(Solo se usa en el servidor)**
 				""", true),
 		
-			new Field(":scroll: `/reglas`", 
+			new Field(":scroll: `/rules`", 
 				"""
 				> Provee las reglas del servidor.
 				> **(Solo se usa en el servidor)**
@@ -134,6 +134,12 @@ public class HelpEmbed {
 			new Field(":school: `/salon`",
 				"""
 				> Provee información sobre el edificio donde se puede encontrar ese salón.
+				> Requiere la codificación del edificio Ex: S, CH, SH, etc...
+				""", true),
+			new Field(":desktop:  `/lab`",
+				"""
+				> Provee una lista de los laboratorios/salones de estudio.
+				> Requiere la codificación del edificio Ex: S, CH, SH, etc...
 				""", true),
 				
 			new Field(":page_with_curl: `/curriculo`",
