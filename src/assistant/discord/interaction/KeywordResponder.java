@@ -6,9 +6,11 @@ package assistant.discord.interaction;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import assistant.discord.object.ResponderCategory;
 import assistant.discord.object.ResponderTopic;
@@ -106,38 +108,38 @@ public class KeywordResponder {
         Map<ResponderTopic, Integer> topicCount = countTopicTokens(tokens);
         Optional<ResponderTopic> mostRelevantTopic = getMostRelevantTopic(topicCount);
 
-        StringBuilder responseBuilder = new StringBuilder();
+        Set<String> responses = new HashSet<>();
 
         for (ResponderCategory category : categoryCount.keySet()) {
         	if (mostRelevantTopic.isPresent()) {
 	    		switch (category) {
 	    		case WHAT:
-	    			responseBuilder.append(generateWhatResponse(mostRelevantTopic.get()));
+	    			responses.add(generateWhatResponse(mostRelevantTopic.get()));
 	    			break;
 	    		case WHEN:
-	    			responseBuilder.append(generateWhenResponse(mostRelevantTopic.get()));
+	    			responses.add(generateWhenResponse(mostRelevantTopic.get()));
 	    			break;
 	    		case WHO:
-	    			responseBuilder.append(generateWhoResponse(mostRelevantTopic.get()));
+	    			responses.add(generateWhoResponse(mostRelevantTopic.get()));
 	    			break;
 	    		case WHERE:
-	    			responseBuilder.append(generateWhereResponse(mostRelevantTopic.get()));
+	    			responses.add(generateWhereResponse(mostRelevantTopic.get()));
 	    			break;
 	    		case WHY:
-	    			responseBuilder.append(generateWhyResponse(mostRelevantTopic.get()));
+	    			responses.add(generateWhyResponse(mostRelevantTopic.get()));
 	    			break;
 	    		case HOW:
-	    			responseBuilder.append(generateHowResponse(mostRelevantTopic.get()));
+	    			responses.add(generateHowResponse(mostRelevantTopic.get()));
 	    			break;
 	    		case RECOMMENDATION:
-	    			responseBuilder.append(generateRecommendationResponse(mostRelevantTopic.get()));
+	    			responses.add(generateRecommendationResponse(mostRelevantTopic.get()));
 	    			break;
 	    		default:
 	    			return "";
 	    		}
         	}
         }
-        return responseBuilder.toString().trim();
+        return String.join(" ", responses);
     }
     
     
