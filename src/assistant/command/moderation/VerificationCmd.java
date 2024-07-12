@@ -233,6 +233,8 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 			event.getMember().getUser()
 				.openPrivateChannel().queue(privateMessage -> showWelcomeMessage(privateMessage, memberDTO.get(), event.getGuild()));
 		}
+		
+		delayInteractions(2000); // two seconds
 	}
 	
 	private void showWelcomeMessage(PrivateChannel privateChannel, MemberDTO member, Guild server) {
@@ -349,7 +351,10 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 			
 			try {
 				server.addRoleToMember(member, role).queue(
-					success -> Logger.instance().logFile(LogFeedback.SUCCESS, "Given Role [%s] to [%s]", role.getName(), member.getEffectiveName()));
+					success -> Logger.instance().logFile(LogFeedback.SUCCESS, "Given Role [%s] to [%s]", role.getName(), member.getEffectiveName()),
+					error   -> Logger.instance().logFile(LogFeedback.ERROR,   "Failed giving Role [%s] to [%s]", role.getName(), member.getEffectiveName()));
+				
+				delayInteractions(2000); // two seconds
 			} catch (HierarchyException he) {
 				hook.sendMessage("No se pudo otorgar los roles, por favor notifique a un Bot developer").setEphemeral(true).queue();
 				Logger.instance().logFile(LogFeedback.WARNING, "Failed to add role: %s to member %s", he.getMessage(), member.getEffectiveName());
@@ -371,7 +376,10 @@ public class VerificationCmd extends InteractionModel implements CommandI {
 		
 		try {
 			server.addRoleToMember(member, role).queue(
-					success -> Logger.instance().logFile(LogFeedback.SUCCESS, "Given Role [%s] to [%s]", role.getName(), member.getEffectiveName()));
+					success -> Logger.instance().logFile(LogFeedback.SUCCESS, "Given Role [%s] to [%s]", role.getName(), member.getEffectiveName()),
+					error   -> Logger.instance().logFile(LogFeedback.ERROR,   "Failed giving Role [%s] to [%s]", role.getName(), member.getEffectiveName()));
+			
+			delayInteractions(2000); // two seconds
 		} catch (HierarchyException he) {
 			hook.sendMessage("No se pudo otorgar los roles, por favor notifique a un Bot developer").setEphemeral(true).queue();
 			Logger.instance().logFile(LogFeedback.WARNING, "Failed to add role: %s to member %s", he.getMessage(), member.getEffectiveName());
@@ -383,10 +391,21 @@ public class VerificationCmd extends InteractionModel implements CommandI {
     	
 		try {
 			server.modifyNickname(member, nickname).queue(
-				success -> Logger.instance().logFile(LogFeedback.SUCCESS, "Successfully changed nickname from [%s] to [%s]", member.getEffectiveName(), nickname));
+				success -> Logger.instance().logFile(LogFeedback.SUCCESS, "Successfully changed nickname from [%s] to [%s]", member.getEffectiveName(), nickname),
+				error   -> Logger.instance().logFile(LogFeedback.ERROR,   "Failed changing nickname from [%s] to [%s]", member.getEffectiveName(), nickname));
+			
+			delayInteractions(2000); // two seconds
 		} catch (HierarchyException he) {
 			hook.sendMessage("No se pudo otorgar el nickname, por favor notifique a un Bot developer").setEphemeral(true).queue();
 			Logger.instance().logFile(LogFeedback.WARNING, "Failed to change nickname: %s", he.getMessage());
+		}
+	}
+	
+	private void delayInteractions(long miliseconds) {
+		try {
+			Thread.sleep(miliseconds);
+		} catch (InterruptedException ie) {
+			Logger.instance().logFile(LogFeedback.ERROR, "Thread sleep exception: %s", ie.getLocalizedMessage());
 		}
 	}
 }
