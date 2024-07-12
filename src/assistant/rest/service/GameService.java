@@ -54,12 +54,12 @@ public class GameService {
 		List<UserRankDTO> leaderboard = new ArrayList<>();
 		for (int i = 0;i < result.rowCount(); i++) {
 			UserRankDTO ranked = new UserRankDTO();
-			ranked.setRank(result.getValue("rank"));
-			ranked.setLevel(result.getValue("level"));
-			ranked.setUserXP(result.getValue("message_xp"));
-			ranked.setUsername(result.getValue("username"));
-			ranked.setMilestone(result.getValue("xp_milestone"));
-			ranked.setCommandsUsed(result.getValue("commands_used"));
+			ranked.setRank(result.getValue("rank", i));
+			ranked.setLevel(result.getValue("level", i));
+			ranked.setUserXP(result.getValue("message_xp", i));
+			ranked.setUsername(result.getValue("username", i));
+			ranked.setMilestone(result.getValue("xp_milestone", i));
+			ranked.setCommandsUsed(result.getValue("commands_used", i));
 			leaderboard.add(ranked);
 		}
 		return leaderboard;
