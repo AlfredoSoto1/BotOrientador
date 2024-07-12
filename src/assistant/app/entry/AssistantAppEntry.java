@@ -13,12 +13,7 @@ import assistant.app.core.DebugConfiguration;
  * @author Alfredo
  * 
  * TODO: 
- *  
- *  Tomorrow
  *  - Add food location search and listing command
- *  
- *  - Merge to master and test
- *  - Complete the Jar file and run in PI
  */
 @SpringBootApplication
 @ComponentScan("assistant")

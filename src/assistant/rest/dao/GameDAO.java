@@ -191,15 +191,11 @@ public class GameDAO {
 		// Add all transaction parameter fields
 		transaction.submitSQL(
 			"""
-			WITH ranked_users AS (
-			    SELECT message_xp, username, xp_milestone, level, commands_used, discserid,
-			            ROW_NUMBER() OVER (ORDER BY message_xp DESC) AS rank
-			        FROM joinedmember
-			            INNER JOIN advancement     ON fjmid = jmid
-			            INNER JOIN serverownership ON fseoid = seoid
-			)
-			SELECT *
-			    FROM ranked_users
+		    SELECT message_xp, username, xp_milestone, level, commands_used, discserid,
+		            ROW_NUMBER() OVER (ORDER BY message_xp DESC) AS rank
+		        FROM joinedmember
+		            INNER JOIN advancement     ON fjmid = jmid
+		            INNER JOIN serverownership ON fseoid = seoid
 			    WHERE
 			        username = ? AND discserid = ?
 			""", 
