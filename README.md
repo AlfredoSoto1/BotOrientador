@@ -1,8 +1,9 @@
-# Smart-Assistant Software Guide
-This is a new re-built version from the original Discord bot for Team-Made's Developer team.
-This software is a fully autonomous Discord bot for managing incomming students main Discord server.
-Assigning roles, replying, deleting and running commands as its main feature holding its main data
-in a database using Microsoft Access files with secure password and encryption.
+# Smart-Assistant Discord Application
+This repository hosts a Java-based Discord bot tailored to support new incoming students in various 
+engineering disciplines, including Electrical, Computer, Software, and Computer Science Engineering. 
+The bot provides a comprehensive set of features aimed at facilitating orientation and information 
+dissemination within Discord servers. This version represents an evolution from the previous Discord
+bot developed by Team-Made's Developer Team.
 
 ## Table of Contents
 - [Features](#features)
@@ -10,120 +11,114 @@ in a database using Microsoft Access files with secure password and encryption.
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
 - [Usage](#usage)
-  - [How to use bot](#how-to-use-bot)
-  - [API Usage](#api-usage-for-developers)
-  - [Configuration](#configuration)
+  - [Application Commands](#application-commands)
 - [Contributing](#contributing)
 - [License](#license)
 
 
 ## Features
-### Working on these features:
-The current version for this software is: v2023.3-Beta
-* Leader board and points
-* voting polls
-* some games.. not to fancy
-* test software with real users
-* debug software with all test users
-* present to team
+- **Comprehensive Information Commands**:
+  - Delivers detailed insights into curriculums, campus facilities, and orientation week schedules.
+- **Interactive Functionality**:
+  - Engages users with role assignment, game selection, and FAQ responses through intuitive commands.
+- **Seamless Integration**:
+  - Interfaces with external APIs and databases to ensure real-time updates and efficient information retrieval.
+- **Flexible Customization**:
+  - Easily adaptable with customizable commands tailored to meet specific server requirements.
 
 ## Getting Started
 ### Prerequisites
-To contribute code for this software you will need to have knowledge but not limited to:
-  * Knowing Java and SQL
-  * A bit of Python (To understand the prior version of this new implementation. Not required but useful)
-  * Adapt to new APIs used throught this software refered as 'drivers'. You can check these in the `drivers` package
-    
-To run this software you will need for this version (at the moment) is Eclipse IDE.
-You will also need to create a custom Discord token to feed the bot with, in this way when
-the software starts it knows to where connect and start running the bot in the corresponding server.
-For this software you will also need Git installed in your preferred Operating system. This will be
-important for cloning the repository, working with branches and git staging commits to later
-push and/or pull from/to remote repository
+To contribute to this software, you'll need knowledge of the following:
+- Java: Proficiency in Java programming language.
+- Python: Basic understanding (primarily for referencing prior versions).
+- PostgreSQL: Familiarity with setting up and managing PostgreSQL databases.
+- Docker: Understanding Docker containerization for setting up PostgreSQL locally.
+
 ### Installation
-To install this software first clone the repository to a folder of your choice in your device. After cloning,
-you can open Eclipse IDE and import with git (smart import) the already cloned repository.
+1. **Set Up Docker with PostgreSQL**:
+   - Install Docker on your machine if not already installed.
+   - Pull the PostgreSQL Docker image and create a container only for testing locally.
+   You need to setup yout custom container name, database username and password as well.
+   ```bash
+   docker run --name <container_name_here>
+   -e POSTGRES_USER=<your_username>
+   -e POSTGRES_PASSWORD=<your_password>
+   -e POSTGRES_DB=<your_database>
+   -p 5432:5432
+   -d postgres
+   ```
+2. **Prepare the database**:
+   You have to prepare the database, this means to create and fill all tables if you want to
+   test the commands that require the use of data from the database. If you are running a local
+   database using postgres with your container, you can use dunmmy data. If you are using the production
+   database, make sure to not desttoy any existing data. Please contact the manager to assist on this
+   area.
+3. **Setup Discord App token**:
+   You have to create a new Discord app token if you want to test the application. Once you
+   create the token, you have to join the bot to a test server **NOT THE DISTRIBUTION SERVER**.
+   If you want to run the bot on the distribution server, ask the manager of the development team
+   for the token and permision to run it.
+4. **Prepare config file**:
+   You have to create a `resources.config` package inside `/src`. Inside the resources.config package,
+   you have to create a file named `application.properties`. Inside that file you will set the following
+   data:
+    ```properties
+    # REST Spring Settings
+    spring.application.name=AssistantREST
+    #server.port=8080
+    
+    # Application information
+    app.name=DiscordAssistant
+    app.version=v2024.2.SO4
+    
+    # Assistant API-REST controller token
+    app.rest.controller.token=REST_CONTROLLER_TOKEN_HERE
+    
+    # Discord bot token
+    app.discord.bot.token=YOUR_TOKEN_HERE
+    
+    # Database credentials for postgres container in docker
+    app.database.url=jdbc:postgresql://YOUR_MACHINE_IP:5432/DATABASE_NAME_HERE
+    app.database.username=DATABASE_USERNAME_HERE
+    app.database.password=DATABASE_PASSWORD_HERE
+    app.database.driver=org.postgresql.Driver
+    ```
+   
+5. **Compile the project with maven**:
+   Open your IDE of preference (I used Eclipse for this project) and compile the software to a runnable jar file.
+   Once the application is compiled and set, you have to put the `/assistant` folder in the root folder where the
+   jar is located. You can then start running the app and the bot should go online.
 
-#### How to clone from github using terminal
-Open the folder where you would like to clone the repository and open a terminal
-that is located at the folder where you want to clone the repository.
-Then use the following git command:
-```git
-git clone `GitHub's repository link here`
-```
+#### Where to start debugging the application?
+  - Inside the `assistant.app.entry` package, there ypu will find the entry file that will kick off the app. 
+
 ## Usage
-### How to use bot?
-<details>
-<summary>Here are the bot commands that can be used in any chat inside the pre-defined server</summary>
-  
-| Slash Command                       | Description                                                                                                                         |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `/help`                             | Provides a list of all the commands that the bot knows about and can be run by _any_ user.                                          |
-| `/curriculo <departamento>`         | Provides a PDF containing the department's curriculum. It accepts the following options: __(INEL/ICOM/INSO/CIIC)__.                 |
-| `/map`                              | Provides a link to an official UPRM site that contains the map of the campus.                                                       |
-| `/links`                            | Provides a list of links with important general information about the campus and the department.                                    |
-| `/salon <letra>`                    | Provides a link to an official UPRM site that contains information about a specific classroom.                                      |
-| `/calendario`                       | Provides a link containing the academic calendar of UPRM.                                                                           |
-| `/contact <who?>`                   | Contains a list of contact numbers to choose.                                                                                       |
-| `/ls_projects <select>`             | Provides a list of projects and research done in relation to the __INEL/ICOM/INSO/CIIC__ departments.                               |
-| `/estudiante-orientador <dept>`     | Provides a list of all the EO's in the server with the department provided as a parameter in the command.                           |
-| `/ls_student_orgs <select>`         | Provides a list of student organizations.                                                                                           |
-| `/reglas`                           | Provides a list of rules for the server.                                                                                            |
-| `/guia-prepistica`                  | Provides a PDF containing the guide on how-to for prepas.                                                                           |
-
-### Program flow
-
-insert image of how the program executes and it's levels of abstraction
-
-</details>
-
-### API Usage (for developers)
-
-#### Prepare software before debugging!!!
-<details>
-<summary>Basic setup</summary>
-  
-1) Setting up the database
-* You first need to create a `database/` folder in the main project's directory.
-  You will need to reach to one of the managers of TeamMade to give you access to our
-  database. Once you have the database as a Microsoft Access file, you can paste it
-  inside the created `database/` directory. It should be named as `TeamMadeDB.accdb`
-
-2) Setting Bot-token
-* You are going to need a bot token before launching the software.
-  You can either create one for your own testing purposes or ask to
-  one of the official managers of TeamMade to test the bot lively in
-  the server (not recommended) only if the bot is not in a pre-release state
-
-* You will need to create a file inside the `assets/bot-token/` directory named
-  `bot-token.tkn`. There you will paste the bot token and you should be ready to go.
-
-</details>
-
-#### How to start debugging?
-
-<details>
-<summary>Entry point location</summary>
-
-To start running the software in Eclipse IDE, you need to run the java file named
-`ApplicationEntry.java`, located at `application.client` package.
-</details>
-  
-<details>
-<summary>Important notes before debugging</summary>
-
-* Note that once the program starts running you will need to wait a couple of minutes
-  before start testing all commands. This is because the JDA is loading all the data
-  and it might take a few minutes or seconds. If you want to reduce this time you can
-  do so by commenting the `listenerAdapterManager.loadComponentAdapter(...@Component)` methods inside the
-  bot entry class. 
-</details>
-
-### Configuration
-Before running the program you **MUST** check and change the variables inside the
-`BotConfigs.java` interface. Some variables need to be changed if you plan to run
-and test the bot in a custom server.
-
+### Application Commands
+| Command                         | Description                                                                    |
+| ------------------------------- | ------------------------------------------------------------------------------ |
+| `/calendario`                   | Links to the academic calendar of UPRM.                                        |
+| `/estudiante-orientador`        | Lists all EO's in the server by department.                                    |
+| `/rules`                        | Lists server rules.                                                            |
+| `/guia-prepistica`              | Provides a PDF guide on prepas.                                                |
+| `/faculty`                      | Displays detailed information about faculty members.                           |
+| `/ls_projects`                  | Provides information on ongoing projects and research.                         |
+| `/ls_student_orgs`              | Lists student organizations and their activities.                              |
+| `/salon`                        | Finds a building on campus based on its code.                                  |
+| `/lab`                          | Finds a lab on campus based on its code.                                       |
+| `/links`                        | Provides useful links related to studies and resources.                        |
+| `/made-web`                     | Links to the MADE (Media Arts and Digital Entertainment) website.              |
+| `/contact-dcsp`                 | Provides information about the Department of Computer Science and Engineering. |
+| `/contact-department`           | Displays information about specific departments at UPRM.                       |
+| `/contact-decanato-estudiantes` | Provides contact information for the Dean of Students.                         |
+| `/contact-guardia-univ`         | Provides contact information for campus security.                              |
+| `/contact-asesoria-academica`   | Provides guidance on academic matters and advisories.                          |
+| `/contact-asistencia-economica` | Provides information about financial aid and economic assistance.              |
+| `/curriculo`                    | Provides general information about academic curricula.                         |
+| `/guia-prepistica`              | Provides a guide for incoming freshmen.                                        |
+| `/faq`                          | Answers frequently asked questions about the Discord server.                   |
+| `/help`                         | Displays a comprehensive help menu for navigating the bot's commands.          |
+| `/map`                          | Provides a link to the UPRM campus map.                                        |
+| `/rules`                        | Displays the rules and guidelines for the Discord server.                      | 
 
 ## Contributing
 ### How can you help?
@@ -143,6 +138,6 @@ and test the bot in a custom server.
   others for testing and approving.
 
 ## License
- Copyright © 2024 Discord Assistant Developer team. All rights reserved.
+This software has a license please read it and make notes on what you can do with this software.
 
- Prior version link: https://github.com/CarolinaZRM/bot-discord
+Software based on the previous version: https://github.com/CarolinaZRM/bot-discord
