@@ -51,7 +51,7 @@ To contribute to this software, you'll need knowledge of the following:
    You have to prepare the database, this means to create and fill all tables if you want to
    test the commands that require the use of data from the database. If you are running a local
    database using postgres with your container, you can use dunmmy data. If you are using the production
-   database, make sure to not desttoy any existing data. Please contact the manager to assist on this
+   database, make sure to not destroy any existing data. Please contact the manager to assist on this
    area.
 3. **Setup Discord App token**:
    You have to create a new Discord app token if you want to test the application. Once you
