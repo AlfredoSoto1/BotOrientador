@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:latest
+    container_name: sodb-container
+    restart: always
+    environment:
+      POSTGRES_DB: sodb
+      POSTGRES_USER: sodbuser
+      POSTGRES_PASSWORD: sodbpass
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+
+volumes:
+  pgdata:

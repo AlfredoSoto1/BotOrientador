@@ -24,3 +24,5 @@ bot-token-unused.tkn
 
 # Ignore all the properties files
 *.properties
+
+/init

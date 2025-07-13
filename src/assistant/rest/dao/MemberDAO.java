@@ -574,7 +574,10 @@ public class MemberDAO {
 			    INSERT INTO member (email, fprogid) 
 			        SELECT (SELECT email FROM member_info), progid 
 			            FROM chosen_program
-			    RETURNING memid
+			    ON CONFLICT (email) 
+			      DO UPDATE 
+			        SET email = EXCLUDED.email
+			  RETURNING memid
 			), 
 			assigned_team AS (
 			    INSERT INTO assignedteam (fmemid, fteamid)
@@ -712,8 +715,11 @@ public class MemberDAO {
 			    INSERT INTO member (email, fprogid) 
 			        SELECT (SELECT email FROM member_info), progid 
 			            FROM chosen_program
-			    RETURNING memid
-			), 
+			    ON CONFLICT (email) 
+			      DO UPDATE 
+			        SET email = EXCLUDED.email
+			  RETURNING memid
+			),  
 			assigned_team AS (
 			    INSERT INTO assignedteam (fmemid, fteamid)
 			        SELECT (SELECT memid FROM new_member), teamid
